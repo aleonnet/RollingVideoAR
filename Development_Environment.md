@@ -17,7 +17,7 @@
 
 ## Unity + Flutter
 
-이미 Flutter에 Unity가 embedding 되어 있는 plugin이 있다. ([flutter_unity_widget](https://github.com/snowballdigital/flutter-unity-view-widget)) Unity `2019.3.*` 부터 Flutter로 export 하는 기능도 지원된다. Flutter에 `AR Foundation` 샘플 앱이 embedding 되어 있는 프로젝트를 테스트 해봤다. 테스트 방법은 [Build_Flutter_Unity](Build_Flutter_Unity.md) 에 정리했다.
+이미 Flutter에 Unity가 embedding 되어 있는 plugin이 있다. ([flutter_unity_widget](https://github.com/snowballdigital/flutter-unity-view-widget)) Unity `2019.3.*` 부터 Flutter로 export 하는 기능도 지원된다. Flutter에 `AR Foundation` 샘플 앱이 embedding 되어 있는 프로젝트를 테스트 해봤다. 테스트 프로젝트는 [flutter-unity-arkit-demo](flutter-unity-arkit-demo) 에 있다.
    
 개발하는 것 자체에는 문제가 없긴 한데 뭔가 아쉽다.
 
