@@ -143,3 +143,9 @@ dependencies {
 ```
 
 6. Import된 모듈들은 매번 new module로 부를 필요 없이, 해당 폴더를 복사해뒀다가 다른 프로젝트에서 사용하고 gradle 설정만 맞춰주면 된다.
+
+# Reference
+
+- [flutter_unity_widget](https://github.com/snowballdigital/flutter-unity-view-widget)
+- [flutter_unity_widget ARKIT DEMO](https://github.com/juicycleff/flutter-unity-arkit-demo)
+- [AR Foundation Samples](https://github.com/Unity-Technologies/arfoundation-samples)
