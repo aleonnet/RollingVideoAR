@@ -144,6 +144,18 @@ dependencies {
 
 6. Import된 모듈들은 매번 new module로 부를 필요 없이, 해당 폴더를 복사해뒀다가 다른 프로젝트에서 사용하고 gradle 설정만 맞춰주면 된다.
 
+7. `android/UnityExport/src/main/AndroidManifest.xml` 에 activity 
+
+```xml
+ <activity android:name="com.unity3d.player.UnityPlayerActivity" android:theme="@style/UnityThemeSelector" android:screenOrientation="fullSensor" android:launchMode="singleTask" android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection|density" android:hardwareAccelerated="false">
+    <intent-filter>
+       <action android:name="android.intent.action.MAIN" />
+       <category android:name="android.intent.category.LAUNCHER" />
+       <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+   </intent-filter>
+   <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
+ </activity>
+```
 # Reference
 
 - [flutter_unity_widget](https://github.com/snowballdigital/flutter-unity-view-widget)
