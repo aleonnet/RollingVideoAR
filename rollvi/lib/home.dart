@@ -1,12 +1,23 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:rollvi/capture_camera.dart';
+
+
+import 'package:rollvi/screens/assets_object.dart';
 import 'package:rollvi/screens/remote_object.dart';
 import 'package:rollvi/screens/augmented_faces.dart';
-import 'package:rollvi/record_video.dart';
+import 'package:rollvi/screens/custom_object.dart';
+import 'package:rollvi/screens/runtime_materials.dart';
 
-import 'record_video.dart';
+import 'video_trimmer/video_trimmer.dart';
+import 'trimmer.dart';
 
 class HomeScreen extends StatelessWidget{
+
+  final Trimmer _trimmer = Trimmer();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,7 +70,17 @@ class HomeScreen extends StatelessWidget{
                   style: TextStyle(color: Colors.white)
               ),
               color: Colors.blue,
-              onPressed: () {
+              onPressed: () async {
+                File file = await ImagePicker.pickVideo(
+                  source: ImageSource.gallery,
+                );
+                if (file != null) {
+                  await _trimmer.loadVideo(videoFile: file);
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (context) {
+                    return TrimmerView(_trimmer);
+                  }));
+                }
 
               },
             )
