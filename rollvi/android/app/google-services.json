@@ -1,0 +1,56 @@
+{
+  "project_info": {
+    "project_number": "347705689038",
+    "firebase_url": "https://rollvi.firebaseio.com",
+    "project_id": "rollvi",
+    "storage_bucket": "rollvi.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:347705689038:android:40bd15efe082e55380619f",
+        "android_client_info": {
+          "package_name": "kr.hispace.rollvi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "347705689038-b2b0u28dt49tchm305o1cf1muf2vehf8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kr.hispace.rollvi",
+            "certificate_hash": "1583656041068847a2e5ff53aabf8b417bb81032"
+          }
+        },
+        {
+          "client_id": "347705689038-ee0tu2ifd2l00neri9ohce6h5k6gbm0g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kr.hispace.rollvi",
+            "certificate_hash": "d8ccae5f9d3f2bfae717aa0a6672b1582664dca2"
+          }
+        },
+        {
+          "client_id": "347705689038-2geceuc0olm4kf9u5f7tso93dhnm1srh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCoFOh1_x1OEIAwPPGrhMoi63PaxR4JIpo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "347705689038-2geceuc0olm4kf9u5f7tso93dhnm1srh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

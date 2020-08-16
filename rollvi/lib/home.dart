@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rollvi/capture_camera.dart';
+import 'package:rollvi/face_detect.dart';
+import 'package:rollvi/realtime_face_detect.dart';
 
 
 import 'package:rollvi/screens/assets_object.dart';
@@ -13,6 +15,7 @@ import 'package:rollvi/screens/augmented_faces.dart';
 import 'package:rollvi/screens/custom_object.dart';
 import 'package:rollvi/screens/runtime_materials.dart';
 
+import 'face_contour_detection/face_contour_detection.dart';
 import 'video_trimmer/video_trimmer.dart';
 import 'trimmer.dart';
 
@@ -44,13 +47,37 @@ class HomeScreen extends StatelessWidget{
             ),
             RaisedButton(
               child: Text(
-                  "AR Plane",
+                  "Realtime Face Detection",
                   style: TextStyle(color: Colors.white)
               ),
-              color: Colors.red,
+              color: Colors.blue,
               onPressed: () {
                 Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) => CustomObject())
+                    .push(MaterialPageRoute(builder: (context) => RealtimeFaceDetect())
+                );
+              },
+            ),
+            RaisedButton(
+              child: Text(
+                  "Image - Face Detection",
+                  style: TextStyle(color: Colors.white)
+              ),
+              color: Colors.blue,
+              onPressed: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) => FaceDetect())
+                );
+              },
+            ),
+            RaisedButton(
+              child: Text(
+                  "Face Contour",
+                  style: TextStyle(color: Colors.white)
+              ),
+              color: Colors.blue,
+              onPressed: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) => FaceContourDetectionScreen())
                 );
               },
             ),
