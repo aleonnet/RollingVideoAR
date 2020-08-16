@@ -1,6 +1,7 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:rollvi/record_video.dart';
 import 'home.dart';
+
 
 void main() {
   runApp(App());

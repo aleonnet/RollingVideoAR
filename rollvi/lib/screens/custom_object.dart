@@ -62,7 +62,7 @@ class _CustomObjectState extends State<CustomObject> {
     final earth = ArCoreNode(
         shape: earthShape,
         children: [moon],
-        position: hit.pose.translation + vector.Vector3(0.0, 1.0, 0.0),
+        position: hit.pose.translation + vector.Vector3(0.0, 0.0, 0.0),
         rotation: hit.pose.rotation);
 
     arCoreController.addArCoreNodeWithAnchor(earth);
@@ -70,7 +70,16 @@ class _CustomObjectState extends State<CustomObject> {
 
   void _handleOnPlaneTap(List<ArCoreHitTestResult> hits) {
     final hit = hits.first;
-    _addSphere(hit);
+    arCoreController.addArCoreNodeWithAnchor(
+        ArCoreReferenceNode(
+          name: 'andy',
+          object3DFileName: 'Andy.sfb',
+          position: hit.pose.translation,
+          rotation: hit.pose.rotation,
+        )
+    );
+
+//    _addSphere(hit);
   }
 
   void onTapHandler(String name) {

@@ -6,6 +6,8 @@ import 'package:rollvi/capture_camera.dart';
 
 
 import 'package:rollvi/screens/assets_object.dart';
+import 'package:rollvi/screens/floor_object.dart';
+import 'package:rollvi/screens/matri_3d.dart';
 import 'package:rollvi/screens/remote_object.dart';
 import 'package:rollvi/screens/augmented_faces.dart';
 import 'package:rollvi/screens/custom_object.dart';
@@ -43,6 +45,18 @@ class HomeScreen extends StatelessWidget{
             RaisedButton(
               child: Text(
                   "AR Plane",
+                  style: TextStyle(color: Colors.white)
+              ),
+              color: Colors.red,
+              onPressed: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) => CustomObject())
+                );
+              },
+            ),
+            RaisedButton(
+              child: Text(
+                  "Remote obj",
                   style: TextStyle(color: Colors.white)
               ),
               color: Colors.red,

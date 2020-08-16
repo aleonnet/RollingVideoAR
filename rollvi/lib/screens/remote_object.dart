@@ -1,5 +1,6 @@
 import 'package:rollvi/arcore_flutter_plugin/arcore_flutter_plugin.dart';
 import 'package:flutter/material.dart';
+import 'package:vector_math/vector_math_64.dart';
 
 class RemoteObject extends StatefulWidget {
   @override
@@ -34,9 +35,11 @@ class _RemoteObjectState extends State<RemoteObject> {
 
   void _addToucano(ArCoreHitTestResult plane) {
     final toucanNode = ArCoreReferenceNode(
-        name: "Toucano",
+        name: "Duck",
+//        object3DFileName: 'Andy.sfb',
         objectUrl:
             "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF/Duck.gltf",
+//        "https://raw.githubusercontent.com/alteous/glTF-Sample-Models-Official/master/2.0/BrainStem/glTF/BrainStem.gltf",
         position: plane.pose.translation,
         rotation: plane.pose.rotation);
 
