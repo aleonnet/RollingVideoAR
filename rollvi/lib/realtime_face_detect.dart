@@ -116,9 +116,14 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 
             print(path);
 
+//            Navigator.push(context, MaterialPageRoute(
+//                  builder: (context) => DisplayPictureScreen(imagePath: '/data/user/0/kr.hispace.rollvi/app_flutter/screenshot.png'),
+//                ));
+
             await _capture().then(
-                Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => DisplayPictureScreen(imagePath: path),
+              print("Caputre Complete"),
+              Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => DisplayPictureScreen(imagePath: '/data/user/0/kr.hispace.rollvi/app_flutter/screenshot.png'),
                 ))
             );
 
@@ -178,21 +183,6 @@ class DisplayPictureScreen extends StatelessWidget {
     );
   }
 }
-
-//takeScreenshot() async {
-//  var scr= new GlobalKey();
-//  RepaintBoundary(
-//      key: scr,
-//      child: new FlutterLogo(size: 50.0,));
-//
-//  RenderRepaintBoundary boundary = scr.currentContext.findRenderObject();
-//  var image = await boundary.toImage();
-//  var byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-//  var pngBytes = byteData.buffer.asUint8List();
-//  print(pngBytes);
-//}
-
-
 
 class FaceCamera extends StatelessWidget {
   final List<Face> faces;
