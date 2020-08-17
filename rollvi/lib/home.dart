@@ -15,7 +15,7 @@ import 'package:rollvi/screens/augmented_faces.dart';
 import 'package:rollvi/screens/custom_object.dart';
 import 'package:rollvi/screens/runtime_materials.dart';
 
-import 'face_contour_detection/face_contour_detection.dart';
+//import 'face_contour_detection/face_contour_detection.dart';
 import 'video_trimmer/video_trimmer.dart';
 import 'trimmer.dart';
 
@@ -69,18 +69,18 @@ class HomeScreen extends StatelessWidget{
                 );
               },
             ),
-            RaisedButton(
-              child: Text(
-                  "Face Contour",
-                  style: TextStyle(color: Colors.white)
-              ),
-              color: Colors.blue,
-              onPressed: () {
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) => FaceContourDetectionScreen())
-                );
-              },
-            ),
+//            RaisedButton(
+//              child: Text(
+//                  "Face Contour",
+//                  style: TextStyle(color: Colors.white)
+//              ),
+//              color: Colors.blue,
+//              onPressed: () {
+//                Navigator.of(context)
+//                    .push(MaterialPageRoute(builder: (context) => FaceContourDetectionScreen())
+//                );
+//              },
+//            ),
             RaisedButton(
               child: Text(
                   "Remote obj",
