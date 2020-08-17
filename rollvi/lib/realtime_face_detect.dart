@@ -75,12 +75,18 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('ROLLVI'),
+        backgroundColor: Colors.redAccent,
+      ),
       body: ClipRect(
         child: Align(
-          alignment: Alignment.topLeft,
-          heightFactor: 0.7, // 0.56
+          alignment: Alignment.topCenter,
+          widthFactor: 1.0,
+          heightFactor: 0.8, // 0.56
+
           child: AspectRatio(
-            aspectRatio: 9 / 16,
+            aspectRatio: 9 / 15,
             child: _camera == null
                 ? Container(color: Colors.black)
                 : FaceCamera(faces: _faces, camera: _camera),
@@ -132,14 +138,50 @@ class FaceCamera extends StatelessWidget {
                         camera.description.lensDirection),
                   )
                 : const Text('No results!'),
-//          new Positioned.fill(
-//              left: 50,
-//              top: 100,
-//            child: new Image(
-//                image: new AssetImage("assets/rainbow.gif")
-//            ),
-//          )
+            new Positioned.fill(
+              left: (faces == null)
+                  ? 0
+                  : _scalePoint(
+                          offset: faces[0]
+                              .getContour(FaceContourType.upperLipBottom)
+                              .positionsList[4],
+                          imageSize: Size(camera.value.previewSize.height,
+                              camera.value.previewSize.width),
+                          widgetSize: Size(411.4, 685.7),
+                          cameraLensDirection: CameraLensDirection.front)
+                      .dx,
+              top: (faces == null)
+                  ? 0
+                  : _scalePoint(
+                          offset: faces[0]
+                              .getContour(FaceContourType.upperLipBottom)
+                              .positionsList[4],
+                          imageSize: Size(camera.value.previewSize.height,
+                              camera.value.previewSize.width),
+                          widgetSize: Size(411.4, 685.7),
+                          cameraLensDirection: CameraLensDirection.front)
+                      .dy,
+              child: Container(
+//                color: Colors.black,
+                child: new Image(image: new AssetImage("assets/water.gif"), alignment: Alignment.topLeft,),
+              )
+            )
           ],
         ));
+  }
+
+  Offset _scalePoint(
+      {Offset offset,
+      @required Size imageSize,
+      @required Size widgetSize,
+      CameraLensDirection cameraLensDirection}) {
+    final double scaleX = widgetSize.width / imageSize.width;
+    final double scaleY = widgetSize.height / imageSize.height;
+
+    if (cameraLensDirection == CameraLensDirection.front) {
+      return Offset(
+          widgetSize.width - (offset.dx * scaleX), offset.dy * scaleY);
+    }
+    return Offset(offset.dx * scaleX, offset.dy * scaleY);
   }
 }

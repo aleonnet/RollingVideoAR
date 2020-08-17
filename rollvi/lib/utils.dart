@@ -5,6 +5,41 @@ import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
 
 
+List<Offset> _scalePoints({
+  List<Offset> offsets,
+  @required Size imageSize,
+  @required Size widgetSize,
+  CameraLensDirection cameraLensDirection
+}) {
+  final double scaleX = widgetSize.width / imageSize.width;
+  final double scaleY = widgetSize.height / imageSize.height;
+
+  if (cameraLensDirection == CameraLensDirection.front) {
+    return offsets
+        .map((offset) => Offset(
+        widgetSize.width - (offset.dx * scaleX), offset.dy * scaleY))
+        .toList();
+  }
+  return offsets
+      .map((offset) => Offset(offset.dx * scaleX, offset.dy * scaleY))
+      .toList();
+}
+
+Offset _scalePoint({
+  Offset offset,
+  @required Size imageSize,
+  @required Size widgetSize,
+  CameraLensDirection cameraLensDirection
+}) {
+  final double scaleX = widgetSize.width / imageSize.width;
+  final double scaleY = widgetSize.height / imageSize.height;
+
+  if (cameraLensDirection == CameraLensDirection.front) {
+    return Offset(widgetSize.width - (offset.dx * scaleX), offset.dy * scaleY);
+  }
+  return Offset(offset.dx * scaleX, offset.dy * scaleY);
+}
+
 ImageRotation rotationIntToImageRotation(int rotation) {
   switch (rotation) {
     case 0:

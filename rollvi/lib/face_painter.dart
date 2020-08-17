@@ -16,7 +16,6 @@ class FaceContourPainter extends CustomPainter {
 
   FaceContourPainter(this.imageSize, this.faces, this.cameraLensDirection) {
     for (var i = 0; i < faces.length; i++) {
-      print(faces[i]);
       rects.add(faces[i].boundingBox);
     }
   }
@@ -89,9 +88,13 @@ class FaceContourPainter extends CustomPainter {
         ..strokeWidth = 3.0
         ..color = Colors.pink;
 
-      print(faces[i]
-          .getContour(FaceContourType.face)
-          .positionsList);
+      canvas.drawCircle(
+          _scalePoint(
+            offset:upperLipBottom[4],
+            imageSize: imageSize,
+            widgetSize: size
+          ),
+          3.0, lipPaint);
 
       canvas.drawPoints(
           ui.PointMode.polygon,
@@ -216,6 +219,20 @@ class FaceContourPainter extends CustomPainter {
     return offsets
         .map((offset) => Offset(offset.dx * scaleX, offset.dy * scaleY))
         .toList();
+  }
+
+  Offset _scalePoint({
+    Offset offset,
+    @required Size imageSize,
+    @required Size widgetSize,
+  }) {
+    final double scaleX = widgetSize.width / imageSize.width;
+    final double scaleY = widgetSize.height / imageSize.height;
+
+    if (cameraLensDirection == CameraLensDirection.front) {
+      return Offset(widgetSize.width - (offset.dx * scaleX), offset.dy * scaleY);
+    }
+    return Offset(offset.dx * scaleX, offset.dy * scaleY);
   }
 
   @override
