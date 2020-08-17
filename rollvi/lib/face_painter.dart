@@ -90,7 +90,7 @@ class FaceContourPainter extends CustomPainter {
 
       canvas.drawCircle(
           _scalePoint(
-            offset:upperLipBottom[4],
+            offset:(upperLipBottom[4] + lowerLipTop[4]) / 2,
             imageSize: imageSize,
             widgetSize: size
           ),

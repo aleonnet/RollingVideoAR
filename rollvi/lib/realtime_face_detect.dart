@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:carousel_pro/carousel_pro.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'face_painter.dart';
@@ -138,36 +139,49 @@ class FaceCamera extends StatelessWidget {
                         camera.description.lensDirection),
                   )
                 : const Text('No results!'),
-            new Positioned.fill(
-              left: (faces == null)
-                  ? 0
-                  : _scalePoint(
-                          offset: faces[0]
-                              .getContour(FaceContourType.upperLipBottom)
-                              .positionsList[4],
-                          imageSize: Size(camera.value.previewSize.height,
-                              camera.value.previewSize.width),
-                          widgetSize: Size(411.4, 685.7),
-                          cameraLensDirection: CameraLensDirection.front)
-                      .dx,
-              top: (faces == null)
-                  ? 0
-                  : _scalePoint(
-                          offset: faces[0]
-                              .getContour(FaceContourType.upperLipBottom)
-                              .positionsList[4],
-                          imageSize: Size(camera.value.previewSize.height,
-                              camera.value.previewSize.width),
-                          widgetSize: Size(411.4, 685.7),
-                          cameraLensDirection: CameraLensDirection.front)
-                      .dy,
-              child: Container(
-//                color: Colors.black,
-                child: new Image(image: new AssetImage("assets/water.gif"), alignment: Alignment.topLeft,),
-              )
-            )
+            (faces != null)
+                ? new Positioned.fill(
+                    left: _getLipBottomPoint(
+                        faces,
+                        Size(
+                          camera.value.previewSize.height,
+                          camera.value.previewSize.width,
+                        )).dx,
+                    top: _getLipBottomPoint(
+                        faces,
+                        Size(
+                          camera.value.previewSize.height,
+                          camera.value.previewSize.width,
+                        )).dy,
+                    child: Carousel(images: [
+                      new Image(
+                        image: new AssetImage("assets/water.gif"),
+                        alignment: Alignment.topLeft,
+                      ),
+                      new Image(
+                        image: new AssetImage("assets/rainbow.gif"),
+                        alignment: Alignment.topLeft,
+                      ),
+                    ], autoplay: false))
+                : new Text("aaa")
           ],
         ));
+  }
+
+  Offset _getLipBottomPoint(List<Face> faces, Size imageSize) {
+    if (faces == null) return Offset(-500, -500);
+    try {
+      Offset upperLipBottom = faces[0].getContour(FaceContourType.upperLipBottom).positionsList[4];
+      Offset lowerLipTop = faces[0].getContour(FaceContourType.lowerLipTop).positionsList[4];
+
+      return _scalePoint(
+          offset: (upperLipBottom + lowerLipTop) / 2.0,
+          imageSize: imageSize,
+          widgetSize: Size(411.4, 685.7),
+          cameraLensDirection: CameraLensDirection.front);
+    } catch (e) {
+      return Offset(-500, -500);
+    }
   }
 
   Offset _scalePoint(
