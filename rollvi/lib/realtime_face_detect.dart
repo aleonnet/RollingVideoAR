@@ -1,5 +1,6 @@
 import 'dart:io';
-import 'dart:ui';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -88,18 +89,19 @@ class _FacePageState extends State<RealtimeFaceDetect> {
         title: const Text('ROLLVI'),
         backgroundColor: Colors.redAccent,
       ),
-      body: ClipRect(
-        child: Align(
-          alignment: Alignment.topCenter,
-          widthFactor: 1.0,
-          heightFactor: 0.8, // 0.56
-
-          child: AspectRatio(
-            key: previewContainer,
-            aspectRatio: 9 / 15,
-            child: _camera == null
-                ? Container(color: Colors.black)
-                : FaceCamera(faces: _faces, camera: _camera),
+      body:RepaintBoundary (
+        key: previewContainer,
+        child:  ClipRect(
+          child: Align(
+            alignment: Alignment.topCenter,
+            widthFactor: 1.0,
+            heightFactor: 0.8, // 0.56
+            child: AspectRatio(
+              aspectRatio: 9 / 15,
+              child: _camera == null
+                  ? Container(color: Colors.black)
+                  : FaceCamera(faces: _faces, camera: _camera),
+            ),
           ),
         ),
       ),
@@ -114,12 +116,11 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 
             print(path);
 
-//            await _camera.takePicture(path);
-
-            await takeScreenshot();
-//            Navigator.push(context, MaterialPageRoute(
-//              builder: (context) => DisplayPictureScreen(imagePath: path),
-//            ));
+            await _capture().then(
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => DisplayPictureScreen(imagePath: path),
+                ))
+            );
 
           } catch (e) {
             print(e);
@@ -130,31 +131,30 @@ class _FacePageState extends State<RealtimeFaceDetect> {
     );
   }
 
-//  takeScreenShot() async {
-//    RenderRepaintBoundary boundary =
-//    previewContainer.currentContext.findRenderObject();
-//    double pixelRatio = originalSize / MediaQuery.of(context).size.width;
-//    ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
-//    ByteData byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-//    Uint8List pngBytes = byteData.buffer.asUint8List();
-//    setState(() {
-//      _image2 = Image.memory(pngBytes.buffer.asUint8List());
-//    });
-//    final directory = (await getApplicationDocumentsDirectory()).path;
-//    File imgFile = new File('$directory/screenshot.png');
-//    imgFile.writeAsBytes(pngBytes);
-//    final snackBar = SnackBar(
-//      content: Text('Saved to ${directory}'),
-//      action: SnackBarAction(
-//        label: 'Ok',
-//        onPressed: () {
-//          // Some code
-//        },
-//      ),
-//    );
-//
-//    Scaffold.of(context).showSnackBar(snackBar);
-//  }
+  _capture() async {
+    print("START CAPTURE");
+    var renderObject = previewContainer.currentContext.findRenderObject();
+    if (renderObject is RenderRepaintBoundary) {
+      var boundary = renderObject;
+      ui.Image image = await boundary.toImage();
+      final directory = (await getApplicationDocumentsDirectory()).path;
+      ByteData byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      Uint8List pngBytes = byteData.buffer.asUint8List();
+      print(pngBytes);
+      File imgFile = new File('$directory/screenshot.png');
+      imgFile.writeAsBytes(pngBytes);
+      print("FINISH CAPTURE ${imgFile.path}");
+    }
+  }
+
+  takeScreenShot() async{
+    RenderRepaintBoundary boundary = previewContainer.currentContext.findRenderObject();
+    var image = await boundary.toImage();
+    var byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    var pngBytes = byteData.buffer.asUint8List();
+    print(pngBytes);
+  }
+
 
   @override
   void dispose() async {
@@ -179,18 +179,18 @@ class DisplayPictureScreen extends StatelessWidget {
   }
 }
 
-takeScreenshot() async {
-  var scr= new GlobalKey();
-  RepaintBoundary(
-      key: scr,
-      child: new FlutterLogo(size: 50.0,));
-
-  RenderRepaintBoundary boundary = scr.currentContext.findRenderObject();
-  var image = await boundary.toImage();
-  var byteData = await image.toByteData(format: ImageByteFormat.png);
-  var pngBytes = byteData.buffer.asUint8List();
-  print(pngBytes);
-}
+//takeScreenshot() async {
+//  var scr= new GlobalKey();
+//  RepaintBoundary(
+//      key: scr,
+//      child: new FlutterLogo(size: 50.0,));
+//
+//  RenderRepaintBoundary boundary = scr.currentContext.findRenderObject();
+//  var image = await boundary.toImage();
+//  var byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+//  var pngBytes = byteData.buffer.asUint8List();
+//  print(pngBytes);
+//}
 
 
 
@@ -239,16 +239,20 @@ class FaceCamera extends StatelessWidget {
                           camera.value.previewSize.height,
                           camera.value.previewSize.width,
                         )).dy,
-                    child: Carousel(images: [
-                      new Image(
-                        image: new AssetImage("assets/water.gif"),
-                        alignment: Alignment.topLeft,
-                      ),
-                      new Image(
-                        image: new AssetImage("assets/rainbow.gif"),
-                        alignment: Alignment.topLeft,
-                      ),
-                    ], autoplay: false))
+//                    child: Carousel(images: [
+//                      new Image(
+//                        image: new AssetImage("assets/water.gif"),
+//                        alignment: Alignment.topLeft,
+//                      ),
+//                      new Image(
+//                        image: new AssetImage("assets/rainbow.gif"),
+//                        alignment: Alignment.topLeft,
+//                      ),
+//                    ], autoplay: false))
+                      child: new Image(
+                          image: new AssetImage("assets/water.gif"),
+                          alignment: Alignment.topLeft,
+                        ))
                 : new Text("aaa")
           ],
         ));
