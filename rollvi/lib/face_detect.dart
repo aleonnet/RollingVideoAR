@@ -7,12 +7,12 @@ import 'package:image_picker/image_picker.dart';
 
 import 'face_painter_from_image.dart';
 
-class FaceDetect extends StatefulWidget {
+class FaceDetectPage extends StatefulWidget {
   @override
   _FacePageState createState() => _FacePageState();
 }
 
-class _FacePageState extends State<FaceDetect> {
+class _FacePageState extends State<FaceDetectPage> {
   File _imageFile;
   List<Face> _faces;
   bool isLoading = false;
