@@ -142,7 +142,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
         child: Text('camera is null'),
       )
           : LiveCamera(
-        faces: _faces,
+        faces: [],
         camera: _camera
       )
     );
@@ -195,6 +195,13 @@ class LiveCamera extends StatelessWidget {
         fit: StackFit.expand,
         children: <Widget>[
           cameraEnabled ? CameraPreview(camera) : Container( color: Colors.black ),
+          new Positioned.fill(
+              left: 50,
+              top: 100,
+            child: new Image(
+                image: new AssetImage("assets/rainbow.gif")
+            ),
+          )
         ],
       )
     );
