@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
-import 'package:camera/camera.dart';
+import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'package:flutter/foundation.dart';
 import 'firebase_face_contour.dart';
 

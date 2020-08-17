@@ -4,17 +4,14 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:rollvi/darwin_camera/darwin_camera.dart';
 
 
-class FaceContourPainter extends CustomPainter {
+class FacePainterFromImage extends CustomPainter {
+  final ui.Image image;
+  final List<Face> faces;
   final List<Rect> rects = [];
 
-  final Size imageSize;
-  final List<Face> faces;
-  final CameraLensDirection cameraLensDirection;
-
-  FaceContourPainter(this.imageSize, this.faces, this.cameraLensDirection) {
+  FacePainterFromImage(this.image, this.faces) {
     for (var i = 0; i < faces.length; i++) {
       print(faces[i]);
       rects.add(faces[i].boundingBox);
@@ -28,9 +25,12 @@ class FaceContourPainter extends CustomPainter {
       ..strokeWidth = 15.0
       ..color = Colors.yellow;
 
-//    canvas.drawImage(image, Offset.zero, Paint());
+    final Size imageSize = Size(
+        image.width.toDouble(), image.height.toDouble());
+
+    canvas.drawImage(image, Offset.zero, Paint());
     for (var i = 0; i < faces.length; i++) {
-//      canvas.drawRect(rects[i], paint);
+      canvas.drawRect(rects[i], paint);
 
       final List<Offset> facePoints =
           faces[i]
@@ -199,6 +199,7 @@ class FaceContourPainter extends CustomPainter {
     }
   }
 
+
   List<Offset> _scalePoints({
     List<Offset> offsets,
     @required Size imageSize,
@@ -207,19 +208,13 @@ class FaceContourPainter extends CustomPainter {
     final double scaleX = widgetSize.width / imageSize.width;
     final double scaleY = widgetSize.height / imageSize.height;
 
-    if (cameraLensDirection == CameraLensDirection.front) {
-      return offsets
-          .map((offset) => Offset(
-          widgetSize.width - (offset.dx * scaleX), offset.dy * scaleY))
-          .toList();
-    }
     return offsets
         .map((offset) => Offset(offset.dx * scaleX, offset.dy * scaleY))
         .toList();
   }
 
   @override
-  bool shouldRepaint(FaceContourPainter oldDelegate) {
-    return imageSize != oldDelegate.imageSize || faces != oldDelegate.faces;
+  bool shouldRepaint(FacePainterFromImage oldDelegate) {
+    return image != oldDelegate.image || faces != oldDelegate.faces;
   }
 }

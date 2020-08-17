@@ -1,6 +1,8 @@
-import 'package:camera/camera.dart';
+
+import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'face_contour_painter.dart';
 import 'utils.dart';
@@ -34,29 +36,29 @@ class _FaceContourDetectionScreenState
   }
 
   void _initializeCamera() async {
-    CameraDescription description = await getCamera(_direction);
+//    CameraDescription description = await getCamera(_direction);
+
+//
+//    _camera = CameraController(
+//      description,
+//      defaultTargetPlatform == TargetPlatform.iOS
+//          ? ResolutionPreset.low
+//          : ResolutionPreset.medium,
+//    );
+
+    CameraDescription description = await availableCameras().then(
+            (List<CameraDescription> cameras) => cameras.firstWhere(
+                (CameraDescription camera) => camera.lensDirection == _direction));
+
     ImageRotation rotation = rotationIntToImageRotation(
       description.sensorOrientation,
     );
 
     _camera = CameraController(
-      description,
-      defaultTargetPlatform == TargetPlatform.iOS
-          ? ResolutionPreset.low
-          : ResolutionPreset.medium,
+        description,
+        ResolutionPreset.high
     );
-//
-//    List<CameraDescription> cameraDescription = await availableCameras();
-//
-//    _camera = CameraController(
-//        cameraDescription[0],
-//        ResolutionPreset.high
-//    );
-//
-//    ImageRotation rotation = rotationIntToImageRotation(
-//      cameraDescription[0].sensorOrientation,
-//    );
-////
+
     await _camera.initialize();
 
     print("initialize Camera");

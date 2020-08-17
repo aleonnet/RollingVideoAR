@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'face_painter.dart';
+import 'face_painter_from_image.dart';
 
 class FaceDetect extends StatefulWidget {
   @override
@@ -64,7 +64,7 @@ class _FacePageState extends State<FaceDetect> {
             width: _image.width.toDouble(),
             height: _image.height.toDouble(),
             child: CustomPaint(
-              painter: FacePainter(_image, _faces),
+              painter: FacePainterFromImage(_image, _faces),
             ),
           ),
         ),
