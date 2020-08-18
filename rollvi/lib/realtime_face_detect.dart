@@ -89,9 +89,9 @@ class _FacePageState extends State<RealtimeFaceDetect> {
         title: const Text('ROLLVI'),
         backgroundColor: Colors.redAccent,
       ),
-      body:RepaintBoundary (
+      body: RepaintBoundary(
         key: previewContainer,
-        child:  ClipRect(
+        child: ClipRect(
           child: Align(
             alignment: Alignment.topCenter,
             widthFactor: 1.0,
@@ -114,19 +114,15 @@ class _FacePageState extends State<RealtimeFaceDetect> {
               '${DateTime.now()}.png',
             );
 
-            print(path);
-
-//            Navigator.push(context, MaterialPageRoute(
-//                  builder: (context) => DisplayPictureScreen(imagePath: '/data/user/0/kr.hispace.rollvi/app_flutter/screenshot.png'),
-//                ));
-
-            await _capture().then(
-              print("Caputre Complete"),
-              Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => DisplayPictureScreen(imagePath: '/data/user/0/kr.hispace.rollvi/app_flutter/screenshot.png'),
-                ))
-            );
-
+            await _capture().then((path) => {
+                  imageCache.clear(),
+                  print("Caputre Complete : $path"),
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              DisplayPictureScreen(imagePath: path)))
+                });
           } catch (e) {
             print(e);
           }
@@ -136,30 +132,34 @@ class _FacePageState extends State<RealtimeFaceDetect> {
     );
   }
 
-  _capture() async {
+  Future<String> _capture() async {
     print("START CAPTURE");
     var renderObject = previewContainer.currentContext.findRenderObject();
     if (renderObject is RenderRepaintBoundary) {
       var boundary = renderObject;
       ui.Image image = await boundary.toImage();
-      final directory = (await getApplicationDocumentsDirectory()).path;
+//      final directory = (await getApplicationDocumentsDirectory()).path;
+      final directory = (await getExternalStorageDirectory()).path;
       ByteData byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData.buffer.asUint8List();
-      print(pngBytes);
       File imgFile = new File('$directory/screenshot.png');
-      imgFile.writeAsBytes(pngBytes);
+      imgFile.writeAsBytesSync(pngBytes);
+      print(pngBytes);
       print("FINISH CAPTURE ${imgFile.path}");
+
+      return imgFile.path;
     }
+    return null;
   }
 
-  takeScreenShot() async{
-    RenderRepaintBoundary boundary = previewContainer.currentContext.findRenderObject();
+  takeScreenShot() async {
+    RenderRepaintBoundary boundary =
+        previewContainer.currentContext.findRenderObject();
     var image = await boundary.toImage();
     var byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     var pngBytes = byteData.buffer.asUint8List();
     print(pngBytes);
   }
-
 
   @override
   void dispose() async {
@@ -239,22 +239,52 @@ class FaceCamera extends StatelessWidget {
 //                        alignment: Alignment.topLeft,
 //                      ),
 //                    ], autoplay: false))
-                      child: new Image(
-                          image: new AssetImage("assets/water.gif"),
-                          alignment: Alignment.topLeft,
-                        ))
+                    child: Stack(
+                      children: <Widget>[
+                        new Container(
+                            child: new Image(
+                          image: new AssetImage("assets/say_text.gif"),
+                          width: 350,
+                          height: 300,
+                          alignment: Alignment(-1, -1.2),
+                        )),
+                        new Container(
+                            child: new Image(
+                          image: new AssetImage("assets/say_heart.gif"),
+                          width: 350,
+                          height: 300,
+                          alignment: Alignment(-1, -4),
+                        )),
+                      ],
+                    ))
                 : new Text("aaa")
           ],
         ));
   }
 
+  Offset _getLeftEarPoint(List<Face> faces, Size imageSize) {
+    if (faces == null) return Offset(-500, -500);
+    try {
+      return _scalePoint(
+          offset: faces[0].getContour(FaceContourType.face).positionsList[9],
+          imageSize: imageSize,
+          widgetSize: Size(411.4, 685.7),
+          cameraLensDirection: CameraLensDirection.front);
+    } catch (e) {
+      return Offset(-500, -500);
+    }
+  }
+
   Offset _getLipBottomPoint(List<Face> faces, Size imageSize) {
     if (faces == null) return Offset(-500, -500);
     try {
-      Offset upperLipBottom = faces[0].getContour(FaceContourType.upperLipBottom).positionsList[4];
-      Offset lowerLipTop = faces[0].getContour(FaceContourType.lowerLipTop).positionsList[4];
+      Offset upperLipBottom =
+          faces[0].getContour(FaceContourType.upperLipBottom).positionsList[4];
+      Offset lowerLipTop =
+          faces[0].getContour(FaceContourType.lowerLipTop).positionsList[4];
 
       return _scalePoint(
+//          offset: faces[0].getContour(FaceContourType.lowerLipTop).positionsList[4],
           offset: (upperLipBottom + lowerLipTop) / 2.0,
           imageSize: imageSize,
           widgetSize: Size(411.4, 685.7),
