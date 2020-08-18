@@ -140,7 +140,8 @@ class _FacePageState extends State<RealtimeFaceDetect> {
       ui.Image image = await boundary.toImage();
 //      final directory = (await getApplicationDocumentsDirectory()).path;
       final directory = (await getExternalStorageDirectory()).path;
-      ByteData byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      ByteData byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData.buffer.asUint8List();
       File imgFile = new File('$directory/screenshot.png');
       imgFile.writeAsBytesSync(pngBytes);
@@ -196,7 +197,6 @@ class FaceCamera extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-//        key: previewContainer,
         constraints: const BoxConstraints.expand(),
         child: Stack(
           fit: StackFit.expand,
@@ -204,19 +204,59 @@ class FaceCamera extends StatelessWidget {
             cameraEnabled
                 ? CameraPreview(camera)
                 : Container(color: Colors.black),
+//            (faces != null)
+//                ? CustomPaint(
+//                    painter: FaceContourPainter(
+//                        Size(
+//                          camera.value.previewSize.height,
+//                          camera.value.previewSize.width,
+//                        ),
+//                        faces,
+//                        camera.description.lensDirection),
+//                  )
+//                : const Text('No results!'),
             (faces != null)
-                ? CustomPaint(
-                    painter: FaceContourPainter(
-                        Size(
-                          camera.value.previewSize.height,
-                          camera.value.previewSize.width,
+                ? new Positioned(
+                    width: 200,
+                    right: _getLeftEarPoint(
+                                faces,
+                                Size(
+                                  camera.value.previewSize.height,
+                                  camera.value.previewSize.width,
+                                )).dx *
+                            -1 +
+                        420,
+                    top: _getLeftEarPoint(
+                            faces,
+                            Size(
+                              camera.value.previewSize.height,
+                              camera.value.previewSize.width,
+                            )).dy -
+                        150,
+                    child: new Stack(
+                      children: <Widget>[
+                        Positioned(
+                          child: new Container(
+                              child: new Image(
+                            image: new AssetImage("assets/hear_text.gif"),
+                            height: 300,
+                            alignment: Alignment.center,
+                          )),
                         ),
-                        faces,
-                        camera.description.lensDirection),
-                  )
-                : const Text('No results!'),
+                        Positioned(
+                          child: new Container(
+                              child: new Image(
+                            image: new AssetImage("assets/hear_heart.gif"),
+                            height: 300,
+                            alignment: Alignment.center,
+                          )),
+                        )
+                      ],
+                    ))
+                : new Text("aaa"),
             (faces != null)
-                ? new Positioned.fill(
+                ? new Positioned(
+                    width: 400,
                     left: _getLipBottomPoint(
                         faces,
                         Size(
@@ -224,37 +264,43 @@ class FaceCamera extends StatelessWidget {
                           camera.value.previewSize.width,
                         )).dx,
                     top: _getLipBottomPoint(
-                        faces,
-                        Size(
-                          camera.value.previewSize.height,
-                          camera.value.previewSize.width,
-                        )).dy,
-//                    child: Carousel(images: [
-//                      new Image(
-//                        image: new AssetImage("assets/water.gif"),
-//                        alignment: Alignment.topLeft,
-//                      ),
-//                      new Image(
-//                        image: new AssetImage("assets/rainbow.gif"),
-//                        alignment: Alignment.topLeft,
-//                      ),
-//                    ], autoplay: false))
-                    child: Stack(
+                            faces,
+                            Size(
+                              camera.value.previewSize.height,
+                              camera.value.previewSize.width,
+                            )).dy -
+                        150,
+                    child: new Stack(
                       children: <Widget>[
-                        new Container(
-                            child: new Image(
-                          image: new AssetImage("assets/say_text.gif"),
-                          width: 350,
-                          height: 300,
-                          alignment: Alignment(-1, -1.2),
-                        )),
-                        new Container(
-                            child: new Image(
-                          image: new AssetImage("assets/say_heart.gif"),
-                          width: 350,
-                          height: 300,
-                          alignment: Alignment(-1, -4),
-                        )),
+                        Positioned(
+                          child: new Container(
+//                              color: Colors.red,
+                              child: new Image(
+                            image: new AssetImage("assets/say_text.gif"),
+                            height: 300,
+                            alignment: Alignment.center,
+                          )),
+                        ),
+                        Positioned(
+                          child: new Container(
+//                            color: Colors.blue,
+                              child: new Image(
+                            image: new AssetImage("assets/say_heart.gif"),
+                            height: 300,
+                            alignment: Alignment.center,
+                          )),
+                        ),
+                        Positioned(
+                            top: 5,
+                            child: new Container(
+//                            color: Colors.blue,
+                                child: new Image(
+                              image: new AssetImage("assets/say_heart.gif"),
+                              height: 300,
+                              alignment: Alignment.center,
+                            )),
+
+                        )
                       ],
                     ))
                 : new Text("aaa")
@@ -283,8 +329,13 @@ class FaceCamera extends StatelessWidget {
       Offset lowerLipTop =
           faces[0].getContour(FaceContourType.lowerLipTop).positionsList[4];
 
+      Offset o = _scalePoint(
+          offset: (upperLipBottom + lowerLipTop) / 2.0,
+          imageSize: imageSize,
+          widgetSize: Size(411.4, 685.7),
+          cameraLensDirection: CameraLensDirection.front);
+      print(o);
       return _scalePoint(
-//          offset: faces[0].getContour(FaceContourType.lowerLipTop).positionsList[4],
           offset: (upperLipBottom + lowerLipTop) / 2.0,
           imageSize: imageSize,
           widgetSize: Size(411.4, 685.7),

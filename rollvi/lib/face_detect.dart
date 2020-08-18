@@ -27,7 +27,7 @@ class _FacePageState extends State<FaceDetectPage> {
     final faceDetector = FirebaseVision.instance.faceDetector(FaceDetectorOptions(
         enableClassification: false,
         enableLandmarks: false,
-        enableContours: true,
+        enableContours: false,
         enableTracking: false));
 
     List<Face> faces = await faceDetector.processImage(image);
