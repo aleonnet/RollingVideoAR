@@ -8,6 +8,8 @@ import 'package:rollvi/realtime_face_detect.dart';
 
 import 'package:rollvi/screens/remote_object.dart';
 import 'package:rollvi/screens/augmented_faces.dart';
+import 'package:rollvi/test.dart';
+import 'package:rollvi/video_timer.dart';
 
 import 'video_trimmer/video_trimmer.dart';
 import 'trimmer.dart';
@@ -28,13 +30,13 @@ class HomeScreen extends StatelessWidget{
           children: <Widget>[
             RaisedButton(
               child: Text(
-                "Camera Capture",
+                "Test",
                 style: TextStyle(color: Colors.white),
               ),
               color: Colors.blue,
               onPressed: () {
                 Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) => CaptureCamera())
+                    .push(MaterialPageRoute(builder: (context) => Test())
                 );
               },
             ),
