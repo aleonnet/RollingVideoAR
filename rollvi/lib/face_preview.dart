@@ -58,7 +58,11 @@ class VideoState extends State<FacePreview> {
             return AspectRatio(
               aspectRatio: _controller.value.aspectRatio,
               // Use the VideoPlayer widget to display the video.
-              child: VideoPlayer(_controller),
+              child:  Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.rotationY(pi),
+                child: VideoPlayer(_controller),
+              ),
             );
           } else {
             // If the VideoPlayerController is still initializing, show a

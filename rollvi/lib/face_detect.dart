@@ -77,6 +77,8 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 
     await _camera.initialize();
 
+
+
     _camera.startImageStream((CameraImage image) {
       _savedImage = image;
 
@@ -146,11 +148,10 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 
             String videoPath = '';
 
-            await _camera.startVideoRecording(videoPath);
-
+            await _camera.stopImageStream();
             _startVideoRecording().then((String filePath) {
               if (filePath != null) {
-                print("Recording Start!!1");
+                print("Recording Start");
                 setState(() {
                   videoPath = filePath;
                 });
