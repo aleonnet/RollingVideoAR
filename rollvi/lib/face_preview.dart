@@ -1,30 +1,85 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:image/image.dart' as imglib;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-
-class FacePreview extends StatelessWidget{
+class FacePreview extends StatefulWidget {
   final imglib.Image cameraImg;
-//  final ui.Image stickerImg;
+  final List<imglib.Image> cameraSequence;
 
+//  final ui.Image stickerImg;
   final String imagePath;
 
-  const FacePreview({Key key, this.cameraImg, this.imagePath}) : super(key: key);
+  FacePreview({Key key, this.cameraImg, this.cameraSequence, this.imagePath})
+      : super(key: key);
 
+  @override
+  State createState() => new ImageSequenceState();
+}
+
+
+class PreviewState extends State<FacePreview> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Stack(
-          children: <Widget>[
-            Image.memory(imglib.encodeJpg(cameraImg)),
-            Image.file(File(imagePath)),
-          ],
-        ),
-      )
+      body: Stack(
+        children: <Widget>[
+          Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.rotationY(pi),
+            child: Image.memory(imglib.encodeJpg(widget.cameraImg)),
+          ),
+          Image.file(File(widget.imagePath)),
+        ],
+      ),
+    );
+  }
+}
+
+
+class ImageSequenceState extends State<FacePreview>
+    with TickerProviderStateMixin {
+  AnimationController _controller;
+  Animation<int> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    int maxImages = widget.cameraSequence.length;
+
+    _controller = new AnimationController(vsync: this);
+    _animation = new IntTween(begin: 0, end: maxImages-1).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      body: Stack(
+        children: <Widget>[
+          new AnimatedBuilder(
+              animation: _animation,
+              builder: (BuildContext context, Widget child) {
+                String frame = _animation.value.toString();
+                print(frame);
+
+                return Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(pi),
+                  child: Image.memory(imglib.encodeJpg(widget.cameraImg)),
+                );
+              }),
+        ],
+      ),
     );
   }
 }

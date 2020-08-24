@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -35,8 +36,13 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   CameraController _camera;
   bool _isDetecting = false;
   CameraLensDirection _cameraDirection = CameraLensDirection.front;
-
   CameraImage _savedImage;
+
+  final int _maxTime = 5;
+  bool isRecording = false;
+  Timer _timer;
+  List<imglib.Image> _imageSequence;
+
 
   @override
   void initState() {
@@ -47,8 +53,15 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   @override
   void dispose() async {
     super.dispose();
+    stopRecording();
     await _camera.stopImageStream();
     await _camera.dispose();
+  }
+
+  void stopRecording() {
+    isRecording = false;
+    _timer.cancel();
+    _imageSequence.clear();
   }
 
   void _initializeCamera() async {
@@ -75,6 +88,10 @@ class _FacePageState extends State<RealtimeFaceDetect> {
         (dynamic result) {
           setState(() {
             _faces = result;
+
+            if (isRecording) {
+              _imageSequence.add(_convertCameraImage(image));
+            }
           });
 
           _isDetecting = false;
@@ -98,10 +115,6 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ROLLVI'),
-        backgroundColor: Colors.redAccent,
-      ),
       body: RepaintBoundary(
         key: previewContainer,
         child: _camera == null
@@ -125,13 +138,25 @@ class _FacePageState extends State<RealtimeFaceDetect> {
         child: Icon(Icons.fiber_manual_record),
         onPressed: () async {
           try {
-            final path = join(
-              (await getTemporaryDirectory()).path,
-              '${DateTime.now()}.png',
-            );
+            if (isRecording) {
+              return;
+            }
+
+            isRecording = true;
+
+            int _time = _maxTime;
+
+            _timer = new Timer.periodic(
+                Duration(seconds: 1),
+                    (timer) {
+                      if (_time < 1) {
+                        stopRecording();
+                      } else {
+                        _time -= 1;
+                      }
+                    });
 
             imglib.Image capturedImage = _convertCameraImage(_savedImage);
-
             await _capture().then((path) => {
                   imageCache.clear(),
                   print("Capture Complete : $path"),
@@ -139,7 +164,9 @@ class _FacePageState extends State<RealtimeFaceDetect> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => FacePreview(
-                              cameraImg: capturedImage, imagePath: path)))
+                              cameraImg: capturedImage,
+                              cameraSequence: _imageSequence,
+                              imagePath: path)))
                 });
           } catch (e) {
             print(e);
@@ -152,25 +179,30 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 
   Future<String> _capture() async {
     print("START CAPTURE");
+//    final directory = (await getExternalStorageDirectory()).path;
+//    File imgFile = new File('$directory/screenshot.png');
+
+    final path = join(
+      (await getTemporaryDirectory()).path,
+      '${DateTime.now()}.png',
+    );
+
     var renderObject = previewContainer.currentContext.findRenderObject();
     print(renderObject);
     if (renderObject is RenderRepaintBoundary) {
-      var boundary = renderObject;
-      ui.Image image = await boundary.toImage();
-//      final directory = (await getApplicationDocumentsDirectory()).path;
-      final directory = (await getExternalStorageDirectory()).path;
-      ByteData byteData =
-          await image.toByteData(format: ui.ImageByteFormat.png);
+      ui.Image image = await renderObject.toImage();
+
+      ByteData byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData.buffer.asUint8List();
-      File imgFile = new File('$directory/screenshot.png');
+
+      File imgFile = new File(path);
       imgFile.writeAsBytesSync(pngBytes);
-      print(pngBytes);
+
       print("FINISH CAPTURE ${imgFile.path}");
 
       return imgFile.path;
-    } else {
-      print("not renderRepaintBoundary");
     }
+
     return null;
   }
 

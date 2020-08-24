@@ -5,7 +5,6 @@ import 'package:flutter/rendering.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'backup/face_painter.dart';
 
-
 class FaceCamera extends StatelessWidget {
   final List<Face> faces;
   final CameraController camera;
@@ -17,19 +16,14 @@ class FaceCamera extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        constraints: const BoxConstraints.expand(),
-        child: Stack(
-          fit: StackFit.expand,
-          children: <Widget>[
-            cameraEnabled
-                ? CameraPreview(camera)
-                : Container(color: Colors.black),
-            _getFaceContourPaint(faces, camera),
-            _getLeftEarStickerWidget(faces, camera),
-            _getMouseStickerWidget(faces, camera),
-          ],
-        ));
+    return Stack(
+      children: <Widget>[
+        cameraEnabled ? CameraPreview(camera) : Container(color: Colors.black),
+//            _getFaceContourPaint(faces, camera),
+        _getLeftEarStickerWidget(faces, camera),
+        _getMouseStickerWidget(faces, camera),
+      ],
+    );
   }
 
   Widget _getMouseStickerWidget(List<Face> faces, CameraController camera) {
@@ -51,7 +45,7 @@ class FaceCamera extends StatelessWidget {
         width: width,
         height: height,
         left: lipBottomPoint.dx,
-        top: lipBottomPoint.dy - 150,
+        top: lipBottomPoint.dy - 100,
         child: new Stack(
           children: <Widget>[
             _getStickerWidget("assets/say_t01.webp"),
@@ -77,13 +71,11 @@ class FaceCamera extends StatelessWidget {
 
     Offset leftEarPoint = _getLeftEarPoint(faces, imageSize);
 
-    print(leftEarPoint);
-
     Widget stickerWidgets = new Positioned(
         width: width,
         height: height,
         right: leftEarPoint.dx * -1 + 420,
-        top: leftEarPoint.dy - 150,
+        top: leftEarPoint.dy - 100,
         child: new Stack(
           children: <Widget>[
             _getStickerWidget("assets/hear_text.gif"),
@@ -100,10 +92,10 @@ class FaceCamera extends StatelessWidget {
     Widget stickerWidget = Positioned(
       child: new Container(
           child: new Image(
-            image: new AssetImage(assetName),
-            height: height,
-            alignment: Alignment.center,
-          )),
+        image: new AssetImage(assetName),
+        height: height,
+        alignment: Alignment.center,
+      )),
     );
 
     return stickerWidget;
@@ -151,9 +143,9 @@ class FaceCamera extends StatelessWidget {
       Face face = faces[0];
 
       Offset upperLipBottom =
-      face.getContour(FaceContourType.upperLipBottom).positionsList[4];
+          face.getContour(FaceContourType.upperLipBottom).positionsList[4];
       Offset lowerLipTop =
-      face.getContour(FaceContourType.lowerLipTop).positionsList[4];
+          face.getContour(FaceContourType.lowerLipTop).positionsList[4];
 
       double offsetMouse = lowerLipTop.dy - upperLipBottom.dy;
 
@@ -174,9 +166,9 @@ class FaceCamera extends StatelessWidget {
 
   Offset _scalePoint(
       {Offset offset,
-        @required Size imageSize,
-        @required Size widgetSize,
-        CameraLensDirection cameraLensDirection}) {
+      @required Size imageSize,
+      @required Size widgetSize,
+      CameraLensDirection cameraLensDirection}) {
     final double scaleX = widgetSize.width / imageSize.width;
     final double scaleY = widgetSize.height / imageSize.height;
 
