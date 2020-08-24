@@ -69,10 +69,9 @@ class _FacePageState extends State<RealtimeFaceDetect> {
           setState(() {
             _faces = result;
 
-
             Size imageSize = Size(image.width.toDouble(), image.height.toDouble());
-            Offset leftEar = _getLeftEarPoint(_faces, imageSize);
-            Offset lipBottom = _getLipCenterPoint(_faces, imageSize);
+//            Offset leftEar = _getLeftEarPoint(_faces, imageSize);
+//            Offset lipBottom = _getLipCenterPoint(_faces, imageSize);
 
           });
 
@@ -95,61 +94,6 @@ class _FacePageState extends State<RealtimeFaceDetect> {
     return faces;
   }
 
-
-  Offset _getLeftEarPoint(List<Face> faces, Size imageSize) {
-    if (faces == null) return Offset(-500, -500);
-    try {
-      return _scalePoint(
-          offset: faces[0].getContour(FaceContourType.face).positionsList[9],
-          imageSize: imageSize,
-          widgetSize: Size(411.4, 685.7),
-          cameraLensDirection: CameraLensDirection.front);
-    } catch (e) {
-      return Offset(-500, -500);
-    }
-  }
-
-  Offset _getLipCenterPoint(List<Face> faces, Size imageSize) {
-    if (faces == null) return Offset(-500, -500);
-    try {
-      Offset upperLipBottom =
-      faces[0].getContour(FaceContourType.upperLipBottom).positionsList[4];
-      Offset lowerLipTop =
-      faces[0].getContour(FaceContourType.lowerLipTop).positionsList[4];
-
-      double offsetMouse = lowerLipTop.dy - upperLipBottom.dy;
-
-      if (offsetMouse > 15) {
-//        isMouseOpen = true;
-        print("Open Mouse");
-      } else {
-//        isMouseOpen = false;
-      }
-
-      return _scalePoint(
-          offset: (upperLipBottom + lowerLipTop) / 2.0,
-          imageSize: imageSize,
-          widgetSize: Size(411.4, 685.7),
-          cameraLensDirection: CameraLensDirection.front);
-    } catch (e) {
-      return Offset(-500, -500);
-    }
-  }
-
-  Offset _scalePoint(
-      {Offset offset,
-        @required Size imageSize,
-        @required Size widgetSize,
-        CameraLensDirection cameraLensDirection}) {
-    final double scaleX = widgetSize.width / imageSize.width;
-    final double scaleY = widgetSize.height / imageSize.height;
-
-    if (cameraLensDirection == CameraLensDirection.front) {
-      return Offset(
-          widgetSize.width - (offset.dx * scaleX), offset.dy * scaleY);
-    }
-    return Offset(offset.dx * scaleX, offset.dy * scaleY);
-  }
 
 
   @override
@@ -299,95 +243,103 @@ class FaceCamera extends StatelessWidget {
             cameraEnabled
                 ? CameraPreview(camera)
                 : Container(color: Colors.black),
-//            (faces != null)
-//                ? CustomPaint(
-//                    painter: FaceContourPainter(
-//                        Size(
-//                          camera.value.previewSize.height,
-//                          camera.value.previewSize.width,
-//                        ),
-//                        faces,
-//                        camera.description.lensDirection),
-//                  )
-//                : const Text('No results!'),
-            (faces != null)
-                ? new Positioned(
-                    width: 200,
-                    right: _getLeftEarPoint(
-                                faces,
-                                Size(
-                                  camera.value.previewSize.height,
-                                  camera.value.previewSize.width,
-                                )).dx *
-                            -1 +
-                        420,
-                    top: _getLeftEarPoint(
-                            faces,
-                            Size(
-                              camera.value.previewSize.height,
-                              camera.value.previewSize.width,
-                            )).dy -
-                        150,
-                    child: new Stack(
-                      children: <Widget>[
-                        Positioned(
-                          child: new Container(
-                              child: new Image(
-                            image: new AssetImage("assets/hear_text.gif"),
-                            height: 300,
-                            alignment: Alignment.center,
-                          )),
-                        ),
-                        Positioned(
-                          child: new Container(
-                              child: new Image(
-                            image: new AssetImage("assets/hear_heart.gif"),
-                            height: 300,
-                            alignment: Alignment.center,
-                          )),
-                        )
-                      ],
-                    ))
-                : new Text(""),
-            (faces != null)
-                ? new Positioned(
-                    width: 200,
-                    left: _getLipBottomPoint(
-                        faces,
-                        Size(
-                          camera.value.previewSize.height,
-                          camera.value.previewSize.width,
-                        )).dx,
-                    top: _getLipBottomPoint(
-                            faces,
-                            Size(
-                              camera.value.previewSize.height,
-                              camera.value.previewSize.width,
-                            )).dy -
-                        150,
-                    child: new Stack(
-                      children: <Widget>[
-                        Positioned(
-                          child: new Container(
-                              child: new Image(
-                            image: new AssetImage("assets/say_t01.webp"),
-                            height: 300,
-                            alignment: Alignment.center,
-                          )),
-                        ),
-                        Positioned(
-                          child: new Container(
-                              child: new Image(
-                            image: new AssetImage("assets/say_h01.webp"),
-                            height: 300,
-                            alignment: Alignment.center,
-                          )),
-                        ),
-                      ],
-                    ))
-                : new Text("aaa")
+//            _getFaceContourPaint(faces, camera),
+            _getLeftEarStickerWidget(faces, camera),
+            _getMouseStickerWidget(faces, camera),
           ],
         ));
+  }
+
+  Widget _getMouseStickerWidget(List<Face> faces, CameraController camera) {
+    final double width = 200;
+    final double height = 300;
+
+    if (faces == null) {
+      return new Text("");
+    }
+
+    Size imageSize = Size(
+      camera.value.previewSize.height,
+      camera.value.previewSize.width,
+    );
+
+    Offset lipBottomPoint = _getLipBottomPoint(faces, imageSize);
+
+    Widget stickerWidgets = new Positioned(
+        width: width,
+        height: height,
+        left: lipBottomPoint.dx,
+        top: lipBottomPoint.dy - 150,
+        child: new Stack(
+          children: <Widget>[
+            _getStickerWidget("assets/say_t01.webp"),
+            _getStickerWidget("assets/say_h01.webp"),
+          ],
+        ));
+
+    return stickerWidgets;
+  }
+
+  Widget _getLeftEarStickerWidget(List<Face> faces, CameraController camera) {
+    final double width = 200;
+    final double height = 300;
+
+    if (faces == null) {
+      return new Text("");
+    }
+
+    Size imageSize = Size(
+      camera.value.previewSize.height,
+      camera.value.previewSize.width,
+    );
+
+    Offset leftEarPoint = _getLeftEarPoint(faces, imageSize);
+
+    Widget stickerWidgets = new Positioned(
+        width: width,
+        height: height,
+        left: leftEarPoint.dx * 1 + 420,
+        top: leftEarPoint.dy - 150,
+        child: new Stack(
+          children: <Widget>[
+            _getStickerWidget("assets/hear_text.gif"),
+            _getStickerWidget("assets/hear_heart.gif"),
+          ],
+        ));
+
+    return stickerWidgets;
+  }
+
+  Widget _getStickerWidget(String assetName) {
+    final double height = 300;
+
+    Widget stickerWidget = Positioned(
+      child: new Container(
+          child: new Image(
+            image: new AssetImage(assetName),
+            height: height,
+            alignment: Alignment.center,
+          )),
+    );
+
+    return stickerWidget;
+  }
+
+  Widget _getFaceContourPaint(List<Face> faces, CameraController camera) {
+    if (faces == null || camera == null) {
+      print("Faces is null");
+      return Text("");
+    }
+
+    return new CustomPaint(
+      painter: FaceContourPainter(
+          Size(
+            camera.value.previewSize.height,
+            camera.value.previewSize.width,
+          ),
+          faces,
+          camera.description.lensDirection),
+    );
   }
 
   Offset _getLeftEarPoint(List<Face> faces, Size imageSize) {
@@ -404,7 +356,9 @@ class FaceCamera extends StatelessWidget {
   }
 
   Offset _getLipBottomPoint(List<Face> faces, Size imageSize) {
-    if (faces == null) return Offset(-500, -500);
+    final defaultOffset = Offset(-500, -500);
+
+    if (faces == null) return defaultOffset;
     try {
       Offset upperLipBottom =
           faces[0].getContour(FaceContourType.upperLipBottom).positionsList[4];
@@ -414,19 +368,18 @@ class FaceCamera extends StatelessWidget {
       double offsetMouse = lowerLipTop.dy - upperLipBottom.dy;
 
       if (offsetMouse > 15) {
-//        isMouseOpen = true;
         print("Open Mouse");
-      } else {
-//        isMouseOpen = false;
+        return _scalePoint(
+            offset: (upperLipBottom + lowerLipTop) / 2.0,
+            imageSize: imageSize,
+            widgetSize: Size(411.4, 685.7),
+            cameraLensDirection: CameraLensDirection.front);
       }
-      return _scalePoint(
-          offset: (upperLipBottom + lowerLipTop) / 2.0,
-          imageSize: imageSize,
-          widgetSize: Size(411.4, 685.7),
-          cameraLensDirection: CameraLensDirection.front);
     } catch (e) {
-      return Offset(-500, -500);
+      return defaultOffset;
     }
+
+    return defaultOffset;
   }
 
   Offset _scalePoint(
@@ -443,7 +396,6 @@ class FaceCamera extends StatelessWidget {
     }
     return Offset(offset.dx * scaleX, offset.dy * scaleY);
   }
-
 }
 
 
