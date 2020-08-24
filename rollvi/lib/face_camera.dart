@@ -150,7 +150,6 @@ class FaceCamera extends StatelessWidget {
       double offsetMouse = lowerLipTop.dy - upperLipBottom.dy;
 
       if (offsetMouse > mouseOpenThreshold) {
-        print("Open Mouse");
         return _scalePoint(
             offset: (upperLipBottom + lowerLipTop) / 2.0,
             imageSize: imageSize,

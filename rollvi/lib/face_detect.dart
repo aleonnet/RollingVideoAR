@@ -43,10 +43,10 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   Timer _timer;
   List<imglib.Image> _imageSequence;
 
-
   @override
   void initState() {
     super.initState();
+    _imageSequence = new List<imglib.Image>();
     _initializeCamera();
   }
 
@@ -61,7 +61,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   void stopRecording() {
     isRecording = false;
     _timer.cancel();
-    _imageSequence.clear();
+//    _imageSequence.clear();
   }
 
   void _initializeCamera() async {
@@ -89,7 +89,8 @@ class _FacePageState extends State<RealtimeFaceDetect> {
           setState(() {
             _faces = result;
 
-            if (isRecording) {
+            if (isRecording == true) {
+              print("append : ${_imageSequence.length}");
               _imageSequence.add(_convertCameraImage(image));
             }
           });
@@ -146,28 +147,43 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 
             int _time = _maxTime;
 
-            _timer = new Timer.periodic(
-                Duration(seconds: 1),
-                    (timer) {
-                      if (_time < 1) {
-                        stopRecording();
-                      } else {
-                        _time -= 1;
-                      }
+
+            _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
+              print('[timer] : $_time');
+              if (_time < 1) {
+                stopRecording();
+
+                imglib.Image capturedImage = _convertCameraImage(_savedImage);
+                _capture().then((path) => {
+                      imageCache.clear(),
+                      print("Capture Complete : $path"),
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => FacePreview(
+                                  cameraImg: capturedImage,
+                                  cameraSequence: _imageSequence,
+                                  imagePath: path)))
                     });
 
-            imglib.Image capturedImage = _convertCameraImage(_savedImage);
-            await _capture().then((path) => {
-                  imageCache.clear(),
-                  print("Capture Complete : $path"),
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => FacePreview(
-                              cameraImg: capturedImage,
-                              cameraSequence: _imageSequence,
-                              imagePath: path)))
-                });
+              } else {
+
+                _time -= 1;
+              }
+            });
+
+//            imglib.Image capturedImage = _convertCameraImage(_savedImage);
+//            await _capture().then((path) => {
+//                  imageCache.clear(),
+//                  print("Capture Complete : $path"),
+//                  Navigator.push(
+//                      context,
+//                      MaterialPageRoute(
+//                          builder: (context) => FacePreview(
+//                              cameraImg: capturedImage,
+//                              cameraSequence: _imageSequence,
+//                              imagePath: path)))
+//                });
           } catch (e) {
             print(e);
           }
@@ -179,8 +195,6 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 
   Future<String> _capture() async {
     print("START CAPTURE");
-//    final directory = (await getExternalStorageDirectory()).path;
-//    File imgFile = new File('$directory/screenshot.png');
 
     final path = join(
       (await getTemporaryDirectory()).path,
@@ -192,7 +206,8 @@ class _FacePageState extends State<RealtimeFaceDetect> {
     if (renderObject is RenderRepaintBoundary) {
       ui.Image image = await renderObject.toImage();
 
-      ByteData byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      ByteData byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData.buffer.asUint8List();
 
       File imgFile = new File(path);

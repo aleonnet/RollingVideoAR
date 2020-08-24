@@ -51,8 +51,10 @@ class ImageSequenceState extends State<FacePreview>
 
     int maxImages = widget.cameraSequence.length;
 
-    _controller = new AnimationController(vsync: this);
+    _controller = new AnimationController(vsync: this, duration: const Duration(seconds: 1))..repeat();
     _animation = new IntTween(begin: 0, end: maxImages-1).animate(_controller);
+
+    print("Max Image Sequnece : $maxImages");
   }
 
   @override
@@ -69,13 +71,13 @@ class ImageSequenceState extends State<FacePreview>
           new AnimatedBuilder(
               animation: _animation,
               builder: (BuildContext context, Widget child) {
-                String frame = _animation.value.toString();
-                print(frame);
+                int frame = _animation.value;
+                print("frame : $frame");
 
                 return Transform(
                   alignment: Alignment.center,
                   transform: Matrix4.rotationY(pi),
-                  child: Image.memory(imglib.encodeJpg(widget.cameraImg)),
+                  child: Image.memory(imglib.encodeJpg(widget.cameraSequence[frame])),
                 );
               }),
         ],
