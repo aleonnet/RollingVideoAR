@@ -17,7 +17,7 @@ class FacePreview extends StatefulWidget {
       : super(key: key);
 
   @override
-  State createState() => new ImageSequenceState();
+  State createState() => new PreviewState();
 }
 
 
@@ -51,7 +51,7 @@ class ImageSequenceState extends State<FacePreview>
 
     int maxImages = widget.cameraSequence.length;
 
-    _controller = new AnimationController(vsync: this, duration: const Duration(seconds: 1))..repeat();
+    _controller = new AnimationController(vsync: this);
     _animation = new IntTween(begin: 0, end: maxImages-1).animate(_controller);
 
     print("Max Image Sequnece : $maxImages");

@@ -38,7 +38,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   CameraLensDirection _cameraDirection = CameraLensDirection.front;
   CameraImage _savedImage;
 
-  final int _maxTime = 5;
+  final int _maxTime = 2;
   bool isRecording = false;
   Timer _timer;
   List<imglib.Image> _imageSequence;
