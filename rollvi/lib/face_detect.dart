@@ -38,15 +38,15 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   CameraLensDirection _cameraDirection = CameraLensDirection.front;
   CameraImage _savedImage;
 
-  final int _maxTime = 5;
+  final int _maxTime = 2;
   bool isRecording = false;
   Timer _timer;
-  List<imglib.Image> _imageSequence;
+  List<Image> _imageSequence;
 
   @override
   void initState() {
     super.initState();
-    _imageSequence = new List<imglib.Image>();
+    _imageSequence = new List<Image>();
     _initializeCamera();
   }
 
@@ -89,10 +89,9 @@ class _FacePageState extends State<RealtimeFaceDetect> {
           setState(() {
             _faces = result;
 
-            if (isRecording == true) {
-              print("append : ${_imageSequence.length}");
-              _imageSequence.add(_convertCameraImage(image));
-            }
+//            if (isRecording == true) {
+//              _imageSequence.add(_convertCameraImage(image));
+//            }
           });
 
           _isDetecting = false;
@@ -145,45 +144,45 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 
             isRecording = true;
 
-            int _time = _maxTime;
+            String videoPath = '';
 
+            await _camera.startVideoRecording(videoPath);
 
-            _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
-              print('[timer] : $_time');
-              if (_time < 1) {
-                stopRecording();
-
-                imglib.Image capturedImage = _convertCameraImage(_savedImage);
-                _capture().then((path) => {
-                      imageCache.clear(),
-                      print("Capture Complete : $path"),
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => FacePreview(
-                                  cameraImg: capturedImage,
-                                  cameraSequence: _imageSequence,
-                                  imagePath: path)))
-                    });
-
-              } else {
-
-                _time -= 1;
+            _startVideoRecording().then((String filePath) {
+              if (filePath != null) {
+                print("Recording Start!!1");
+                setState(() {
+                  videoPath = filePath;
+                });
               }
             });
 
-//            imglib.Image capturedImage = _convertCameraImage(_savedImage);
-//            await _capture().then((path) => {
-//                  imageCache.clear(),
-//                  print("Capture Complete : $path"),
-//                  Navigator.push(
-//                      context,
-//                      MaterialPageRoute(
-//                          builder: (context) => FacePreview(
-//                              cameraImg: capturedImage,
-//                              cameraSequence: _imageSequence,
-//                              imagePath: path)))
-//                });
+            int _time = _maxTime;
+            _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
+              print('[timer] : $_time');
+              if (_time < 1) {
+                _stopVideoRecording().then((_) {
+                  print("Stop Video Recording");
+
+                  stopRecording();
+
+                  Image capturedImage = _convertCameraImage(_savedImage);
+                  _capture().then((path) => {
+                        imageCache.clear(),
+                        print("Capture Complete : $path"),
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => FacePreview(
+                                    cameraImg: capturedImage,
+                                    cameraSequence: _imageSequence,
+                                    imagePath: videoPath)))
+                      });
+                });
+              } else {
+                _time -= 1;
+              }
+            });
           } catch (e) {
             print(e);
           }
@@ -191,6 +190,51 @@ class _FacePageState extends State<RealtimeFaceDetect> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
+  }
+
+  Future<String> _startVideoRecording() async {
+    if (!_camera.value.isInitialized) {
+      print("Please wait...");
+      return null;
+    }
+
+    // Do nothing if a recording is on progress
+    if (_camera.value.isRecordingVideo) {
+      return null;
+    }
+
+    final Directory appDirectory = await getApplicationDocumentsDirectory();
+    final String videoDirectory = '${appDirectory.path}/Videos';
+    await Directory(videoDirectory).create(recursive: true);
+    final String currentTime = DateTime.now().millisecondsSinceEpoch.toString();
+    final String filePath = '$videoDirectory/${currentTime}.mp4';
+
+    try {
+      await _camera.startVideoRecording(filePath);
+    } on CameraException catch (e) {
+      _showCameraException(e);
+      return null;
+    }
+
+    return filePath;
+  }
+
+  Future<void> _stopVideoRecording() async {
+    if (!_camera.value.isRecordingVideo) {
+      return null;
+    }
+
+    try {
+      await _camera.stopVideoRecording();
+    } on CameraException catch (e) {
+      _showCameraException(e);
+      return null;
+    }
+  }
+
+  void _showCameraException(CameraException e) {
+    String errorText = 'Error: ${e.code}\nError Message: ${e.description}';
+    print(errorText);
   }
 
   Future<String> _capture() async {
@@ -221,7 +265,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
     return null;
   }
 
-  static imglib.Image _convertCameraImage(CameraImage image) {
+  static Image _convertCameraImage(CameraImage image) {
     int width = image.width;
     int height = image.height;
 
@@ -237,19 +281,28 @@ class _FacePageState extends State<RealtimeFaceDetect> {
         final yp = image.planes[0].bytes[index];
         final up = image.planes[1].bytes[uvIndex];
         final vp = image.planes[2].bytes[uvIndex];
-        // Calculate pixel color
+// Calculate pixel color
         int r = (yp + vp * 1436 / 1024 - 179).round().clamp(0, 255);
         int g = (yp - up * 46549 / 131072 + 44 - vp * 93604 / 131072 + 91)
             .round()
             .clamp(0, 255);
         int b = (yp + up * 1814 / 1024 - 227).round().clamp(0, 255);
-        // color: 0x FF  FF  FF  FF
-        //           A   B   G   R
+// color: 0x FF  FF  FF  FF
+//           A   B   G   R
         img.data[index] = hexFF | (b << 16) | (g << 8) | r;
       }
     }
-    // Rotate 90 degrees to upright
+
+// imglib.Image
     var img1 = imglib.copyRotate(img, -90);
-    return img1;
+//    return img1;
+
+// png
+//    List<int> png = new imglib.PngEncoder(level: 0, filter: 0).encodeImage(img1);
+
+// jpg
+    List<int> jpg = imglib.encodeJpg(img1);
+
+    return Image.memory(jpg);
   }
 }

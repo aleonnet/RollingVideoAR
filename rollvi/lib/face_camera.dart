@@ -48,8 +48,14 @@ class FaceCamera extends StatelessWidget {
         top: lipBottomPoint.dy - 100,
         child: new Stack(
           children: <Widget>[
-            _getStickerWidget("assets/say_t01.webp"),
+//            _getStickerWidget("assets/say_t01.webp"),
             _getStickerWidget("assets/say_h01.webp"),
+            _getStickerWidget("assets/say_t02.webp"),
+//            _getStickerWidget("assets/say_h01.webp"),
+//            _getStickerWidget("assets/say_h02.webp"),
+//            _getStickerWidget("assets/say_h03.webp"),
+//            _getStickerWidget("assets/say_h04.webp"),
+//            _getStickerWidget("assets/say_h05.webp"),
           ],
         ));
 
@@ -178,3 +184,4 @@ class FaceCamera extends StatelessWidget {
     return Offset(offset.dx * scaleX, offset.dy * scaleY);
   }
 }
+
