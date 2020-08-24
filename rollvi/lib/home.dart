@@ -2,13 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:rollvi/capture_camera.dart';
-import 'package:rollvi/face_detect.dart';
-import 'package:rollvi/realtime_face_detect.dart';
+import 'backup/face_detect.dart';
+import 'face_detect.dart';
 
 import 'package:rollvi/screens/remote_object.dart';
 import 'package:rollvi/screens/augmented_faces.dart';
-import 'package:rollvi/test.dart';
 import 'package:rollvi/video_timer.dart';
 
 import 'video_trimmer/video_trimmer.dart';
@@ -28,18 +26,6 @@ class HomeScreen extends StatelessWidget{
       body:Container(
         child: Column(
           children: <Widget>[
-            RaisedButton(
-              child: Text(
-                "Test",
-                style: TextStyle(color: Colors.white),
-              ),
-              color: Colors.blue,
-              onPressed: () {
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) => Test())
-                );
-              },
-            ),
             RaisedButton(
               child: Text(
                   "Camera - Face Detection",
