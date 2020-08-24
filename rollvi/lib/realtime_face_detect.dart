@@ -295,10 +295,12 @@ class FaceCamera extends StatelessWidget {
 
     Offset leftEarPoint = _getLeftEarPoint(faces, imageSize);
 
+    print(leftEarPoint);
+
     Widget stickerWidgets = new Positioned(
         width: width,
         height: height,
-        left: leftEarPoint.dx * 1 + 420,
+        right: leftEarPoint.dx * -1 + 420,
         top: leftEarPoint.dy - 150,
         child: new Stack(
           children: <Widget>[
@@ -326,10 +328,7 @@ class FaceCamera extends StatelessWidget {
   }
 
   Widget _getFaceContourPaint(List<Face> faces, CameraController camera) {
-    if (faces == null || camera == null) {
-      print("Faces is null");
-      return Text("");
-    }
+    if (faces == null || camera == null) return Text("");
 
     return new CustomPaint(
       painter: FaceContourPainter(
@@ -343,31 +342,40 @@ class FaceCamera extends StatelessWidget {
   }
 
   Offset _getLeftEarPoint(List<Face> faces, Size imageSize) {
-    if (faces == null) return Offset(-500, -500);
+    final defaultOffset = Offset(-500, -500);
+
+    if (faces == null) return defaultOffset;
+
     try {
+      Face face = faces[0];
+
       return _scalePoint(
-          offset: faces[0].getContour(FaceContourType.face).positionsList[9],
+          offset: face.getContour(FaceContourType.face).positionsList[9],
           imageSize: imageSize,
           widgetSize: Size(411.4, 685.7),
           cameraLensDirection: CameraLensDirection.front);
     } catch (e) {
-      return Offset(-500, -500);
+      return defaultOffset;
     }
   }
 
   Offset _getLipBottomPoint(List<Face> faces, Size imageSize) {
-    final defaultOffset = Offset(-500, -500);
+    final Offset defaultOffset = Offset(-500, -500);
+    final double mouseOpenThreshold = 15;
 
     if (faces == null) return defaultOffset;
+
     try {
+      Face face = faces[0];
+
       Offset upperLipBottom =
-          faces[0].getContour(FaceContourType.upperLipBottom).positionsList[4];
+          face.getContour(FaceContourType.upperLipBottom).positionsList[4];
       Offset lowerLipTop =
-          faces[0].getContour(FaceContourType.lowerLipTop).positionsList[4];
+          face.getContour(FaceContourType.lowerLipTop).positionsList[4];
 
       double offsetMouse = lowerLipTop.dy - upperLipBottom.dy;
 
-      if (offsetMouse > 15) {
+      if (offsetMouse > mouseOpenThreshold) {
         print("Open Mouse");
         return _scalePoint(
             offset: (upperLipBottom + lowerLipTop) / 2.0,
