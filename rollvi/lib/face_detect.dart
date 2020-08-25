@@ -6,7 +6,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as imglib;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/rendering.dart';
@@ -14,10 +13,18 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'package:photofilters/photofilters.dart';
-import 'package:rollvi/face_preview.dart';
+import 'package:rollvi/image_preview.dart';
+import 'package:rollvi/image_sequence_preview.dart';
+import 'package:rollvi/video_preview.dart';
 
 import 'face_camera.dart';
 import 'utils.dart';
+
+enum CaptureType {
+  Image,
+  Video,
+  ImageSequence,
+}
 
 class RealtimeFaceDetect extends StatefulWidget {
   @override
@@ -43,15 +50,16 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   final int _maxTime = 2;
   bool isRecording = false;
   Timer _timer;
-  List<Image> _imageSequence;
+  List<imglib.Image> _imageSequence;
 
-  List<bool> _selectedIndex = [false, false, false];
+  CaptureType _captureType = CaptureType.Video;
+  List<bool> _selectedIndex = [true, true, false];
   int _selectedFilter = 1;
 
   @override
   void initState() {
     super.initState();
-    _imageSequence = new List<Image>();
+    _imageSequence = new List<imglib.Image>();
     _initialize();
   }
 
@@ -101,9 +109,9 @@ class _FacePageState extends State<RealtimeFaceDetect> {
           setState(() {
             _faces = result;
 
-//            if (isRecording == true) {
-//              _imageSequence.add(_convertCameraImage(image));
-//            }
+            if (_captureType == CaptureType.ImageSequence && isRecording == true) {
+              _imageSequence.add(_convertCameraImage(image));
+            }
           });
 
           _isDetecting = false;
@@ -150,10 +158,11 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 //            ),
         child: _camera == null
             ? Container(color: Colors.black)
-            : FaceCamera(faces: _faces,
-                          camera: _camera,
-                          showFaceContour: _selectedIndex[2],
-                          filterIndex: _selectedFilter),
+            : FaceCamera(
+                faces: _faces,
+                camera: _camera,
+                showFaceContour: _selectedIndex[2],
+                filterIndex: _selectedFilter),
       ),
       bottomNavigationBar: BottomAppBar(
         child: Container(
@@ -164,14 +173,18 @@ class _FacePageState extends State<RealtimeFaceDetect> {
             children: <Widget>[
               IconButton(
                 iconSize: 27.0,
-                icon: Icon(
-                  Icons.home,
-                  color: (_selectedIndex[0] == true)
-                      ? Colors.redAccent
-                      : Colors.grey.shade400,
-                ),
+                icon: _getCaptureIcon(_captureType),
                 onPressed: () async {
-                  _selectedIndex[0] = !_selectedIndex[0];
+                  switch (_captureType) {
+                    case CaptureType.Video:
+                      _captureType = CaptureType.Image;
+                      break;
+                    case CaptureType.Image:
+                      _captureType = CaptureType.ImageSequence;
+                      break;
+                    case CaptureType.ImageSequence:
+                      _captureType = CaptureType.Video;
+                  }
                 },
               ),
               IconButton(
@@ -205,7 +218,8 @@ class _FacePageState extends State<RealtimeFaceDetect> {
                 iconSize: 27.0,
                 icon: _getFilterIcon(_selectedFilter),
                 onPressed: () {
-                  _selectedFilter = (_selectedFilter > 4) ? 1 : _selectedFilter += 1;
+                  _selectedFilter =
+                      (_selectedFilter > 4) ? 1 : _selectedFilter += 1;
                 },
               ),
             ],
@@ -216,32 +230,75 @@ class _FacePageState extends State<RealtimeFaceDetect> {
         //color of the BottomAppBar
         color: Colors.white,
       ),
-      floatingActionButton: (_selectedIndex[1] == false) ? null :
-          (isRecording == false)
-          ? _getRecordButton(context)
-          : FloatingActionButton(
-              child: Icon(Icons.fiber_manual_record),
-              backgroundColor: Colors.grey,
-            ),
+      floatingActionButton: (_selectedIndex[1] == false)
+          ? null
+          : (isRecording == false)
+              ? _getRecordButton(context)
+              : FloatingActionButton(
+                  child: Icon(Icons.fiber_manual_record),
+                  backgroundColor: Colors.grey,
+                ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    );
+  }
+
+  Icon _getCaptureIcon(CaptureType captureType) {
+    switch(captureType) {
+      case CaptureType.Video:
+        return Icon(
+          Icons.videocam,
+          color: Colors.grey.shade400,
+        );
+      case CaptureType.Image:
+        return Icon(
+          Icons.camera_alt,
+          color: Colors.grey.shade400,
+        );
+      case CaptureType.ImageSequence:
+        return Icon(
+          Icons.camera_roll,
+          color: Colors.grey.shade400,
+        );
+    }
+    return Icon(
+      Icons.settings,
+      color: Colors.grey.shade400,
     );
   }
 
   Icon _getFilterIcon(int index) {
     Color color = Colors.grey.shade700;
-    switch(index) {
+    switch (index) {
       case 1:
-        return Icon(Icons.looks_one, color: color,);
+        return Icon(
+          Icons.looks_one,
+          color: color,
+        );
       case 2:
-        return Icon(Icons.looks_two, color: color,);
+        return Icon(
+          Icons.looks_two,
+          color: color,
+        );
       case 3:
-        return Icon(Icons.looks_3, color: color,);
+        return Icon(
+          Icons.looks_3,
+          color: color,
+        );
       case 4:
-        return Icon(Icons.looks_4, color: color,);
+        return Icon(
+          Icons.looks_4,
+          color: color,
+        );
       case 5:
-        return Icon(Icons.looks_5, color: color,);
+        return Icon(
+          Icons.looks_5,
+          color: color,
+        );
       default:
-        return Icon(Icons.settings, color: color,);
+        return Icon(
+          Icons.settings,
+          color: color,
+        );
     }
   }
 
@@ -254,47 +311,71 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 
           String videoPath = '';
 
-          await _camera.stopImageStream();
-          _startVideoRecording().then((String filePath) {
-            if (filePath != null) {
-              print("Recording Start");
-              setState(() {
-                videoPath = filePath;
-              });
-            }
-          });
+          if (_captureType == CaptureType.Video) {
+            await _camera.stopImageStream();
+            _startVideoRecording().then((String filePath) {
+              if (filePath != null) {
+                print("Recording Start");
+                setState(() {
+                  videoPath = filePath;
+                });
+              }
+            });
+          }
 
-          int _time = _maxTime;
-          _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
-            print('[timer] : $_time');
+          if (_captureType == CaptureType.Image) {
+            imglib.Image capturedImage = _convertCameraImage(_savedImage);
+            _capture().then((path) => {
+              imageCache.clear(),
+              print("Capture Complete : $path"),
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          ImagePreview(cameraImg: capturedImage,)))
+                  ..then((value) => _initialize())
+            });
+          }
+          else {
+            int _time = _maxTime;
+            _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
+              print('[timer] : $_time');
 
-            if (_time < 1) {
-              _stopVideoRecording().then((_) {
-                print("Stop Video Recording");
+              if (_time < 1) {
+                if (_captureType == CaptureType.Video) {
+                  _stopVideoRecording().then((_) {
+                    print("Stop Video Recording");
 
-                stopRecording();
+                    stopRecording();
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                VideoPreview(videoPath: videoPath)))
+                      ..then((value) => _initialize());
+                  });
+                }
+                else if (_captureType == CaptureType.ImageSequence) {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ImageSequencePreview(
+                              cameraSequence: _imageSequence)))
+                    ..then((value) => _initialize());
+                }
 
-                Image capturedImage = _convertCameraImage(_savedImage);
-                _capture().then((path) => {
-                      imageCache.clear(),
-                      print("Capture Complete : $path"),
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => FacePreview(
-                                  cameraImg: capturedImage,
-                                  cameraSequence: _imageSequence,
-                                  imagePath: videoPath)))
-                        ..then((value) => _initializeCamera())
-                    });
-              });
-            } else {
-              _time -= 1;
-            }
-          });
+                _timer.cancel();
+              } else {
+                _time -= 1;
+              }
+            });
+
+          }
         } catch (e) {
           print(e);
         }
+
+
       },
     );
     return recordButton;
@@ -372,7 +453,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
     return null;
   }
 
-  static Image _convertCameraImage(CameraImage image) {
+  static imglib.Image _convertCameraImage(CameraImage image) {
     int width = image.width;
     int height = image.height;
 
@@ -403,10 +484,11 @@ class _FacePageState extends State<RealtimeFaceDetect> {
     }
 
     var img1 = imglib.copyRotate(img, -90);
+    return img1;
 
 //    List<int> png = new imglib.PngEncoder(level: 0, filter: 0).encodeImage(img1);
-    List<int> jpg = imglib.encodeJpg(img1);
+//    List<int> jpg = imglib.encodeJpg(img1);
 
-    return Image.memory(jpg);
+//    return Image.memory(jpg);
   }
 }
