@@ -61,10 +61,13 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   void stopRecording() {
     isRecording = false;
     _timer.cancel();
-//    _imageSequence.clear();
   }
 
   void _initializeCamera() async {
+    isRecording = false;
+    if (_timer != null) _timer.cancel();
+    if(_imageSequence.isNotEmpty) _imageSequence.clear();
+
     CameraDescription description = await availableCameras().then(
         (List<CameraDescription> cameras) => cameras.firstWhere(
             (CameraDescription camera) =>
@@ -136,61 +139,69 @@ class _FacePageState extends State<RealtimeFaceDetect> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: (isRecording == false)
+      ? _getRecordButton(context)
+      : FloatingActionButton(
         child: Icon(Icons.fiber_manual_record),
-        onPressed: () async {
-          try {
-            if (isRecording) {
-              return;
-            }
-
-            isRecording = true;
-
-            String videoPath = '';
-
-            await _camera.stopImageStream();
-            _startVideoRecording().then((String filePath) {
-              if (filePath != null) {
-                print("Recording Start");
-                setState(() {
-                  videoPath = filePath;
-                });
-              }
-            });
-
-            int _time = _maxTime;
-            _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
-              print('[timer] : $_time');
-              if (_time < 1) {
-                _stopVideoRecording().then((_) {
-                  print("Stop Video Recording");
-
-                  stopRecording();
-
-                  Image capturedImage = _convertCameraImage(_savedImage);
-                  _capture().then((path) => {
-                        imageCache.clear(),
-                        print("Capture Complete : $path"),
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => FacePreview(
-                                    cameraImg: capturedImage,
-                                    cameraSequence: _imageSequence,
-                                    imagePath: videoPath)))
-                      });
-                });
-              } else {
-                _time -= 1;
-              }
-            });
-          } catch (e) {
-            print(e);
-          }
-        },
+        backgroundColor: Colors.white,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
+  }
+
+  Widget _getRecordButton(BuildContext context) {
+    FloatingActionButton recordButton = FloatingActionButton(
+      child: Icon(Icons.fiber_manual_record),
+      onPressed: () async {
+        try {
+          isRecording = true;
+
+          String videoPath = '';
+
+          await _camera.stopImageStream();
+          _startVideoRecording().then((String filePath) {
+            if (filePath != null) {
+              print("Recording Start");
+              setState(() {
+                videoPath = filePath;
+              });
+            }
+          });
+
+          int _time = _maxTime;
+          _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
+            print('[timer] : $_time');
+
+            if (_time < 1) {
+              _stopVideoRecording().then((_) {
+                print("Stop Video Recording");
+
+                stopRecording();
+
+                Image capturedImage = _convertCameraImage(_savedImage);
+                _capture().then((path) => {
+                  imageCache.clear(),
+                  print("Capture Complete : $path"),
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => FacePreview(
+                              cameraImg: capturedImage,
+                              cameraSequence: _imageSequence,
+                              imagePath: videoPath)))
+                  ..then((value) => _initializeCamera())
+                });
+              });
+            } else {
+              _time -= 1;
+            }
+          });
+        } catch (e) {
+          print(e);
+        }
+      },
+    );
+    return recordButton;
   }
 
   Future<String> _startVideoRecording() async {
@@ -208,7 +219,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
     final String videoDirectory = '${appDirectory.path}/Videos';
     await Directory(videoDirectory).create(recursive: true);
     final String currentTime = DateTime.now().millisecondsSinceEpoch.toString();
-    final String filePath = '$videoDirectory/${currentTime}.mp4';
+    final String filePath = '$videoDirectory/$currentTime.mp4';
 
     try {
       await _camera.startVideoRecording(filePath);
@@ -294,14 +305,9 @@ class _FacePageState extends State<RealtimeFaceDetect> {
       }
     }
 
-// imglib.Image
     var img1 = imglib.copyRotate(img, -90);
-//    return img1;
 
-// png
 //    List<int> png = new imglib.PngEncoder(level: 0, filter: 0).encodeImage(img1);
-
-// jpg
     List<int> jpg = imglib.encodeJpg(img1);
 
     return Image.memory(jpg);

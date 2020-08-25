@@ -19,7 +19,7 @@ class FaceCamera extends StatelessWidget {
     return Stack(
       children: <Widget>[
         cameraEnabled ? CameraPreview(camera) : Container(color: Colors.black),
-//            _getFaceContourPaint(faces, camera),
+        _getFaceContourPaint(faces, camera),
         _getLeftEarStickerWidget(faces, camera),
         _getMouseStickerWidget(faces, camera),
       ],
@@ -27,9 +27,6 @@ class FaceCamera extends StatelessWidget {
   }
 
   Widget _getMouseStickerWidget(List<Face> faces, CameraController camera) {
-    final double width = 200;
-    final double height = 300;
-
     if (faces == null) {
       return new Text("");
     }
@@ -42,15 +39,12 @@ class FaceCamera extends StatelessWidget {
     Offset lipBottomPoint = _getLipBottomPoint(faces, imageSize);
 
     Widget stickerWidgets = new Positioned(
-        width: width,
-        height: height,
         left: lipBottomPoint.dx,
-        top: lipBottomPoint.dy - 100,
+        top: lipBottomPoint.dy - 50,
         child: new Stack(
           children: <Widget>[
-//            _getStickerWidget("assets/say_t01.webp"),
-            _getStickerWidget("assets/say_h01.webp"),
-            _getStickerWidget("assets/say_t02.webp"),
+            _getStickerWidget("assets/say_mmm02.webp"),
+//            _getStickerWidget("assets/say_t04.webp"),
 //            _getStickerWidget("assets/say_h01.webp"),
 //            _getStickerWidget("assets/say_h02.webp"),
 //            _getStickerWidget("assets/say_h03.webp"),
@@ -80,8 +74,8 @@ class FaceCamera extends StatelessWidget {
     Widget stickerWidgets = new Positioned(
         width: width,
         height: height,
-        right: leftEarPoint.dx * -1 + 420,
-        top: leftEarPoint.dy - 100,
+        right: leftEarPoint.dx * -1 + 415,
+        top: leftEarPoint.dy - 60,
         child: new Stack(
           children: <Widget>[
             _getStickerWidget("assets/hear_text.gif"),
@@ -92,13 +86,14 @@ class FaceCamera extends StatelessWidget {
     return stickerWidgets;
   }
 
-  Widget _getStickerWidget(String assetName) {
-    final double height = 300;
+  Widget _getStickerWidget(String assetName, {double width = 200, double height=100}) {
 
     Widget stickerWidget = Positioned(
       child: new Container(
           child: new Image(
+            fit: BoxFit.contain,
         image: new AssetImage(assetName),
+        width: width,
         height: height,
         alignment: Alignment.center,
       )),
@@ -128,7 +123,6 @@ class FaceCamera extends StatelessWidget {
 
     try {
       Face face = faces[0];
-
       return _scalePoint(
           offset: face.getContour(FaceContourType.face).positionsList[9],
           imageSize: imageSize,
@@ -147,7 +141,6 @@ class FaceCamera extends StatelessWidget {
 
     try {
       Face face = faces[0];
-
       Offset upperLipBottom =
           face.getContour(FaceContourType.upperLipBottom).positionsList[4];
       Offset lowerLipTop =
@@ -184,4 +177,3 @@ class FaceCamera extends StatelessWidget {
     return Offset(offset.dx * scaleX, offset.dy * scaleY);
   }
 }
-
