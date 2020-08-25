@@ -101,12 +101,17 @@ class VideoState extends State<FacePreview> {
                     heroTag: null,
                     onPressed: () async {
                       final path = join(
-                        (await getTemporaryDirectory()).path,
-                        '${DateTime.now()}.png',
+                        (await getExternalStorageDirectory()).path,
+                        '${DateTime.now()}.mp4',
                       );
 
-                      GallerySaver.saveVideo(path)
-                          .then((value) => {print("Save Complete!")});
+                      print("Recorded Video Path $widget.imagePath");
+                      GallerySaver.saveVideo(widget.imagePath, albumName: 'Media')
+                          .then((bool success) {
+                        setState(() {
+                          print("Video Saved!!!!!!!!!!");
+                        });
+                      });
                     },
                     child: Icon(Icons.share)),
                 SizedBox(height: 10),

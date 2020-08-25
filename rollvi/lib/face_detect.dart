@@ -170,7 +170,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
                       ? Colors.redAccent
                       : Colors.grey.shade400,
                 ),
-                onPressed: () {
+                onPressed: () async {
                   _selectedIndex[0] = !_selectedIndex[0];
                 },
               ),
@@ -309,7 +309,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
       return null;
     }
 
-    final Directory appDirectory = await getApplicationDocumentsDirectory();
+    final Directory appDirectory = await getExternalStorageDirectory();
     final String videoDirectory = '${appDirectory.path}/Videos';
     await Directory(videoDirectory).create(recursive: true);
     final String currentTime = DateTime.now().millisecondsSinceEpoch.toString();
