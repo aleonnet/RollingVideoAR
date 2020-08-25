@@ -34,7 +34,7 @@ class FaceCamera extends StatelessWidget {
       children: <Widget>[
         CameraPreview(camera),
         showFaceContour ? _getFaceContourPaint(faces, camera) : Container(),
-        _getLeftEarStickerWidget(faces, camera, filterIndex),
+//        _getLeftEarStickerWidget(faces, camera, filterIndex),
         _getMouseStickerWidget(faces, camera, filterIndex),
       ],
     );
@@ -53,12 +53,14 @@ class FaceCamera extends StatelessWidget {
     final ARFilter arFilter = _getMouseARFilter(filterIndex);
     final Offset lipBottomPoint = _getLipBottomPoint(faces, imageSize);
 
+    final double left = (filterIndex == 5) ? 0 : lipBottomPoint.dx;
+    final double top = (filterIndex == 5) ? 20 : lipBottomPoint.dy - (arFilter.height * 1/2) - 20;
+
     Widget stickerWidgets = new Positioned(
-        left: lipBottomPoint.dx,
-        top: lipBottomPoint.dy - 50,
+        left: left,
+        top: top,
         child: new Stack(
           children: <Widget>[
-
             for (var assetName in arFilter.assetNames)
               _getStickerWidget(assetName, arFilter.width, arFilter.height),
           ],
@@ -101,33 +103,32 @@ class FaceCamera extends StatelessWidget {
   ARFilter _getMouseARFilter(int filterIndex) {
     ARFilter arFilter = new ARFilter();
     arFilter.location = FilterLocation.Mouse;
-    arFilter.height = 300;
 
     switch(filterIndex) {
       case 1:
-        arFilter.assetNames.add("assets/say_t01.webp");
-        arFilter.assetNames.add("assets/say_h01.webp");
+        arFilter.assetNames.add("assets/say_m01.webp");
         arFilter.width = 200;
+        arFilter.height = 100;
         break;
       case 2:
-        arFilter.assetNames.add("assets/say_t02.webp");
-        arFilter.assetNames.add("assets/say_h02.webp");
-        arFilter.width = 250;
+        arFilter.assetNames.add("assets/say_m02.webp");
+        arFilter.width = 300;
+        arFilter.height = 250;
         break;
       case 3:
-        arFilter.assetNames.add("assets/say_t03.webp");
-        arFilter.assetNames.add("assets/say_h03.webp");
-        arFilter.width = 300;
+        arFilter.assetNames.add("assets/say_m03.webp");
+        arFilter.width = 450;
+        arFilter.height = 400;
         break;
       case 4:
-        arFilter.assetNames.add("assets/say_t04.webp");
-        arFilter.assetNames.add("assets/say_h04.webp");
-        arFilter.width = 350;
+        arFilter.assetNames.add("assets/say_m04.webp");
+        arFilter.width = 450;
+        arFilter.height = 400;
         break;
       case 5:
-        arFilter.assetNames.add("assets/say_t05.webp");
-        arFilter.assetNames.add("assets/say_h05.webp");
-        arFilter.width = 400;
+        arFilter.assetNames.add("assets/say_m05.webp");
+        arFilter.width = 450;
+        arFilter.height = 600;
         break;
       case 0:
       default:
@@ -180,6 +181,7 @@ class FaceCamera extends StatelessWidget {
 
     Widget stickerWidget = Positioned(
       child: new Container(
+//        color: Colors.blue,
           child: new Image(
             fit: BoxFit.contain,
         image: new AssetImage(assetName),
