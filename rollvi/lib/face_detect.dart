@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:image/image.dart' as imglib;
 
 import 'package:flutter/foundation.dart';
@@ -43,11 +45,13 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   Timer _timer;
   List<Image> _imageSequence;
 
+  List<bool> _selectedIndex = [false, false, false, false];
+
   @override
   void initState() {
     super.initState();
     _imageSequence = new List<Image>();
-    _initializeCamera();
+    _initialize();
   }
 
   @override
@@ -63,11 +67,15 @@ class _FacePageState extends State<RealtimeFaceDetect> {
     _timer.cancel();
   }
 
-  void _initializeCamera() async {
+  void _initialize() {
     isRecording = false;
     if (_timer != null) _timer.cancel();
-    if(_imageSequence.isNotEmpty) _imageSequence.clear();
+    if (_imageSequence.isNotEmpty) _imageSequence.clear();
 
+    _initializeCamera();
+  }
+
+  void _initializeCamera() async {
     CameraDescription description = await availableCameras().then(
         (List<CameraDescription> cameras) => cameras.firstWhere(
             (CameraDescription camera) =>
@@ -125,33 +133,106 @@ class _FacePageState extends State<RealtimeFaceDetect> {
       ),
       body: RepaintBoundary(
         key: previewContainer,
-        child: ClipRect(
-          child: Align(
-            alignment: Alignment.center,
-            widthFactor: 1.0,
-            heightFactor: 0.88, // 0.8, 0.56
-            child: AspectRatio(
-              aspectRatio: 9 / 15, // 9 / 15
-              child: _camera == null
-                  ? Container(color: Colors.black)
-                  : FaceCamera(faces: _faces, camera: _camera),
-            ),
+//        child:
+//            ClipRect(
+//              child: Align(
+//                alignment: Alignment.center,
+//                widthFactor: 1,
+//                heightFactor: 1, // 0.8, 0.56
+//                child: AspectRatio(
+//                  aspectRatio: 9 / 15, // 9 / 15
+//                  child: _camera == null
+//                      ? Container(color: Colors.black)
+//                      : FaceCamera(faces: _faces, camera: _camera),
+//                ),
+//              ),
+//            ),
+        child: _camera == null
+            ? Container(color: Colors.black)
+            : FaceCamera(faces: _faces, camera: _camera),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Container(
+          margin: EdgeInsets.only(left: 12.0, right: 12.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              IconButton(
+                //update the bottom app bar view each time an item is clicked
+                iconSize: 27.0,
+                icon: Icon(
+                  Icons.home,
+                  //darken the icon if it is selected or else give it a different color
+                  color: (_selectedIndex[0] == true)
+                      ? Colors.redAccent
+                      : Colors.grey.shade400,
+                ),
+                onPressed: () {
+                  _selectedIndex[0] = !_selectedIndex[0];
+                },
+              ),
+              IconButton(
+                iconSize: 27.0,
+                icon: Icon(
+                  Icons.call_made,
+                  color: (_selectedIndex[1] == true)
+                      ? Colors.redAccent
+                      : Colors.grey.shade400,
+                ),
+                onPressed: () {
+                  _selectedIndex[1] = !_selectedIndex[1];
+                },
+              ),
+              //to leave space in between the bottom app bar items and below the FAB
+              SizedBox(
+                width: 50.0,
+              ),
+              IconButton(
+                iconSize: 27.0,
+                icon: Icon(
+                  Icons.call_received,
+                  color: (_selectedIndex[2] == true)
+                      ? Colors.redAccent
+                      : Colors.grey.shade400,
+                ),
+                onPressed: () {
+                  _selectedIndex[2] = !_selectedIndex[2];
+                },
+              ),
+              IconButton(
+                iconSize: 27.0,
+                icon: Icon(
+                  Icons.settings,
+                  color: (_selectedIndex[3] == true)
+                      ? Colors.redAccent
+                      : Colors.grey.shade400,
+                ),
+                onPressed: () {
+                  _selectedIndex[3] = !_selectedIndex[3];
+                },
+              ),
+            ],
           ),
         ),
+        //to add a space between the FAB and BottomAppBar
+        shape: CircularNotchedRectangle(),
+        //color of the BottomAppBar
+        color: Colors.white,
       ),
       floatingActionButton: (isRecording == false)
-      ? _getRecordButton(context)
-      : FloatingActionButton(
-        child: Icon(Icons.fiber_manual_record),
-        backgroundColor: Colors.white,
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          ? _getRecordButton(context)
+          : FloatingActionButton(
+              child: Icon(Icons.fiber_manual_record),
+              backgroundColor: Colors.grey,
+            ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
   Widget _getRecordButton(BuildContext context) {
     FloatingActionButton recordButton = FloatingActionButton(
-      child: Icon(Icons.fiber_manual_record),
+      child: Icon(Icons.camera),
       onPressed: () async {
         try {
           isRecording = true;
@@ -180,17 +261,17 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 
                 Image capturedImage = _convertCameraImage(_savedImage);
                 _capture().then((path) => {
-                  imageCache.clear(),
-                  print("Capture Complete : $path"),
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => FacePreview(
-                              cameraImg: capturedImage,
-                              cameraSequence: _imageSequence,
-                              imagePath: videoPath)))
-                  ..then((value) => _initializeCamera())
-                });
+                      imageCache.clear(),
+                      print("Capture Complete : $path"),
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => FacePreview(
+                                  cameraImg: capturedImage,
+                                  cameraSequence: _imageSequence,
+                                  imagePath: videoPath)))
+                        ..then((value) => _initializeCamera())
+                    });
               });
             } else {
               _time -= 1;

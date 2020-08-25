@@ -2,10 +2,15 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:image/image.dart' as imglib;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 
 class FacePreview extends StatefulWidget {
@@ -34,6 +39,7 @@ class VideoState extends State<FacePreview> {
 //      'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
 //    );
     _initializeVideoPlayerFuture = _controller.initialize();
+    _controller.setLooping(true);
 
     super.initState();
   }
@@ -47,58 +53,122 @@ class VideoState extends State<FacePreview> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text('ROLLVI'),
-        backgroundColor: Colors.redAccent,
-      ),
-      body: FutureBuilder(
-        future: _initializeVideoPlayerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            // If the VideoPlayerController has finished initialization, use
-            // the data it provides to limit the aspect ratio of the video.
-            return ClipRect(
-              child: Align(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          title: const Text('ROLLVI'),
+          backgroundColor: Colors.redAccent,
+        ),
+        body: FutureBuilder(
+          future: _initializeVideoPlayerFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              // If the VideoPlayerController has finished initialization, use
+              // the data it provides to limit the aspect ratio of the video.
+//            return ClipRect(
+//              child: Align(
+//                alignment: Alignment.center,
+//                widthFactor: 1.0,
+//                heightFactor: 0.88, // 0.8, 0.56
+//                child: AspectRatio(
+//                  aspectRatio: 9 / 15, // 9 / 15
+//                  child: Transform(
+//                    alignment: Alignment.center,
+//                    transform: Matrix4.rotationY(pi),
+//                    child: VideoPlayer(_controller),
+//                  ),
+//                ),
+//              ),
+//            );
+              return Transform(
                 alignment: Alignment.center,
-                widthFactor: 1.0,
-                heightFactor: 0.88, // 0.8, 0.56
-                child: AspectRatio(
-                  aspectRatio: 9 / 15, // 9 / 15
-                  child: Transform(
-                    alignment: Alignment.center,
-                    transform: Matrix4.rotationY(pi),
-                    child: VideoPlayer(_controller),
+                transform: Matrix4.rotationY(pi),
+                child: VideoPlayer(_controller),
+              );
+            } else {
+              // If the VideoPlayerController is still initializing, show a
+              // loading spinner.
+              return Center(child: CircularProgressIndicator());
+            }
+          },
+        ),
+        floatingActionButton: Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FloatingActionButton(
+                    heroTag: null,
+                    onPressed: () async {
+                      final path = join(
+                        (await getTemporaryDirectory()).path,
+                        '${DateTime.now()}.png',
+                      );
+
+                      GallerySaver.saveVideo(path)
+                          .then((value) => {print("Save Complete!")});
+                    },
+                    child: Icon(Icons.share)),
+                SizedBox(height: 10),
+                FloatingActionButton(
+                  heroTag: null,
+                  onPressed: () {
+                    setState(() {
+                      if (_controller.value.isPlaying) {
+                        _controller.pause();
+                      } else {
+                        _controller.play();
+                      }
+                    });
+                  },
+                  // Display the correct icon depending on the state of the player.
+                  child: Icon(
+                    _controller.value.isPlaying
+                        ? Icons.pause
+                        : Icons.play_arrow,
                   ),
                 ),
-              ),
-            );
-          } else {
-            // If the VideoPlayerController is still initializing, show a
-            // loading spinner.
-            return Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Wrap the play or pause in a call to `setState`. This ensures the
-          // correct icon is shown.
-          setState(() {
-            // If the video is playing, pause it.
-            if (_controller.value.isPlaying) {
-              _controller.pause();
-            } else {
-              // If the video is paused, play it.
-              _controller.play();
-            }
-          });
-        },
-        // Display the correct icon depending on the state of the player.
-        child: Icon(
-          _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-        ),
-      ),
+              ],
+            )
+          ],
+        ));
+  }
+
+  Widget _getFAB() {
+    return SpeedDial(
+      animatedIcon: AnimatedIcons.menu_close,
+      animatedIconTheme: IconThemeData(size: 22),
+      backgroundColor: Color(0xFF801E48),
+      visible: true,
+      curve: Curves.bounceIn,
+      children: [
+        // FAB 1
+        SpeedDialChild(
+            child: Icon(Icons.assignment_turned_in),
+            backgroundColor: Color(0xFF801E48),
+            onTap: () {
+              /* do anything */
+            },
+            label: 'Button 1',
+            labelStyle: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+                fontSize: 16.0),
+            labelBackgroundColor: Color(0xFF801E48)),
+        // FAB 2
+        SpeedDialChild(
+            child: Icon(Icons.assignment_turned_in),
+            backgroundColor: Color(0xFF801E48),
+            onTap: () {
+              setState(() {});
+            },
+            label: 'Button 2',
+            labelStyle: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+                fontSize: 16.0),
+            labelBackgroundColor: Color(0xFF801E48))
+      ],
     );
   }
 }
