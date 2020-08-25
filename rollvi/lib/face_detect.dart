@@ -45,7 +45,8 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   Timer _timer;
   List<Image> _imageSequence;
 
-  List<bool> _selectedIndex = [false, false, false, false];
+  List<bool> _selectedIndex = [false, false, false];
+  int _selectedFilter = 1;
 
   @override
   void initState() {
@@ -149,7 +150,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 //            ),
         child: _camera == null
             ? Container(color: Colors.black)
-            : FaceCamera(faces: _faces, camera: _camera),
+            : FaceCamera(faces: _faces, camera: _camera, filterIndex: _selectedFilter),
       ),
       bottomNavigationBar: BottomAppBar(
         child: Container(
@@ -191,7 +192,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
               IconButton(
                 iconSize: 27.0,
                 icon: Icon(
-                  Icons.call_received,
+                  Icons.face,
                   color: (_selectedIndex[2] == true)
                       ? Colors.redAccent
                       : Colors.grey.shade400,
@@ -202,14 +203,9 @@ class _FacePageState extends State<RealtimeFaceDetect> {
               ),
               IconButton(
                 iconSize: 27.0,
-                icon: Icon(
-                  Icons.settings,
-                  color: (_selectedIndex[3] == true)
-                      ? Colors.redAccent
-                      : Colors.grey.shade400,
-                ),
+                icon: _getFilterIcon(_selectedFilter),
                 onPressed: () {
-                  _selectedIndex[3] = !_selectedIndex[3];
+                  _selectedFilter = (_selectedFilter > 4) ? 1 : _selectedFilter += 1;
                 },
               ),
             ],
@@ -228,6 +224,24 @@ class _FacePageState extends State<RealtimeFaceDetect> {
             ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
+  }
+
+  Icon _getFilterIcon(int index) {
+    Color color = Colors.grey.shade700;
+    switch(index) {
+      case 1:
+        return Icon(Icons.looks_one, color: color,);
+      case 2:
+        return Icon(Icons.looks_two, color: color,);
+      case 3:
+        return Icon(Icons.looks_3, color: color,);
+      case 4:
+        return Icon(Icons.looks_4, color: color,);
+      case 5:
+        return Icon(Icons.looks_5, color: color,);
+      default:
+        return Icon(Icons.settings, color: color,);
+    }
   }
 
   Widget _getRecordButton(BuildContext context) {
