@@ -22,7 +22,6 @@ class FacePreview extends StatefulWidget {
   State createState() => new VideoState();
 }
 
-
 class VideoState extends State<FacePreview> {
   VideoPlayerController _controller;
   Future<void> _initializeVideoPlayerFuture;
@@ -31,7 +30,6 @@ class VideoState extends State<FacePreview> {
   void initState() {
     print("video path : ${widget.imagePath}");
     _controller = VideoPlayerController.file(File(widget.imagePath));
-
 //    _controller = VideoPlayerController.network(
 //      'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
 //    );
@@ -49,19 +47,30 @@ class VideoState extends State<FacePreview> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text('ROLLVI'),
+        backgroundColor: Colors.redAccent,
+      ),
       body: FutureBuilder(
         future: _initializeVideoPlayerFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             // If the VideoPlayerController has finished initialization, use
             // the data it provides to limit the aspect ratio of the video.
-            return AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              // Use the VideoPlayer widget to display the video.
-              child:  Transform(
+            return ClipRect(
+              child: Align(
                 alignment: Alignment.center,
-                transform: Matrix4.rotationY(pi),
-                child: VideoPlayer(_controller),
+                widthFactor: 1.0,
+                heightFactor: 0.88, // 0.8, 0.56
+                child: AspectRatio(
+                  aspectRatio: 9 / 15, // 9 / 15
+                  child: Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.rotationY(pi),
+                    child: VideoPlayer(_controller),
+                  ),
+                ),
               ),
             );
           } else {
@@ -94,7 +103,6 @@ class VideoState extends State<FacePreview> {
   }
 }
 
-
 class PreviewState extends State<FacePreview> {
   @override
   Widget build(BuildContext context) {
@@ -113,7 +121,6 @@ class PreviewState extends State<FacePreview> {
   }
 }
 
-
 class ImageSequenceState extends State<FacePreview>
     with TickerProviderStateMixin {
   AnimationController _controller;
@@ -125,8 +132,11 @@ class ImageSequenceState extends State<FacePreview>
 
     int maxImages = widget.cameraSequence.length;
 
-    _controller = new AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat();
-    _animation = new IntTween(begin: 0, end: maxImages-1).animate(_controller);
+    _controller = new AnimationController(
+        vsync: this, duration: const Duration(seconds: 2))
+      ..repeat();
+    _animation =
+        new IntTween(begin: 0, end: maxImages - 1).animate(_controller);
 
     print("Max Image Sequnece : $maxImages");
   }

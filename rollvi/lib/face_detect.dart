@@ -77,8 +77,6 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 
     await _camera.initialize();
 
-
-
     _camera.startImageStream((CameraImage image) {
       _savedImage = image;
 
@@ -117,24 +115,26 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text('ROLLVI'),
+        backgroundColor: Colors.redAccent,
+      ),
       body: RepaintBoundary(
         key: previewContainer,
-        child: _camera == null
-            ? Container(color: Colors.black)
-            : FaceCamera(faces: _faces, camera: _camera),
-//        child: ClipRect(
-//          child: Align(
-//            alignment: Alignment.topCenter,
-//            widthFactor: 1.0,
-//            heightFactor: 1.0, // 0.8, 0.56
-//            child: AspectRatio(
-//              aspectRatio: 1, // 9 / 15
-//              child: _camera == null
-//                  ? Container(color: Colors.black)
-//                  : FaceCamera(faces: _faces, camera: _camera),
-//            ),
-//          ),
-//        ),
+        child: ClipRect(
+          child: Align(
+            alignment: Alignment.center,
+            widthFactor: 1.0,
+            heightFactor: 0.88, // 0.8, 0.56
+            child: AspectRatio(
+              aspectRatio: 9 / 15, // 9 / 15
+              child: _camera == null
+                  ? Container(color: Colors.black)
+                  : FaceCamera(faces: _faces, camera: _camera),
+            ),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.fiber_manual_record),
