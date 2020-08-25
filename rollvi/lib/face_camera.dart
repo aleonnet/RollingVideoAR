@@ -178,7 +178,6 @@ class FaceCamera extends StatelessWidget {
   }
 
   Widget _getStickerWidget(String assetName, double width, double height) {
-
     Widget stickerWidget = Positioned(
       child: new Container(
 //        color: Colors.blue,
@@ -198,6 +197,10 @@ class FaceCamera extends StatelessWidget {
     if (faces == null || camera == null) return Text("");
 
     return new CustomPaint(
+      size: Size(
+        camera.value.previewSize.height,
+        camera.value.previewSize.width,
+      ),
       painter: FaceContourPainter(
           Size(
             camera.value.previewSize.height,

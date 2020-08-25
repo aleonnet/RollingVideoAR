@@ -27,7 +27,6 @@ class FaceContourPainter extends CustomPainter {
       ..strokeWidth = 15.0
       ..color = Colors.yellow;
 
-//    canvas.drawImage(image, Offset.zero, Paint());
     for (var i = 0; i < faces.length; i++) {
 //      canvas.drawRect(rects[i], paint);
 

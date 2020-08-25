@@ -106,11 +106,12 @@ class VideoState extends State<FacePreview> {
                       );
 
                       print("Recorded Video Path $widget.imagePath");
-                      GallerySaver.saveVideo(widget.imagePath, albumName: 'Media')
-                          .then((bool success) {
-                        setState(() {
-                          print("Video Saved!!!!!!!!!!");
-                        });
+                      GallerySaver.saveVideo(widget.imagePath, albumName: 'Media').then((bool success) {
+                        if (success) {
+                          print("Video Saved!");
+                        } else {
+                          print("Video Save Failed");
+                        }
                       });
                     },
                     child: Icon(Icons.share)),

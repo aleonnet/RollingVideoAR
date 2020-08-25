@@ -387,14 +387,16 @@ class _FacePageState extends State<RealtimeFaceDetect> {
         final yp = image.planes[0].bytes[index];
         final up = image.planes[1].bytes[uvIndex];
         final vp = image.planes[2].bytes[uvIndex];
-// Calculate pixel color
+
+        // Calculate pixel color
         int r = (yp + vp * 1436 / 1024 - 179).round().clamp(0, 255);
         int g = (yp - up * 46549 / 131072 + 44 - vp * 93604 / 131072 + 91)
             .round()
             .clamp(0, 255);
         int b = (yp + up * 1814 / 1024 - 227).round().clamp(0, 255);
-// color: 0x FF  FF  FF  FF
-//           A   B   G   R
+
+        // color: 0x FF  FF  FF  FF
+        //           A   B   G   R
         img.data[index] = hexFF | (b << 16) | (g << 8) | r;
       }
     }
