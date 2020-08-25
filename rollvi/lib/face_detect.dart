@@ -177,7 +177,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
               IconButton(
                 iconSize: 27.0,
                 icon: Icon(
-                  Icons.call_made,
+                  Icons.adjust,
                   color: (_selectedIndex[1] == true)
                       ? Colors.redAccent
                       : Colors.grey.shade400,
@@ -216,7 +216,8 @@ class _FacePageState extends State<RealtimeFaceDetect> {
         //color of the BottomAppBar
         color: Colors.white,
       ),
-      floatingActionButton: (isRecording == false)
+      floatingActionButton: (_selectedIndex[1] == false) ? null :
+          (isRecording == false)
           ? _getRecordButton(context)
           : FloatingActionButton(
               child: Icon(Icons.fiber_manual_record),
