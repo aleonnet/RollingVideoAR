@@ -21,19 +21,19 @@ class ARFilter {
 class FaceCamera extends StatelessWidget {
   final List<Face> faces;
   final CameraController camera;
-  final bool cameraEnabled;
+  final bool showFaceContour;
   final int filterIndex;
 
   const FaceCamera(
-      {Key key, this.faces, this.camera, this.cameraEnabled = true, this.filterIndex = 1})
+      {Key key, this.faces, this.camera, this.showFaceContour = false, this.filterIndex = 1})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        cameraEnabled ? CameraPreview(camera) : Container(color: Colors.black),
-        _getFaceContourPaint(faces, camera),
+        CameraPreview(camera),
+        showFaceContour ? _getFaceContourPaint(faces, camera) : Container(),
         _getLeftEarStickerWidget(faces, camera, filterIndex),
         _getMouseStickerWidget(faces, camera, filterIndex),
       ],

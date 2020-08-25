@@ -150,7 +150,10 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 //            ),
         child: _camera == null
             ? Container(color: Colors.black)
-            : FaceCamera(faces: _faces, camera: _camera, filterIndex: _selectedFilter),
+            : FaceCamera(faces: _faces,
+                          camera: _camera,
+                          showFaceContour: _selectedIndex[2],
+                          filterIndex: _selectedFilter),
       ),
       bottomNavigationBar: BottomAppBar(
         child: Container(
@@ -160,11 +163,9 @@ class _FacePageState extends State<RealtimeFaceDetect> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               IconButton(
-                //update the bottom app bar view each time an item is clicked
                 iconSize: 27.0,
                 icon: Icon(
                   Icons.home,
-                  //darken the icon if it is selected or else give it a different color
                   color: (_selectedIndex[0] == true)
                       ? Colors.redAccent
                       : Colors.grey.shade400,
@@ -185,7 +186,6 @@ class _FacePageState extends State<RealtimeFaceDetect> {
                   _selectedIndex[1] = !_selectedIndex[1];
                 },
               ),
-              //to leave space in between the bottom app bar items and below the FAB
               SizedBox(
                 width: 50.0,
               ),
@@ -305,7 +305,6 @@ class _FacePageState extends State<RealtimeFaceDetect> {
       return null;
     }
 
-    // Do nothing if a recording is on progress
     if (_camera.value.isRecordingVideo) {
       return null;
     }
