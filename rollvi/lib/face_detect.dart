@@ -44,17 +44,17 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   List<Face> _faces;
   CameraController _camera;
   bool _isDetecting = false;
-  CameraLensDirection _cameraDirection = CameraLensDirection.front;
-  CameraImage _savedImage;
 
-  final int _maxTime = 2;
+  final int _maxTime = 3;
   bool isRecording = false;
   Timer _timer;
+  CameraImage _lastImage;
   List<imglib.Image> _imageSequence;
 
   CaptureType _captureType = CaptureType.Video;
-  List<bool> _selectedIndex = [true, true, false];
   int _selectedFilter = 1;
+  bool _showShootButton = true;
+  bool _showFaceContour = false;
 
   @override
   void initState() {
@@ -88,7 +88,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
     CameraDescription description = await availableCameras().then(
         (List<CameraDescription> cameras) => cameras.firstWhere(
             (CameraDescription camera) =>
-                camera.lensDirection == _cameraDirection));
+                camera.lensDirection == CameraLensDirection.front));
 
     ImageRotation rotation =
         rotationIntToImageRotation(description.sensorOrientation);
@@ -98,7 +98,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
     await _camera.initialize();
 
     _camera.startImageStream((CameraImage image) {
-      _savedImage = image;
+      _lastImage = image;
 
       if (_isDetecting) return;
 
@@ -161,7 +161,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
             : FaceCamera(
                 faces: _faces,
                 camera: _camera,
-                showFaceContour: _selectedIndex[2],
+                showFaceContour: _showFaceContour,
                 filterIndex: _selectedFilter),
       ),
       bottomNavigationBar: BottomAppBar(
@@ -191,12 +191,12 @@ class _FacePageState extends State<RealtimeFaceDetect> {
                 iconSize: 27.0,
                 icon: Icon(
                   Icons.adjust,
-                  color: (_selectedIndex[1] == true)
+                  color: (_showShootButton == true)
                       ? Colors.redAccent
                       : Colors.grey.shade400,
                 ),
                 onPressed: () {
-                  _selectedIndex[1] = !_selectedIndex[1];
+                  _showShootButton = !_showShootButton;
                 },
               ),
               SizedBox(
@@ -206,12 +206,12 @@ class _FacePageState extends State<RealtimeFaceDetect> {
                 iconSize: 27.0,
                 icon: Icon(
                   Icons.face,
-                  color: (_selectedIndex[2] == true)
+                  color: (_showFaceContour == true)
                       ? Colors.redAccent
                       : Colors.grey.shade400,
                 ),
                 onPressed: () {
-                  _selectedIndex[2] = !_selectedIndex[2];
+                  _showFaceContour = !_showFaceContour;
                 },
               ),
               IconButton(
@@ -230,7 +230,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
         //color of the BottomAppBar
         color: Colors.white,
       ),
-      floatingActionButton: (_selectedIndex[1] == false)
+      floatingActionButton: (_showShootButton == false)
           ? null
           : (isRecording == false)
               ? _getRecordButton(context)
@@ -307,10 +307,11 @@ class _FacePageState extends State<RealtimeFaceDetect> {
       child: Icon(Icons.camera),
       onPressed: () async {
         try {
+          // for image stream
           isRecording = true;
 
+          // for recording video
           String videoPath = '';
-
           if (_captureType == CaptureType.Video) {
             await _camera.stopImageStream();
             _startVideoRecording().then((String filePath) {
@@ -324,7 +325,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
           }
 
           if (_captureType == CaptureType.Image) {
-            imglib.Image capturedImage = _convertCameraImage(_savedImage);
+            imglib.Image capturedImage = _convertCameraImage(_lastImage);
             _capture().then((path) => {
               imageCache.clear(),
               print("Capture Complete : $path"),
@@ -369,13 +370,10 @@ class _FacePageState extends State<RealtimeFaceDetect> {
                 _time -= 1;
               }
             });
-
           }
         } catch (e) {
           print(e);
         }
-
-
       },
     );
     return recordButton;
@@ -391,7 +389,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
       return null;
     }
 
-    final Directory appDirectory = await getExternalStorageDirectory();
+    final Directory appDirectory = await getTemporaryDirectory();
     final String videoDirectory = '${appDirectory.path}/Videos';
     await Directory(videoDirectory).create(recursive: true);
     final String currentTime = DateTime.now().millisecondsSinceEpoch.toString();

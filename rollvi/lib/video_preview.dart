@@ -45,7 +45,20 @@ class VideoState extends State<VideoPreview> {
 
   @override
   Widget build(BuildContext context) {
+    final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+    void showInSnackBar(String value) {
+      _scaffoldKey.currentState.showSnackBar(
+          new SnackBar(
+              content: new Text(value),
+              action: SnackBarAction(
+                label: 'OK',
+                onPressed: _scaffoldKey.currentState.hideCurrentSnackBar,
+              )));
+    }
+
     return Scaffold(
+        key: _scaffoldKey,
         backgroundColor: Colors.black,
         appBar: AppBar(
           title: const Text('ROLLVI'),
@@ -78,8 +91,6 @@ class VideoState extends State<VideoPreview> {
                 child: VideoPlayer(_controller),
               );
             } else {
-              // If the VideoPlayerController is still initializing, show a
-              // loading spinner.
               return Center(child: CircularProgressIndicator());
             }
           },
@@ -101,8 +112,10 @@ class VideoState extends State<VideoPreview> {
                       print("Recorded Video Path $widget.imagePath");
                       GallerySaver.saveVideo(widget.videoPath, albumName: 'Media').then((bool success) {
                         if (success) {
+                          showInSnackBar("Video Saved!");
                           print("Video Saved!");
                         } else {
+                          showInSnackBar("Failed to save the video");
                           print("Video Save Failed");
                         }
                       });
