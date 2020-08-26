@@ -419,8 +419,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   }
 
   void _showCameraException(CameraException e) {
-    String errorText = 'Error: ${e.code}\nError Message: ${e.description}';
-    print(errorText);
+    print('Error: ${e.code}\nError Message: ${e.description}');
   }
 
   Future<String> _capture() async {

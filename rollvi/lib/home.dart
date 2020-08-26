@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:rollvi/countdown_timer.dart';
 import 'package:rollvi/download_link.dart';
 import 'backup/face_detect.dart';
 import 'face_detect.dart';
@@ -27,6 +28,18 @@ class HomeScreen extends StatelessWidget{
       body:Container(
         child: Column(
           children: <Widget>[
+            RaisedButton(
+              child: Text(
+                  "CountDown UI",
+                  style: TextStyle(color: Colors.white)
+              ),
+              color: Colors.blue,
+              onPressed: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) => CountDownTimer())
+                );
+              },
+            ),
             RaisedButton(
               child: Text(
                   "Camera - Face Detection",
