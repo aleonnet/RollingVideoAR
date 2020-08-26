@@ -16,6 +16,8 @@ class ARFilter {
 
   double width = 0.0;
   double height = 0.0;
+
+  Offset offset = new Offset(0.0, 0.0);
 }
 
 class FaceCamera extends StatelessWidget {
@@ -34,7 +36,7 @@ class FaceCamera extends StatelessWidget {
       children: <Widget>[
         CameraPreview(camera),
         showFaceContour ? _getFaceContourPaint(faces, camera) : Container(),
-//        _getLeftEarStickerWidget(faces, camera, filterIndex),
+        _getLeftEarStickerWidget(faces, camera, filterIndex),
         _getMouseStickerWidget(faces, camera, filterIndex),
       ],
     );
@@ -50,15 +52,11 @@ class FaceCamera extends StatelessWidget {
       camera.value.previewSize.width,
     );
 
-    final ARFilter arFilter = _getMouseARFilter(filterIndex);
-    final Offset lipBottomPoint = _getLipBottomPoint(faces, imageSize);
-
-    final double left = (filterIndex == 5) ? 0 : lipBottomPoint.dx;
-    final double top = (filterIndex == 5) ? 20 : lipBottomPoint.dy - (arFilter.height * 1/2) - 20;
+    final ARFilter arFilter = _getMouseARFilter(filterIndex, imageSize);
 
     Widget stickerWidgets = new Positioned(
-        left: left,
-        top: top,
+        left: arFilter.offset.dx,
+        top: arFilter.offset.dy,
         child: new Stack(
           children: <Widget>[
             for (var assetName in arFilter.assetNames)
@@ -70,9 +68,6 @@ class FaceCamera extends StatelessWidget {
   }
 
   Widget _getLeftEarStickerWidget(List<Face> faces, CameraController camera, int filterIndex) {
-    final double width = 200;
-    final double height = 300;
-
     if (faces == null) {
       return new Text("");
     }
@@ -82,14 +77,11 @@ class FaceCamera extends StatelessWidget {
       camera.value.previewSize.width,
     );
 
-    final ARFilter arFilter = _getLeftEarARFilter(filterIndex);
-    final Offset leftEarPoint = _getLeftEarPoint(faces, imageSize);
+    final ARFilter arFilter = _getLeftEarARFilter(filterIndex, imageSize);
 
     Widget stickerWidgets = new Positioned(
-        width: width,
-        height: height,
-        right: leftEarPoint.dx * -1 + 415,
-        top: leftEarPoint.dy - 60,
+        right: arFilter.offset.dx,
+        top: arFilter.offset.dy,
         child: new Stack(
           children: <Widget>[
             for (var assetName in arFilter.assetNames)
@@ -100,9 +92,10 @@ class FaceCamera extends StatelessWidget {
     return stickerWidgets;
   }
 
-  ARFilter _getMouseARFilter(int filterIndex) {
+  ARFilter _getMouseARFilter(int filterIndex, Size imageSize) {
     ARFilter arFilter = new ARFilter();
     arFilter.location = FilterLocation.Mouse;
+
 
     switch(filterIndex) {
       case 1:
@@ -135,44 +128,57 @@ class FaceCamera extends StatelessWidget {
         break;
     }
 
+    final Offset lipBottomPoint = _getLipBottomPoint(faces, imageSize);
+
+    final double left = (filterIndex == 5) ? ((lipBottomPoint.dx != -500) ? 0 : -500) : lipBottomPoint.dx;
+    final double top = (filterIndex == 5) ? ((lipBottomPoint.dx != -500) ? 20 : -500) : lipBottomPoint.dy - (arFilter.height * 1/2) - 20;
+
+    arFilter.offset = Offset(left, top);
+
     return arFilter;
   }
 
-  ARFilter _getLeftEarARFilter(int filterIndex) {
+  ARFilter _getLeftEarARFilter(int filterIndex, Size imageSize) {
     ARFilter arFilter = new ARFilter();
     arFilter.location = FilterLocation.LeftEar;
-    arFilter.height = 300;
 
     switch(filterIndex) {
       case 1:
-        arFilter.assetNames.add("assets/hear_text.gif");
-        arFilter.assetNames.add("assets/hear_heart.gif");
-        arFilter.width = 200;
+        arFilter.assetNames.add("assets/say_01.webp");
+        arFilter.width = 0;
+        arFilter.height = 0;
         break;
       case 2:
-        arFilter.assetNames.add("assets/hear_text.gif");
-        arFilter.assetNames.add("assets/hear_heart.gif");
-        arFilter.width = 250;
+        arFilter.assetNames.add("assets/hear_m02.webp");
+        arFilter.width = 200;
+        arFilter.height = 100;
         break;
       case 3:
-        arFilter.assetNames.add("assets/hear_text.gif");
-        arFilter.assetNames.add("assets/hear_heart.gif");
-        arFilter.width = 300;
+        arFilter.assetNames.add("assets/hear_m03.webp");
+        arFilter.width = 220;
+        arFilter.height = 150;
         break;
       case 4:
-        arFilter.assetNames.add("assets/hear_text.gif");
-        arFilter.assetNames.add("assets/hear_heart.gif");
-        arFilter.width = 350;
+        arFilter.assetNames.add("assets/hear_m04.webp");
+        arFilter.width = 220;
+        arFilter.height = 150;
         break;
       case 5:
-        arFilter.assetNames.add("assets/hear_text.gif");
-        arFilter.assetNames.add("assets/hear_heart.gif");
-        arFilter.width = 400;
+        arFilter.assetNames.add("assets/hear_m05.webp");
+        arFilter.width = 300;
+        arFilter.height = 250;
         break;
       case 0:
       default:
         break;
     }
+
+    final Offset leftEarPoint = _getLeftEarPoint(faces, imageSize);
+
+    final double right = (filterIndex == 1) ? 0 : leftEarPoint.dx * -1 + 415;
+    final double top = (filterIndex == 1) ? 0 : leftEarPoint.dy - (arFilter.height * 1/2) - 20;
+
+    arFilter.offset = Offset(right, top);
 
     return arFilter;
   }

@@ -11,13 +11,16 @@ import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:rollvi/countdown_timer.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'package:photofilters/photofilters.dart';
 import 'package:rollvi/image_preview.dart';
 import 'package:rollvi/image_sequence_preview.dart';
+import 'package:rollvi/progress_painter.dart';
 import 'package:rollvi/video_preview.dart';
 
 import 'face_camera.dart';
+import 'timer_button.dart';
 import 'utils.dart';
 
 enum CaptureType {
@@ -305,6 +308,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   Widget _getRecordButton(BuildContext context) {
     FloatingActionButton recordButton = FloatingActionButton(
       child: Icon(Icons.camera),
+
       onPressed: () async {
         try {
           // for image stream
