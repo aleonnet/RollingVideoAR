@@ -191,16 +191,18 @@ class _FaceCameraState extends State<FaceCamera> {
   }
 
   Widget _getStickerWidget(String assetName, double width, double height) {
+
     Widget stickerWidget = Positioned(
       child: new Container(
 //        color: Colors.blue,
           child: new Image(
-            fit: BoxFit.contain,
+        fit: BoxFit.contain,
         image: new AssetImage(assetName),
         width: width,
         height: height,
         alignment: Alignment.center,
-      )),
+      )..image.evict()
+      ),
     );
 
     return stickerWidget;
