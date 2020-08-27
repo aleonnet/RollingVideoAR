@@ -20,7 +20,7 @@ class ARFilter {
   Offset offset = new Offset(0.0, 0.0);
 }
 
-class FaceCamera extends StatelessWidget {
+class FaceCamera extends StatefulWidget {
   final List<Face> faces;
   final CameraController camera;
   final bool showFaceContour;
@@ -31,28 +31,41 @@ class FaceCamera extends StatelessWidget {
       : super(key: key);
 
   @override
+  _FaceCameraState createState() => _FaceCameraState();
+}
+
+class _FaceCameraState extends State<FaceCamera> {
+
+  Size _imageSize;
+  bool _isOpenMouse = false;
+
+  @override
   Widget build(BuildContext context) {
+    _imageSize = Size(
+      widget.camera.value.previewSize.height,
+      widget.camera.value.previewSize.width,
+    );
+
     return Stack(
       children: <Widget>[
-        CameraPreview(camera),
-        showFaceContour ? _getFaceContourPaint(faces, camera) : Container(),
-        _getLeftEarStickerWidget(faces, camera, filterIndex),
-        _getMouseStickerWidget(faces, camera, filterIndex),
+        CameraPreview(widget.camera),
+        widget.showFaceContour ? _getFaceContourPaint(widget.faces, widget.camera) : Container(),
+        _getLeftEarStickerWidget(widget.faces, widget.filterIndex),
+        _getMouthStickerWidget(widget.faces, widget.filterIndex),
       ],
     );
   }
 
-  Widget _getMouseStickerWidget(List<Face> faces, CameraController camera, int filterIndex) {
+  Widget _getMouthStickerWidget(List<Face> faces, int filterIndex) {
     if (faces == null) {
-      return new Text("");
+      return Text("");
     }
 
-    Size imageSize = Size(
-      camera.value.previewSize.height,
-      camera.value.previewSize.width,
-    );
+    final ARFilter arFilter = _getMouseARFilter(filterIndex);
 
-    final ARFilter arFilter = _getMouseARFilter(filterIndex, imageSize);
+    if (arFilter == null) {
+      return Container();
+    }
 
     Widget stickerWidgets = new Positioned(
         left: arFilter.offset.dx,
@@ -63,21 +76,19 @@ class FaceCamera extends StatelessWidget {
               _getStickerWidget(assetName, arFilter.width, arFilter.height),
           ],
         ));
-
     return stickerWidgets;
   }
 
-  Widget _getLeftEarStickerWidget(List<Face> faces, CameraController camera, int filterIndex) {
+  Widget _getLeftEarStickerWidget(List<Face> faces, int filterIndex) {
     if (faces == null) {
       return new Text("");
     }
 
-    Size imageSize = Size(
-      camera.value.previewSize.height,
-      camera.value.previewSize.width,
-    );
+    final ARFilter arFilter = _getLeftEarARFilter(filterIndex);
 
-    final ARFilter arFilter = _getLeftEarARFilter(filterIndex, imageSize);
+    if (arFilter == null) {
+      return Container();
+    }
 
     Widget stickerWidgets = new Positioned(
         right: arFilter.offset.dx,
@@ -92,10 +103,14 @@ class FaceCamera extends StatelessWidget {
     return stickerWidgets;
   }
 
-  ARFilter _getMouseARFilter(int filterIndex, Size imageSize) {
+  ARFilter _getMouseARFilter(int filterIndex) {
     ARFilter arFilter = new ARFilter();
     arFilter.location = FilterLocation.Mouse;
 
+    final Offset mouthCenterPoint = _getMouthCenterPoint(widget.faces);
+    if (mouthCenterPoint == null) {
+      return null;
+    }
 
     switch(filterIndex) {
       case 1:
@@ -123,31 +138,27 @@ class FaceCamera extends StatelessWidget {
         arFilter.width = 450;
         arFilter.height = 600;
         break;
-      case 0:
       default:
-        break;
+        return null;
     }
 
-    final Offset lipBottomPoint = _getLipBottomPoint(faces, imageSize);
-
-    final double left = (filterIndex == 5) ? ((lipBottomPoint.dx != -500) ? 0 : -500) : lipBottomPoint.dx;
-    final double top = (filterIndex == 5) ? ((lipBottomPoint.dx != -500) ? 20 : -500) : lipBottomPoint.dy - (arFilter.height * 1/2) - 20;
-
+    final double left = (filterIndex == 5) ?  0 : mouthCenterPoint.dx;
+    final double top = (filterIndex == 5) ? 20 : mouthCenterPoint.dy - (arFilter.height * 1/2) - 20;
     arFilter.offset = Offset(left, top);
 
     return arFilter;
   }
 
-  ARFilter _getLeftEarARFilter(int filterIndex, Size imageSize) {
+  ARFilter _getLeftEarARFilter(int filterIndex) {
     ARFilter arFilter = new ARFilter();
     arFilter.location = FilterLocation.LeftEar;
 
+    final Offset leftEarPoint = _getLeftEarPoint(widget.faces);
+    if (leftEarPoint == null) {
+      return null;
+    }
+
     switch(filterIndex) {
-      case 1:
-        arFilter.assetNames.add("assets/say_01.webp");
-        arFilter.width = 0;
-        arFilter.height = 0;
-        break;
       case 2:
         arFilter.assetNames.add("assets/hear_m02.webp");
         arFilter.width = 200;
@@ -168,16 +179,12 @@ class FaceCamera extends StatelessWidget {
         arFilter.width = 300;
         arFilter.height = 250;
         break;
-      case 0:
       default:
-        break;
+        return null;
     }
 
-    final Offset leftEarPoint = _getLeftEarPoint(faces, imageSize);
-
-    final double right = (filterIndex == 1) ? 0 : leftEarPoint.dx * -1 + 415;
-    final double top = (filterIndex == 1) ? 0 : leftEarPoint.dy - (arFilter.height * 1/2) - 20;
-
+    final double right = (filterIndex == 1) ? 0 : leftEarPoint.dx * -1 + 410;
+    final double top = (filterIndex == 1) ? 0 : leftEarPoint.dy - (arFilter.height * 1/2) - 15;
     arFilter.offset = Offset(right, top);
 
     return arFilter;
@@ -217,26 +224,25 @@ class FaceCamera extends StatelessWidget {
     );
   }
 
-  Offset _getLeftEarPoint(List<Face> faces, Size imageSize) {
+  Offset _getLeftEarPoint(List<Face> faces) {
     final defaultOffset = Offset(-500, -500);
 
-    if (faces == null) return defaultOffset;
+    if (faces == null) return null;
 
     try {
       Face face = faces[0];
       return _scalePoint(
           offset: face.getContour(FaceContourType.face).positionsList[9],
-          imageSize: imageSize,
           widgetSize: Size(411.4, 685.7),
           cameraLensDirection: CameraLensDirection.front);
     } catch (e) {
-      return defaultOffset;
+      return null;
     }
   }
 
-  Offset _getLipBottomPoint(List<Face> faces, Size imageSize) {
-    final Offset defaultOffset = Offset(-500, -500);
-    final double mouseOpenThreshold = 15;
+  Offset _getMouthCenterPoint(List<Face> faces) {
+    final Offset defaultOffset = null;
+    final double mouthOpenThreshold = 15;
 
     if (faces == null) return defaultOffset;
 
@@ -249,12 +255,15 @@ class FaceCamera extends StatelessWidget {
 
       double offsetMouse = lowerLipTop.dy - upperLipBottom.dy;
 
-      if (offsetMouse > mouseOpenThreshold) {
+      if (offsetMouse > mouthOpenThreshold) {
+        _isOpenMouse = true;
+
         return _scalePoint(
             offset: (upperLipBottom + lowerLipTop) / 2.0,
-            imageSize: imageSize,
             widgetSize: Size(411.4, 685.7),
             cameraLensDirection: CameraLensDirection.front);
+      } else {
+        _isOpenMouse = false;
       }
     } catch (e) {
       return defaultOffset;
@@ -265,11 +274,10 @@ class FaceCamera extends StatelessWidget {
 
   Offset _scalePoint(
       {Offset offset,
-      @required Size imageSize,
       @required Size widgetSize,
       CameraLensDirection cameraLensDirection}) {
-    final double scaleX = widgetSize.width / imageSize.width;
-    final double scaleY = widgetSize.height / imageSize.height;
+    final double scaleX = widgetSize.width / _imageSize.width;
+    final double scaleY = widgetSize.height / _imageSize.height;
 
     if (cameraLensDirection == CameraLensDirection.front) {
       return Offset(
