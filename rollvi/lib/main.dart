@@ -18,7 +18,7 @@ class App extends StatelessWidget{
           primarySwatch: Colors.red,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: new HomeScreen()
+        home: new RealtimeFaceDetect()
     );
   }
 }
