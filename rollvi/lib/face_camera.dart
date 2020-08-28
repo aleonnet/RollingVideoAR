@@ -37,7 +37,6 @@ class FaceCamera extends StatefulWidget {
 class _FaceCameraState extends State<FaceCamera> {
 
   Size _imageSize;
-  bool _isOpenMouse = false;
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +142,7 @@ class _FaceCameraState extends State<FaceCamera> {
     }
 
     final double left = (filterIndex == 5) ?  0 : mouthCenterPoint.dx;
-    final double top = (filterIndex == 5) ? 20 : mouthCenterPoint.dy - (arFilter.height * 1/2) - 20;
+    final double top = (filterIndex == 5) ? 20 : mouthCenterPoint.dy - (arFilter.height / 2) - 20;
     arFilter.offset = Offset(left, top);
 
     return arFilter;
@@ -158,24 +157,28 @@ class _FaceCameraState extends State<FaceCamera> {
       return null;
     }
 
+    if (_getRightEarPoint(widget.faces).dx - _getNosePoint(widget.faces).dx >= 40) {
+      return null;
+    }
+
     switch(filterIndex) {
       case 2:
-        arFilter.assetNames.add("assets/hear_m02.webp");
+        arFilter.assetNames.add("assets/hear_m02_once.webp");
         arFilter.width = 200;
         arFilter.height = 100;
         break;
       case 3:
-        arFilter.assetNames.add("assets/hear_m03.webp");
+        arFilter.assetNames.add("assets/hear_m03_once.webp");
         arFilter.width = 220;
         arFilter.height = 150;
         break;
       case 4:
-        arFilter.assetNames.add("assets/hear_m04.webp");
+        arFilter.assetNames.add("assets/hear_m04_once.webp");
         arFilter.width = 220;
         arFilter.height = 150;
         break;
       case 5:
-        arFilter.assetNames.add("assets/hear_m05.webp");
+        arFilter.assetNames.add("assets/hear_m05_once.webp");
         arFilter.width = 300;
         arFilter.height = 250;
         break;
@@ -184,7 +187,7 @@ class _FaceCameraState extends State<FaceCamera> {
     }
 
     final double right = (filterIndex == 1) ? 0 : leftEarPoint.dx * -1 + 410;
-    final double top = (filterIndex == 1) ? 0 : leftEarPoint.dy - (arFilter.height * 1/2) - 15;
+    final double top = (filterIndex == 1) ? 0 : leftEarPoint.dy - (arFilter.height / 2) - 20;
     arFilter.offset = Offset(right, top);
 
     return arFilter;
@@ -226,9 +229,35 @@ class _FaceCameraState extends State<FaceCamera> {
     );
   }
 
-  Offset _getLeftEarPoint(List<Face> faces) {
-    final defaultOffset = Offset(-500, -500);
+  Offset _getNosePoint(List<Face> faces) {
+    if (faces == null) return null;
 
+    try {
+      Face face = faces[0];
+      return _scalePoint(
+          offset: face.getContour(FaceContourType.noseBottom).positionsList[1],
+          widgetSize: Size(411.4, 685.7),
+          cameraLensDirection: CameraLensDirection.front);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Offset _getRightEarPoint(List<Face> faces) {
+    if (faces == null) return null;
+
+    try {
+      Face face = faces[0];
+      return _scalePoint(
+          offset: face.getContour(FaceContourType.face).positionsList[27],
+          widgetSize: Size(411.4, 685.7),
+          cameraLensDirection: CameraLensDirection.front);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Offset _getLeftEarPoint(List<Face> faces) {
     if (faces == null) return null;
 
     try {
@@ -243,10 +272,9 @@ class _FaceCameraState extends State<FaceCamera> {
   }
 
   Offset _getMouthCenterPoint(List<Face> faces) {
-    final Offset defaultOffset = null;
     final double mouthOpenThreshold = 15;
 
-    if (faces == null) return defaultOffset;
+    if (faces == null) return null;
 
     try {
       Face face = faces[0];
@@ -258,20 +286,16 @@ class _FaceCameraState extends State<FaceCamera> {
       double offsetMouse = lowerLipTop.dy - upperLipBottom.dy;
 
       if (offsetMouse > mouthOpenThreshold) {
-        _isOpenMouse = true;
-
         return _scalePoint(
-            offset: (upperLipBottom + lowerLipTop) / 2.0,
+            offset: (upperLipBottom + lowerLipTop) / 2 ,
             widgetSize: Size(411.4, 685.7),
             cameraLensDirection: CameraLensDirection.front);
-      } else {
-        _isOpenMouse = false;
       }
     } catch (e) {
-      return defaultOffset;
+      return null;
     }
 
-    return defaultOffset;
+    return null;
   }
 
   Offset _scalePoint(
