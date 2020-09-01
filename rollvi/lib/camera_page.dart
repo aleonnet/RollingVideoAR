@@ -135,10 +135,6 @@ class _CameraPageState extends State<CameraPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-//      appBar: AppBar(
-//        title: const Text('ROLLVI'),
-//        backgroundColor: Colors.redAccent,
-//      ),
       body: RepaintBoundary(
         key: previewContainer,
 //        child:

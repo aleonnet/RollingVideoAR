@@ -36,6 +36,7 @@ class RollviCamera extends StatefulWidget {
 
 class _FaceCameraState extends State<RollviCamera> {
 
+  final double _leftEarOffset = 70;
   Size _imageSize;
 
   @override
@@ -157,7 +158,8 @@ class _FaceCameraState extends State<RollviCamera> {
       return null;
     }
 
-    if (_getRightEarPoint(widget.faces).dx - _getNosePoint(widget.faces).dx >= 40) {
+    double offset = _getRightEarPoint(widget.faces).dx - _getNosePoint(widget.faces).dx;
+    if (offset >= _leftEarOffset) {
       return null;
     }
 
