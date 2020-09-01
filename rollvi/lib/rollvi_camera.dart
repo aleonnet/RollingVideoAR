@@ -41,10 +41,15 @@ class _FaceCameraState extends State<RollviCamera> {
 
   @override
   Widget build(BuildContext context) {
-    _imageSize = Size(
-      widget.camera.value.previewSize.height,
-      widget.camera.value.previewSize.width,
-    );
+
+    try {
+      _imageSize = Size(
+        widget.camera.value.previewSize.height,
+        widget.camera.value.previewSize.width,
+      );
+    } catch (e) {
+      _imageSize = Size(0.0, 0.0);
+    }
 
     return Stack(
       children: <Widget>[
@@ -216,19 +221,23 @@ class _FaceCameraState extends State<RollviCamera> {
   Widget _getFaceContourPaint(List<Face> faces, CameraController camera) {
     if (faces == null || camera == null) return Text("");
 
-    return new CustomPaint(
-      size: Size(
-        camera.value.previewSize.height,
-        camera.value.previewSize.width,
-      ),
-      painter: FaceContourPainter(
-          Size(
-            camera.value.previewSize.height,
-            camera.value.previewSize.width,
-          ),
-          faces,
-          camera.description.lensDirection),
-    );
+    try {
+     return new CustomPaint(
+       size: Size(
+         camera.value.previewSize.height,
+         camera.value.previewSize.width,
+       ),
+       painter: FaceContourPainter(
+           Size(
+             camera.value.previewSize.height,
+             camera.value.previewSize.width,
+           ),
+           faces,
+           camera.description.lensDirection),
+     );
+    } catch (e) {
+      return new Container();
+    }
   }
 
   Offset _getNosePoint(List<Face> faces) {
