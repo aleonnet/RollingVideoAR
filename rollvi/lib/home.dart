@@ -1,20 +1,16 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rollvi/test/countdown_timer.dart';
 import 'backup/face_detect.dart';
-import 'camera_page.dart';
-
+import 'package:rollvi/camera_page.dart';
 import 'package:rollvi/screens/remote_object.dart';
 import 'package:rollvi/screens/augmented_faces.dart';
-
 import 'package:rollvi/trimmer_page.dart';
 import 'video_trimmer/video_trimmer.dart';
 
 
 class HomeScreen extends StatelessWidget{
-
   final Trimmer _trimmer = Trimmer();
 
   @override

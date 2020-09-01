@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
 
-
 ImageRotation rotationIntToImageRotation(int rotation) {
   switch (rotation) {
     case 0:
