@@ -2,17 +2,17 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:rollvi/countdown_timer.dart';
-import 'package:rollvi/download_link.dart';
+import 'package:rollvi/test/countdown_timer.dart';
+import 'file:///D:/01-workspace/01-hispace/RollingVideoAR/rollvi/lib/test/download_link.dart';
 import 'backup/face_detect.dart';
-import 'face_detect.dart';
+import 'camera_page.dart';
 
 import 'package:rollvi/screens/remote_object.dart';
 import 'package:rollvi/screens/augmented_faces.dart';
-import 'package:rollvi/video_timer.dart';
 
-import 'video_trimmer/video_trimmer.dart';
 import 'trimmer.dart';
+import 'video_trimmer/video_trimmer.dart';
+
 
 class HomeScreen extends StatelessWidget{
 
@@ -48,7 +48,7 @@ class HomeScreen extends StatelessWidget{
               color: Colors.blue,
               onPressed: () {
                 Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) => RealtimeFaceDetect())
+                    .push(MaterialPageRoute(builder: (context) => CameraPage())
                 );
               },
             ),

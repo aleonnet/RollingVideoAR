@@ -9,18 +9,18 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 
-class VideoPreview extends StatefulWidget {
+class VideoPreviewPage extends StatefulWidget {
   final String videoPath;
 
-  VideoPreview({Key key, this.videoPath})
+  VideoPreviewPage({Key key, this.videoPath})
       : super(key: key);
 
   @override
-  State createState() => new VideoState();
+  State createState() => new VideoPreviewPageState();
 }
 
 
-class VideoState extends State<VideoPreview> {
+class VideoPreviewPageState extends State<VideoPreviewPage> {
   VideoPlayerController _controller;
   Future<void> _initializeVideoPlayerFuture;
 

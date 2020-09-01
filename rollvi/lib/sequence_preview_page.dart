@@ -5,17 +5,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 
-class ImageSequencePreview extends StatefulWidget {
+class SequencePreviewPage extends StatefulWidget {
   final List<imglib.Image> cameraSequence;
 
-  ImageSequencePreview({Key key, this.cameraSequence})
+  SequencePreviewPage({Key key, this.cameraSequence})
       : super(key: key);
 
   @override
-  State createState() => new ImageSequenceState();
+  State createState() => new SequencePreviewPageState();
 }
 
-class ImageSequenceState extends State<ImageSequencePreview>
+class SequencePreviewPageState extends State<SequencePreviewPage>
     with TickerProviderStateMixin {
   AnimationController _controller;
   Animation<int> _animation;

@@ -11,16 +11,12 @@ import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:rollvi/countdown_timer.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
-import 'package:photofilters/photofilters.dart';
-import 'package:rollvi/image_preview.dart';
-import 'package:rollvi/image_sequence_preview.dart';
-import 'package:rollvi/progress_painter.dart';
-import 'package:rollvi/video_preview.dart';
+import 'package:rollvi/image_preview_page.dart';
+import 'package:rollvi/sequence_preview_page.dart';
+import 'package:rollvi/video_preview_page.dart';
 
-import 'face_camera.dart';
-import 'timer_button.dart';
+import 'rollvi_camera.dart';
 import 'utils.dart';
 
 enum CaptureType {
@@ -29,12 +25,12 @@ enum CaptureType {
   ImageSequence,
 }
 
-class RealtimeFaceDetect extends StatefulWidget {
+class CameraPage extends StatefulWidget {
   @override
-  _FacePageState createState() => _FacePageState();
+  _CameraPageState createState() => _CameraPageState();
 }
 
-class _FacePageState extends State<RealtimeFaceDetect> {
+class _CameraPageState extends State<CameraPage> {
   final GlobalKey previewContainer = new GlobalKey();
 
   final FaceDetector faceDetector = FirebaseVision.instance.faceDetector(
@@ -161,7 +157,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 //            ),
         child: _camera == null
             ? Container(color: Colors.black)
-            : FaceCamera(
+            : RollviCamera(
                 faces: _faces,
                 camera: _camera,
                 showFaceContour: _showFaceContour,
@@ -337,7 +333,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
                   context,
                   MaterialPageRoute(
                       builder: (context) =>
-                          ImagePreview(cameraImg: capturedImage,)))
+                          ImagePreviewPage(cameraImg: capturedImage,)))
                   ..then((value) => _initialize())
             });
           }
@@ -356,7 +352,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                VideoPreview(videoPath: videoPath)))
+                                VideoPreviewPage(videoPath: videoPath)))
                       ..then((value) => _initialize());
                   });
                 }
@@ -364,7 +360,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => ImageSequencePreview(
+                          builder: (context) => SequencePreviewPage(
                               cameraSequence: _imageSequence)))
                     ..then((value) => _initialize());
                 }

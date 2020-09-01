@@ -1,6 +1,4 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:rollvi/face_detect.dart';
 import 'home.dart';
 
 
@@ -18,7 +16,7 @@ class App extends StatelessWidget{
           primarySwatch: Colors.red,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: new RealtimeFaceDetect()
+        home: new HomeScreen()
     );
   }
 }

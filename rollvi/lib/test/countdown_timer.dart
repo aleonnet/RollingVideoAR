@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:rollvi/progress_painter.dart';
+import 'file:///D:/01-workspace/01-hispace/RollingVideoAR/rollvi/lib/test/progress_painter.dart';
 
-class TimerButton extends StatefulWidget {
+class CountDownTimer extends StatefulWidget {
   @override
-  _TimerButton createState() => _TimerButton();
+  _CountDownTimerState createState() => _CountDownTimerState();
 }
 
-class _TimerButton extends State<TimerButton>
+class _CountDownTimerState extends State<CountDownTimer>
     with TickerProviderStateMixin {
   AnimationController controller;
 

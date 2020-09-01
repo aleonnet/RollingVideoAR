@@ -20,13 +20,13 @@ class ARFilter {
   Offset offset = new Offset(0.0, 0.0);
 }
 
-class FaceCamera extends StatefulWidget {
+class RollviCamera extends StatefulWidget {
   final List<Face> faces;
   final CameraController camera;
   final bool showFaceContour;
   final int filterIndex;
 
-  const FaceCamera(
+  const RollviCamera(
       {Key key, this.faces, this.camera, this.showFaceContour = false, this.filterIndex = 1})
       : super(key: key);
 
@@ -34,7 +34,7 @@ class FaceCamera extends StatefulWidget {
   _FaceCameraState createState() => _FaceCameraState();
 }
 
-class _FaceCameraState extends State<FaceCamera> {
+class _FaceCameraState extends State<RollviCamera> {
 
   Size _imageSize;
 
