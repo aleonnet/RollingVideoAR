@@ -4,14 +4,14 @@ import 'video_trimmer/video_trimmer.dart';
 import 'video_trimmer/video_viewer.dart';
 
 
-class TrimmerView extends StatefulWidget {
+class TrimmerPage extends StatefulWidget {
   final Trimmer _trimmer;
-  TrimmerView(this._trimmer);
+  TrimmerPage(this._trimmer);
   @override
-  _TrimmerViewState createState() => _TrimmerViewState();
+  _TrimmerPageState createState() => _TrimmerPageState();
 }
 
-class _TrimmerViewState extends State<TrimmerView> {
+class _TrimmerPageState extends State<TrimmerPage> {
   double _startValue = 0.0;
   double _endValue = 0.0;
 
