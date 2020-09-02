@@ -162,15 +162,6 @@ class _CameraPageState extends State<CameraPage> {
                 camera: _camera,
                 showFaceContour: _showFaceContour,
                 filterIndex: _selectedFilter),
-            (_faces != null)
-            ? Container(
-              child: new Image(
-                image: new AssetImage("assets/hear_heart.gif"),
-                height: 300,
-                width: 200,
-              ),
-            )
-             : new Container(),
           ],
         ),
       ),

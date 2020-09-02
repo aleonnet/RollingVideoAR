@@ -68,23 +68,6 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
           future: _initializeVideoPlayerFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
-              // If the VideoPlayerController has finished initialization, use
-              // the data it provides to limit the aspect ratio of the video.
-//            return ClipRect(
-//              child: Align(
-//                alignment: Alignment.center,
-//                widthFactor: 1.0,
-//                heightFactor: 0.88, // 0.8, 0.56
-//                child: AspectRatio(
-//                  aspectRatio: 9 / 15, // 9 / 15
-//                  child: Transform(
-//                    alignment: Alignment.center,
-//                    transform: Matrix4.rotationY(pi),
-//                    child: VideoPlayer(_controller),
-//                  ),
-//                ),
-//              ),
-//            );
               return Transform(
                 alignment: Alignment.center,
                 transform: Matrix4.rotationY(pi),

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rollvi/test/countdown_timer.dart';
+import 'package:rollvi/test/make_video_page.dart';
 import 'backup/face_detect.dart';
 import 'package:rollvi/camera_page.dart';
 import 'package:rollvi/screens/remote_object.dart';
@@ -25,13 +26,13 @@ class HomeScreen extends StatelessWidget{
           children: <Widget>[
             RaisedButton(
               child: Text(
-                  "CountDown UI",
+                  "Make Video",
                   style: TextStyle(color: Colors.white)
               ),
               color: Colors.blue,
               onPressed: () {
                 Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) => CountDownTimer())
+                    .push(MaterialPageRoute(builder: (context) => MakeVideoPage())
                 );
               },
             ),
@@ -56,6 +57,18 @@ class HomeScreen extends StatelessWidget{
               onPressed: () {
                 Navigator.of(context)
                     .push(MaterialPageRoute(builder: (context) => FaceDetectPage())
+                );
+              },
+            ),
+            RaisedButton(
+              child: Text(
+                  "CountDown UI",
+                  style: TextStyle(color: Colors.white)
+              ),
+              color: Colors.red,
+              onPressed: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) => CountDownTimer())
                 );
               },
             ),
