@@ -33,9 +33,10 @@ class MakeVideoPageState extends State<MakeVideoPage> {
     print("InitState!!");
     _initialize();
 
-//    _controller = VideoPlayerController.network(
-//      'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
-//    );
+    _controller = VideoPlayerController.network(
+      'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
+    );
+    _initializeVideoPlayerFuture = _controller.initialize();
 
     super.initState();
   }
@@ -44,29 +45,17 @@ class MakeVideoPageState extends State<MakeVideoPage> {
     await getImagesDirectory();
     await prepareAssetsPath();
 
-//    _outputPath = await _executeCmd();
-
-    final appDir = await getTemporaryDirectory();
-    String rawDocumentPath = appDir.path;
+    String rawDocumentPath = (await getTemporaryDirectory()).path;
     _outputPath = '$rawDocumentPath/output.mp4';
+    File outputFile = File(_outputPath);
+    bool fileExist = await outputFile.exists();
 
-    print(_outputPath);
-    print(await File(_outputPath).exists());
+    print("$_outputPath : $fileExist");
 
-    _controller = await VideoPlayerController.file(File(_outputPath));
-    _initializeVideoPlayerFuture = _controller.initialize();
-    _controller.setLooping(true);
-    _controller.play();
-
-
-//    await _executeCmd().then((outputPath) {
-//      _controller = VideoPlayerController.file(File(_outputPath));
-//      _initializeVideoPlayerFuture = _controller.initialize();
-//      _controller.setLooping(true);
-//      _controller.play();
-//      print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Play!!!!!!!!!!!!!!!!!!!!!!!");
-//    });
-
+    if (fileExist) {
+      await outputFile.delete(recursive: true);
+      print("Removed $_outputPath");
+    }
   }
 
   @override
@@ -93,6 +82,51 @@ class MakeVideoPageState extends State<MakeVideoPage> {
           }
         },
       ),
+      floatingActionButton: Stack(
+        alignment: Alignment.bottomRight,
+        children: [
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton(
+                heroTag: null,
+                child: Icon(Icons.movie_creation),
+                onPressed: () async {
+                  _outputPath = await _executeCmd();
+                  print("@@@ Make Video File from images - $_outputPath");
+                },
+              ),
+              SizedBox(height: 10),
+              FloatingActionButton(
+                heroTag: null,
+                child: Icon(Icons.add_to_home_screen),
+                onPressed: () async {
+                  print("@@@ Set VideoPlayerController");
+                  _controller = await VideoPlayerController.file(File(_outputPath));
+                  _initializeVideoPlayerFuture = _controller.initialize();
+                  _controller.setLooping(true);
+                  _controller.play();
+                },
+              ),
+              SizedBox(height: 10),
+              FloatingActionButton(
+                heroTag: null,
+                onPressed: () {
+                  setState(() {
+                    _controller.value.isPlaying ? _controller.pause() : _controller.play();
+                  });
+                },
+                // Display the correct icon depending on the state of the player.
+                child: Icon(
+                  _controller.value.isPlaying
+                      ? Icons.pause
+                      : Icons.play_arrow,
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
     );
   }
 
@@ -102,7 +136,6 @@ class MakeVideoPageState extends State<MakeVideoPage> {
     final outputPath = '$rawDocumentPath/output.mp4';
     final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
 
-    print(outputPath);
 //    String cmd = "-r 1/5 -start_number 1 -i ${tempDirectory.path}/test%d.jpg -c:v mpeg4 -pix_fmt yuv420p $outputPath";
     String cmd = "-y -framerate 25 -i ${tempDirectory.path}/test%d.jpg $outputPath";
 
@@ -145,7 +178,6 @@ class MakeVideoPageState extends State<MakeVideoPage> {
     await copyFileAssets('assets/test5.jpg', 'test5.jpg')
         .then((path) => print('Loaded asset $path.'));
   }
-
 
   void _videoMerger() async {
     final appDir = await getApplicationDocumentsDirectory();
