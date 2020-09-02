@@ -1,48 +1,53 @@
+import 'dart:io';
 import 'dart:math';
+import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:image/image.dart' as imglib;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:video_player/video_player.dart';
 
 
 class SequencePreviewPage extends StatefulWidget {
-  final List<imglib.Image> cameraSequence;
+  final String rollviDir;
 
-  SequencePreviewPage({Key key, this.cameraSequence})
+  SequencePreviewPage({Key key, this.rollviDir})
       : super(key: key);
 
   @override
   State createState() => new SequencePreviewPageState();
 }
 
-class SequencePreviewPageState extends State<SequencePreviewPage>
-    with TickerProviderStateMixin {
-  AnimationController _controller;
-  Animation<int> _animation;
+class SequencePreviewPageState extends State<SequencePreviewPage> {
+  VideoPlayerController _controller;
+  Future<void> _initializeVideoPlayerFuture;
 
-  List<Image> _imageList;
+  String _outputPath;
 
   @override
   void initState() {
-    super.initState();
-
-    int maxImages = widget.cameraSequence.length;
-    print("Max Image Sequnece : $maxImages");
     _initialize();
-
-    _controller = new AnimationController(
-        vsync: this, duration: const Duration(seconds: 2))
-      ..repeat();
-    _animation =
-        new IntTween(begin: 0, end: maxImages - 1).animate(_controller);
+    super.initState();
   }
 
-  void _initialize() {
-    _imageList = new List<Image>();
-    for (var image in widget.cameraSequence) {
-      _imageList.add(Image.memory(imglib.encodeJpg(image)));
+  void _initialize() async {
+    await _checkVideoPath();
+    await _makeVideoAndPlay();
+  }
+
+  void _checkVideoPath() async {
+    String rawDocumentPath = (await getTemporaryDirectory()).path;
+    _outputPath = '$rawDocumentPath/rollvi/output.mp4';
+    File outputFile = File(_outputPath);
+    bool fileExist = await outputFile.exists();
+
+    print("$_outputPath : $fileExist");
+
+    if (fileExist) {
+      await outputFile.delete(recursive: true);
+      print("Removed $_outputPath");
     }
-    print("initialize image List : ${_imageList.length}");
   }
 
   @override
@@ -51,23 +56,86 @@ class SequencePreviewPageState extends State<SequencePreviewPage>
     super.dispose();
   }
 
+  void _makeVideoAndPlay() async {
+    await _executeCmd().then((outputPath) {
+      setState(() {
+//        _outputPath = outputPath;
+        print("@@@ Make Video File from images - $outputPath");
+      });
+    });
+
+    _controller = await VideoPlayerController.file(File(_outputPath));
+    _initializeVideoPlayerFuture = _controller.initialize();
+    _controller.setLooping(true);
+    _controller.play();
+  }
+
+  Future<String> _executeCmd() async {
+    String rawDocumentPath = widget.rollviDir;
+
+    final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
+
+//    String cmd = "-r 1/5 -start_number 1 -i ${tempDirectory.path}/test%d.jpg -c:v mpeg4 -pix_fmt yuv420p $outputPath";
+    String cmd =
+        "-y -framerate 25 -i $rawDocumentPath/frame_%d.jpg $_outputPath";
+
+    await _flutterFFmpeg
+        .execute(cmd)
+        .then((rc) => print("FFmpeg process exited with rc $rc"));
+
+    return _outputPath;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      body: Stack(
-        children: <Widget>[
-          new AnimatedBuilder(
-              animation: _animation,
-              builder: (BuildContext context, Widget child) {
-                int frame = _animation.value;
-                print("frame : $frame");
-
-                return Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.rotationY(pi),
-                  child: _imageList[frame],
-                );
-              }),
+    return Scaffold(
+      body: FutureBuilder(
+        future: _initializeVideoPlayerFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              child: VideoPlayer(_controller),
+            );
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        },
+      ),
+      floatingActionButton: Stack(
+        alignment: Alignment.bottomRight,
+        children: [
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton(
+                heroTag: null,
+                child: Icon(Icons.movie_creation),
+                onPressed: () async {
+                  _makeVideoAndPlay();
+                },
+              ),
+              SizedBox(height: 10),
+              (_controller != null)
+                  ? FloatingActionButton(
+                heroTag: null,
+                onPressed: () {
+                  setState(() {
+                    _controller.value.isPlaying
+                        ? _controller.pause()
+                        : _controller.play();
+                  });
+                },
+                // Display the correct icon depending on the state of the player.
+                child: Icon(
+                  _controller.value.isPlaying
+                      ? Icons.pause
+                      : Icons.play_arrow,
+                ),
+              )
+                  : Container(),
+            ],
+          )
         ],
       ),
     );
