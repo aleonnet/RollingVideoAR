@@ -26,24 +26,47 @@ class MakeVideoPageState extends State<MakeVideoPage> {
   Directory tempDirectory;
   String assetPath;
 
+  String _outputPath;
+
   @override
   void initState() {
-    getImagesDirectory();
-    prepareAssetsPath();
-
-
-    _executeCmd().then((outputPath) {
-      _controller = VideoPlayerController.file(File(outputPath));
-      _initializeVideoPlayerFuture = _controller.initialize();
-
-      _controller.setLooping(true);
-    });
+    print("InitState!!");
+    _initialize();
 
 //    _controller = VideoPlayerController.network(
 //      'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
 //    );
 
     super.initState();
+  }
+
+  void _initialize() async {
+    await getImagesDirectory();
+    await prepareAssetsPath();
+
+//    _outputPath = await _executeCmd();
+
+    final appDir = await getTemporaryDirectory();
+    String rawDocumentPath = appDir.path;
+    _outputPath = '$rawDocumentPath/output.mp4';
+
+    print(_outputPath);
+    print(await File(_outputPath).exists());
+
+    _controller = await VideoPlayerController.file(File(_outputPath));
+    _initializeVideoPlayerFuture = _controller.initialize();
+    _controller.setLooping(true);
+    _controller.play();
+
+
+//    await _executeCmd().then((outputPath) {
+//      _controller = VideoPlayerController.file(File(_outputPath));
+//      _initializeVideoPlayerFuture = _controller.initialize();
+//      _controller.setLooping(true);
+//      _controller.play();
+//      print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Play!!!!!!!!!!!!!!!!!!!!!!!");
+//    });
+
   }
 
   @override
@@ -70,16 +93,6 @@ class MakeVideoPageState extends State<MakeVideoPage> {
           }
         },
       ),
-//      floatingActionButton: FloatingActionButton(
-//        onPressed: () {
-//          setState(() {
-//            _controller.value.isPlaying ? _controller.pause() : _controller.play();
-//          });
-//        },
-//        child: Icon(
-//          _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-//        ),
-//      ),
     );
   }
 
@@ -89,10 +102,9 @@ class MakeVideoPageState extends State<MakeVideoPage> {
     final outputPath = '$rawDocumentPath/output.mp4';
     final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
 
-
     print(outputPath);
-//    String cmd = "-r 60 -f assets -s 350x300 -i say_h%02d.webp -vcode libx264 -crf 25 -pix_fmt yuv420p $outputPath";
-    String cmd = "-r 1/5 -start_number 1 -i ${tempDirectory.path}/test%d.jpg -c:v libx264 -pix_fmt yuv420p $outputPath";
+//    String cmd = "-r 1/5 -start_number 1 -i ${tempDirectory.path}/test%d.jpg -c:v mpeg4 -pix_fmt yuv420p $outputPath";
+    String cmd = "-y -framerate 25 -i ${tempDirectory.path}/test%d.jpg $outputPath";
 
     _flutterFFmpeg.execute(cmd).then((rc) => print("FFmpeg process exited with rc $rc"));
 
@@ -121,16 +133,16 @@ class MakeVideoPageState extends State<MakeVideoPage> {
         .writeAsBytes(byteList, mode: FileMode.writeOnly, flush: true);
   }
 
-  prepareAssetsPath() {
-    copyFileAssets('assets/test1.jpg', 'test1.jpg')
+  prepareAssetsPath() async {
+    await copyFileAssets('assets/test1.jpg', 'test1.jpg')
         .then((path) => print('Loaded asset $path.'));
-    copyFileAssets('assets/test2.jpg', 'test2.jpg')
+    await copyFileAssets('assets/test2.jpg', 'test2.jpg')
         .then((path) => print('Loaded asset $path.'));
-    copyFileAssets('assets/test3.jpg', 'test3.jpg')
+    await copyFileAssets('assets/test3.jpg', 'test3.jpg')
         .then((path) => print('Loaded asset $path.'));
-    copyFileAssets('assets/test4.jpg', 'test4.jpg')
+    await copyFileAssets('assets/test4.jpg', 'test4.jpg')
         .then((path) => print('Loaded asset $path.'));
-    copyFileAssets('assets/test5.jpg', 'test5.jpg')
+    await copyFileAssets('assets/test5.jpg', 'test5.jpg')
         .then((path) => print('Loaded asset $path.'));
   }
 

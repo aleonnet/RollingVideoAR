@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'file:///D:/01-workspace/01-hispace/RollingVideoAR/rollvi/lib/test/progress_painter.dart';
+import 'progress_painter.dart';
 
 class CountDownTimer extends StatefulWidget {
   @override
