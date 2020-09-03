@@ -110,13 +110,7 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
                     heroTag: null,
                     onPressed: () async {
                       print("Recorded Video Path ${widget.videoPath}");
-
                       Share.shareFiles([widget.videoPath], text: 'Rollvi Video');
-
-//                      await FlutterShare.shareFile(title: "rollvi video share", filePath: widget.videoPath);
-
-
-
                     },
                     child: Icon(Icons.share)),
                 SizedBox(height: 10),

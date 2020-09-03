@@ -62,16 +62,17 @@ class _SelectVideoPageState extends State<SelectVideoPage> {
                   heroTag: null,
                   child: Icon(Icons.account_circle),
                   onPressed: () async {
-//                  _getVideoFromInstagram();
-
                     String _clipData =
                         (await Clipboard.getData('text/plain')).text;
-                    showDialog(
+                    final inputText = await showDialog(
                         context: context,
-                        builder: (BuildContext context) => CustomDialog(
+                        builder: (BuildContext context) => InstaLinkDialog(
                               clipData: _clipData,
                             ));
-//                    _showInputDialog(context);
+
+                    if (inputText != null) {
+                      _getVideoFromInstagram(inputText);
+                    }
                   },
                 ),
                 SizedBox(height: 10),
@@ -107,18 +108,17 @@ class _SelectVideoPageState extends State<SelectVideoPage> {
         ));
   }
 
-  void _getVideoFromInstagram() async {
+  void _getVideoFromInstagram(String instaLink) async {
     FlutterInsta flutterInsta = new FlutterInsta();
 
-    await flutterInsta
-        .downloadReels(
-            'https://www.instagram.com/p/CEfO46KoKtw/?igshid=1pgwl4zjnktwc')
-        .then((instaUrl) {
+    await flutterInsta.downloadReels(instaLink).then((instaUrl) {
       print("Download Done!!!");
-      _controller = VideoPlayerController.network(instaUrl);
-      _initializeVideoPlayerFuture = _controller.initialize();
-      _controller.setLooping(true);
-      _controller.play();
+      setState(() {
+        _controller = VideoPlayerController.network(instaUrl);
+        _initializeVideoPlayerFuture = _controller.initialize();
+        _controller.setLooping(true);
+        _controller.play();
+      });
     });
   }
 
@@ -132,77 +132,19 @@ class _SelectVideoPageState extends State<SelectVideoPage> {
       });
     });
   }
-
-  Future<String> _showInputDialog(BuildContext context) async {
-    String clipData = (await Clipboard.getData('text/plain')).text;
-    String inputStr = clipData;
-
-    return showDialog<String>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-          content: new Stack(
-            children: <Widget>[
-              Positioned(
-                left: 16,
-                right: 16,
-                child: Image(
-                  image: AssetImage('assets/instagram_icon.png'),
-                  width: 66,
-                  height: 66,
-                ),
-              ),
-              new Container(
-                  padding: EdgeInsets.only(
-                    top: 82,
-                    bottom: 16,
-                  ),
-                  child: new TextField(
-                    autofocus: true,
-                    decoration: new InputDecoration(
-                        prefixIcon: Icon(Icons.link),
-                        labelText: 'Instagram Link',
-                        hintText: clipData),
-                    onChanged: (value) {
-                      inputStr = value;
-                    },
-                  )),
-            ],
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Ok'),
-              onPressed: () {
-                Navigator.of(context).pop(inputStr);
-              },
-            ),
-            FlatButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 }
 
-class CustomDialog extends StatefulWidget {
+class InstaLinkDialog extends StatefulWidget {
   final clipData;
 
-  CustomDialog({Key key, this.clipData}) : super(key: key);
+  InstaLinkDialog({Key key, this.clipData}) : super(key: key);
 
   @override
-  _CustomDialogState createState() => _CustomDialogState();
+  _InstaLinkDialogState createState() => _InstaLinkDialogState();
 }
 
-class _CustomDialogState extends State<CustomDialog> {
-  String inputStr = '';
+class _InstaLinkDialogState extends State<InstaLinkDialog> {
+  String inputStr;
 
   @override
   void initState() {
@@ -271,16 +213,16 @@ class _CustomDialogState extends State<CustomDialog> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       FlatButton(
+                          child: Text('Cancel'),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          }),
+                      FlatButton(
                         child: Text('Ok'),
                         onPressed: () {
                           Navigator.of(context).pop(inputStr);
                         },
                       ),
-                      FlatButton(
-                          child: Text('Cancel'),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          }),
                     ],
                   )),
             ],

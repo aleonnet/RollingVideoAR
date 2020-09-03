@@ -80,7 +80,7 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
 
 //    String cmd = "-r 1/5 -start_number 1 -i ${tempDirectory.path}/test%d.jpg -c:v mpeg4 -pix_fmt yuv420p $outputPath";
     String cmd =
-        "-y -framerate 25 -i $rawDocumentPath/frame_%d.jpg -c:v mpeg4 $_outputPath";
+        "-y -framerate 5 -i $rawDocumentPath/frame_%d.jpg -c:v mpeg4 $_outputPath";
 
     await _flutterFFmpeg
         .execute(cmd)
