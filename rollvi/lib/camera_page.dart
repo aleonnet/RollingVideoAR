@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:image/image.dart' as imglib;
 
 import 'package:flutter/material.dart';
@@ -47,14 +48,14 @@ class _CameraPageState extends State<CameraPage> {
   CameraController _camera;
   bool _isDetecting = false;
 
-  final int _maxTime = 3;
+  final int _maxTime = 2;
   bool isRecording = false;
-  int _frameNum = 0;
+  int _frameNum = 1;
   Timer _timer;
   CameraImage _lastImage;
   List<imglib.Image> _imageSequence;
 
-  CaptureType _captureType = CaptureType.Video;
+  CaptureType _captureType = CaptureType.ImageSequence;
   int _selectedFilter = 1;
   bool _showShootButton = true;
   bool _showFaceContour = false;
@@ -73,7 +74,7 @@ class _CameraPageState extends State<CameraPage> {
   void dispose() async {
     super.dispose();
     _stopRecording();
-    Directory(_rollviDir).deleteSync(recursive: true);
+//    Directory(_rollviDir).deleteSync(recursive: true);
     await _camera.stopImageStream();
     await _camera.dispose();
   }
@@ -85,12 +86,17 @@ class _CameraPageState extends State<CameraPage> {
     Directory(_rollviDir).createSync(recursive: true);
   }
 
-  void _initialize() {
+  void _initialize() async {
     isRecording = false;
+    _frameNum = 1;
+
     if (_timer != null) _timer.cancel();
     if (_imageSequence.isNotEmpty) _imageSequence.clear();
 
     _initializeCamera();
+
+
+    await getExternalStorageDirectory();
   }
 
   void _initializeCamera() async {
@@ -105,6 +111,8 @@ class _CameraPageState extends State<CameraPage> {
     _camera = CameraController(description, ResolutionPreset.high);
 
     await _camera.initialize();
+
+    bool dirExists = Directory(_rollviDir).existsSync();
 
     _camera.startImageStream((CameraImage image) {
       _lastImage = image;
@@ -122,16 +130,9 @@ class _CameraPageState extends State<CameraPage> {
 //              _imageSequence.add(convertCameraImage(image));
 
               imglib.Image img = convertCameraImage(image);
-//              Image jpgImage = Image.memory(imglib.encodeJpg(img));
-
-              bool dirExists = Directory(_rollviDir).existsSync();
-              print("dir : $dirExists");
-
               String filePath = sprintf("$_rollviDir/frame_%d.jpg", [_frameNum++]);
-              print(filePath);
-
-              File curImageFile = new File(filePath);
-              curImageFile.writeAsBytes(imglib.encodeJpg(img));
+              new File(filePath)..writeAsBytesSync(imglib.encodeJpg(img));
+              print("File is writed : $filePath");
             }
           });
 

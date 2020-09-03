@@ -32,13 +32,17 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
   }
 
   void _initialize() async {
-    await _checkVideoPath();
+//    await _checkVideoPath();
+    _outputPath = '${widget.rollviDir}/output.mp4';
+
+    bool fileExist = await File(_outputPath).exists();
+    print("fileExist : $fileExist");
+
     await _makeVideoAndPlay();
   }
 
   void _checkVideoPath() async {
-    String rawDocumentPath = (await getTemporaryDirectory()).path;
-    _outputPath = '$rawDocumentPath/rollvi/output.mp4';
+    _outputPath = '${widget.rollviDir}/output.mp4';
     File outputFile = File(_outputPath);
     bool fileExist = await outputFile.exists();
 
@@ -59,7 +63,6 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
   void _makeVideoAndPlay() async {
     await _executeCmd().then((outputPath) {
       setState(() {
-//        _outputPath = outputPath;
         print("@@@ Make Video File from images - $outputPath");
       });
     });
@@ -77,7 +80,7 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
 
 //    String cmd = "-r 1/5 -start_number 1 -i ${tempDirectory.path}/test%d.jpg -c:v mpeg4 -pix_fmt yuv420p $outputPath";
     String cmd =
-        "-y -framerate 25 -i $rawDocumentPath/frame_%d.jpg $_outputPath";
+        "-y -framerate 25 -i $rawDocumentPath/frame_%d.jpg -c:v mpeg4 $_outputPath";
 
     await _flutterFFmpeg
         .execute(cmd)
@@ -89,6 +92,11 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+//      body: Stack(
+//        children: [
+//          Image.file(File("${widget.rollviDir}/frame_9.jpg")),
+//        ],
+//      ),
       body: FutureBuilder(
         future: _initializeVideoPlayerFuture,
         builder: (context, snapshot) {
