@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:image/image.dart' as imglib;
 
 import 'package:flutter/material.dart';
@@ -15,8 +16,11 @@ import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'package:rollvi/image_preview_page.dart';
 import 'package:rollvi/sequence_preview_page.dart';
 import 'package:rollvi/video_preview_page.dart';
+import 'package:sprintf/sprintf.dart';
 
 import 'rollvi_camera.dart';
+import 'test/make_video_page.dart';
+import 'utils.dart';
 import 'utils.dart';
 
 enum CaptureType {
@@ -44,21 +48,25 @@ class _CameraPageState extends State<CameraPage> {
   CameraController _camera;
   bool _isDetecting = false;
 
-  final int _maxTime = 3;
+  final int _maxTime = 2;
   bool isRecording = false;
+  int _frameNum = 0;
   Timer _timer;
   CameraImage _lastImage;
   List<imglib.Image> _imageSequence;
 
-  CaptureType _captureType = CaptureType.Video;
+  CaptureType _captureType = CaptureType.ImageSequence;
   int _selectedFilter = 1;
   bool _showShootButton = true;
   bool _showFaceContour = false;
+
+  String _rollviDir;
 
   @override
   void initState() {
     super.initState();
     _imageSequence = new List<imglib.Image>();
+    _initializePath();
     _initialize();
   }
 
@@ -66,26 +74,39 @@ class _CameraPageState extends State<CameraPage> {
   void dispose() async {
     super.dispose();
     _stopRecording();
+//    Directory(_rollviDir).deleteSync(recursive: true);
     await _camera.stopImageStream();
     await _camera.dispose();
   }
 
-  void _initialize() {
+  void _initializePath() async {
+    final rawDir = (await getTemporaryDirectory()).path;
+    _rollviDir = '$rawDir/rollvi';
+
+    Directory(_rollviDir).createSync(recursive: true);
+  }
+
+  void _initialize() async {
     isRecording = false;
+    _frameNum = 0;
+
     if (_timer != null) _timer.cancel();
     if (_imageSequence.isNotEmpty) _imageSequence.clear();
 
     _initializeCamera();
+
+
+    await getExternalStorageDirectory();
   }
 
   void _initializeCamera() async {
     CameraDescription description = await availableCameras().then(
-        (List<CameraDescription> cameras) => cameras.firstWhere(
-            (CameraDescription camera) =>
-                camera.lensDirection == CameraLensDirection.front));
+            (List<CameraDescription> cameras) => cameras.firstWhere(
+                (CameraDescription camera) =>
+            camera.lensDirection == CameraLensDirection.front));
 
     ImageRotation rotation =
-        rotationIntToImageRotation(description.sensorOrientation);
+    rotationIntToImageRotation(description.sensorOrientation);
 
     _camera = CameraController(description, ResolutionPreset.high);
 
@@ -99,12 +120,19 @@ class _CameraPageState extends State<CameraPage> {
       _isDetecting = true;
 
       _detectFaces(image, rotation).then(
-        (dynamic result) {
+            (dynamic result) {
           setState(() {
             _faces = result;
 
             if (_captureType == CaptureType.ImageSequence && isRecording == true) {
               _imageSequence.add(convertCameraImage(image));
+
+              print("Frame Num: $_frameNum");
+              _frameNum += 1;
+
+//              _saveCameraImage(image).then((filePath) {
+////                print("File is writed : $filePath");
+//              });
             }
           });
 
@@ -114,6 +142,20 @@ class _CameraPageState extends State<CameraPage> {
         _isDetecting = false;
       });
     });
+  }
+
+  Future<void> _saveCameraImage(CameraImage image) async {
+    imglib.Image img = convertCameraImage(image);
+    String filePath = sprintf("$_rollviDir/frame_%d.jpg", [_frameNum++]);
+    new File(filePath)..writeAsBytes(imglib.encodeJpg(img));
+  }
+
+  Future _saveImageToFile() async {
+    for (int i = 0; i < _frameNum; i++) {
+      String filePath = sprintf("$_rollviDir/frame_%d.jpg", [i]);
+      new File(filePath)..writeAsBytes(imglib.encodeJpg(_imageSequence[i]));
+      print("Saved File: $filePath / $_frameNum");
+    }
   }
 
   _detectFaces(CameraImage cameraImage, ImageRotation rotation) async {
@@ -220,7 +262,7 @@ class _CameraPageState extends State<CameraPage> {
                 icon: _getFilterIcon(_selectedFilter),
                 onPressed: () {
                   _selectedFilter =
-                      (_selectedFilter > 4) ? 1 : _selectedFilter += 1;
+                  (_selectedFilter > 4) ? 1 : _selectedFilter += 1;
                 },
               ),
             ],
@@ -234,73 +276,13 @@ class _CameraPageState extends State<CameraPage> {
       floatingActionButton: (_showShootButton == false)
           ? null
           : (isRecording == false)
-              ? _getRecordButton(context)
-              : FloatingActionButton(
-                  child: Icon(Icons.fiber_manual_record),
-                  backgroundColor: Colors.grey,
-                ),
+          ? _getRecordButton(context)
+          : FloatingActionButton(
+        child: Icon(Icons.fiber_manual_record),
+        backgroundColor: Colors.grey,
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
-  }
-
-  Icon _getCaptureIcon(CaptureType captureType) {
-    switch(captureType) {
-      case CaptureType.Video:
-        return Icon(
-          Icons.videocam,
-          color: Colors.grey.shade400,
-        );
-      case CaptureType.Image:
-        return Icon(
-          Icons.camera_alt,
-          color: Colors.grey.shade400,
-        );
-      case CaptureType.ImageSequence:
-        return Icon(
-          Icons.camera_roll,
-          color: Colors.grey.shade400,
-        );
-    }
-    return Icon(
-      Icons.settings,
-      color: Colors.grey.shade400,
-    );
-  }
-
-  Icon _getFilterIcon(int index) {
-    Color color = Colors.grey.shade700;
-    switch (index) {
-      case 1:
-        return Icon(
-          Icons.looks_one,
-          color: color,
-        );
-      case 2:
-        return Icon(
-          Icons.looks_two,
-          color: color,
-        );
-      case 3:
-        return Icon(
-          Icons.looks_3,
-          color: color,
-        );
-      case 4:
-        return Icon(
-          Icons.looks_4,
-          color: color,
-        );
-      case 5:
-        return Icon(
-          Icons.looks_5,
-          color: color,
-        );
-      default:
-        return Icon(
-          Icons.settings,
-          color: color,
-        );
-    }
   }
 
   Widget _getRecordButton(BuildContext context) {
@@ -336,7 +318,7 @@ class _CameraPageState extends State<CameraPage> {
                   MaterialPageRoute(
                       builder: (context) =>
                           ImagePreviewPage(cameraImg: capturedImage, imagePath: path,)))
-                  ..then((value) => _initialize())
+                ..then((value) => _initialize())
             });
           }
           else {
@@ -359,12 +341,29 @@ class _CameraPageState extends State<CameraPage> {
                   });
                 }
                 else if (_captureType == CaptureType.ImageSequence) {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => SequencePreviewPage(
-                              cameraSequence: _imageSequence)))
-                    ..then((value) => _initialize());
+
+                  print("Caputre Over!!!!!!");
+
+                  _saveImageToFile().then((value) => {
+
+                  _initialize(),
+
+                    Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => SequencePreviewPage(
+                    rollviDir: _rollviDir,
+                    )
+                    ))
+
+                  });
+
+//
+
+//                  Navigator.push(
+//                      context,
+//                      MaterialPageRoute(
+//                          builder: (context) => SequencePreviewPage(
+//                              cameraSequence: _imageSequence)))
+//                    ..then((value) => _initialize());
                 }
 
                 _timer.cancel();
@@ -442,7 +441,7 @@ class _CameraPageState extends State<CameraPage> {
       ui.Image image = await renderObject.toImage();
 
       ByteData byteData =
-          await image.toByteData(format: ui.ImageByteFormat.png);
+      await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData.buffer.asUint8List();
 
       File imgFile = new File(path);
@@ -454,5 +453,66 @@ class _CameraPageState extends State<CameraPage> {
     }
 
     return null;
+  }
+
+
+  Icon _getCaptureIcon(CaptureType captureType) {
+    switch(captureType) {
+      case CaptureType.Video:
+        return Icon(
+          Icons.videocam,
+          color: Colors.grey.shade400,
+        );
+      case CaptureType.Image:
+        return Icon(
+          Icons.camera_alt,
+          color: Colors.grey.shade400,
+        );
+      case CaptureType.ImageSequence:
+        return Icon(
+          Icons.camera_roll,
+          color: Colors.grey.shade400,
+        );
+    }
+    return Icon(
+      Icons.settings,
+      color: Colors.grey.shade400,
+    );
+  }
+
+  Icon _getFilterIcon(int index) {
+    Color color = Colors.grey.shade700;
+    switch (index) {
+      case 1:
+        return Icon(
+          Icons.looks_one,
+          color: color,
+        );
+      case 2:
+        return Icon(
+          Icons.looks_two,
+          color: color,
+        );
+      case 3:
+        return Icon(
+          Icons.looks_3,
+          color: color,
+        );
+      case 4:
+        return Icon(
+          Icons.looks_4,
+          color: color,
+        );
+      case 5:
+        return Icon(
+          Icons.looks_5,
+          color: color,
+        );
+      default:
+        return Icon(
+          Icons.settings,
+          color: color,
+        );
+    }
   }
 }
