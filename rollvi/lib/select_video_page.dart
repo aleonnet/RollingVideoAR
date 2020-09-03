@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rollvi/camera_page.dart';
 import 'package:rollvi/insta_downloader.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 
 class SelectVideoPage extends StatefulWidget {
@@ -61,7 +61,13 @@ class _SelectVideoPageState extends State<SelectVideoPage> {
               children: [
                 FloatingActionButton(
                   heroTag: null,
-                  child: Icon(Icons.account_circle),
+                  child:
+                    ImageIcon(
+                      AssetImage("assets/insta_logo.png"),
+                      color: null,
+                    ),
+
+
                   onPressed: () async {
                     String _clipData =
                         (await Clipboard.getData('text/plain')).text;
@@ -141,7 +147,7 @@ class _SelectVideoPageState extends State<SelectVideoPage> {
   }
 
   Future _getVideoFromGallery() async {
-    ImagePicker.pickVideo(source: ImageSource.gallery).then((file) async {
+    FilePicker.getFile(type: FileType.video).then((file) async {
       setState(() {
         _controller = VideoPlayerController.file(file);
         _initializeVideoPlayerFuture = _controller.initialize();
@@ -211,7 +217,7 @@ class _InstaLinkDialogState extends State<InstaLinkDialog> {
               Text(
                 'Instagram Video Link',
                 style: TextStyle(
-                  fontSize: 24.0,
+                  fontSize: 18.0,
                   fontWeight: FontWeight.w700,
                 ),
               ),
