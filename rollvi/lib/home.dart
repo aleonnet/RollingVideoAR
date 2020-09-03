@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:rollvi/select_video_page.dart';
 import 'package:rollvi/test/countdown_timer.dart';
 import 'package:rollvi/test/make_video_page.dart';
 import 'backup/face_detect.dart';
@@ -24,6 +25,18 @@ class HomeScreen extends StatelessWidget{
       body:Container(
         child: Column(
           children: <Widget>[
+            RaisedButton(
+              child: Text(
+                  "Select Video",
+                  style: TextStyle(color: Colors.white)
+              ),
+              color: Colors.blue,
+              onPressed: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) => SelectVideoPage())
+                );
+              },
+            ),
             RaisedButton(
               child: Text(
                   "Make Video",
