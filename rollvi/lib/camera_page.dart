@@ -50,7 +50,7 @@ class _CameraPageState extends State<CameraPage> {
 
   final int _maxTime = 2;
   bool isRecording = false;
-  int _frameNum = 1;
+  int _frameNum = 0;
   Timer _timer;
   CameraImage _lastImage;
   List<imglib.Image> _imageSequence;
@@ -88,7 +88,7 @@ class _CameraPageState extends State<CameraPage> {
 
   void _initialize() async {
     isRecording = false;
-    _frameNum = 1;
+    _frameNum = 0;
 
     if (_timer != null) _timer.cancel();
     if (_imageSequence.isNotEmpty) _imageSequence.clear();
@@ -127,12 +127,14 @@ class _CameraPageState extends State<CameraPage> {
             _faces = result;
 
             if (_captureType == CaptureType.ImageSequence && isRecording == true) {
-//              _imageSequence.add(convertCameraImage(image));
+              _imageSequence.add(convertCameraImage(image));
 
-              imglib.Image img = convertCameraImage(image);
-              String filePath = sprintf("$_rollviDir/frame_%d.jpg", [_frameNum++]);
-              new File(filePath)..writeAsBytesSync(imglib.encodeJpg(img));
-              print("File is writed : $filePath");
+              print("Frame Num: $_frameNum");
+              _frameNum += 1;
+
+//              _saveCameraImage(image).then((filePath) {
+////                print("File is writed : $filePath");
+//              });
             }
           });
 
@@ -142,6 +144,20 @@ class _CameraPageState extends State<CameraPage> {
         _isDetecting = false;
       });
     });
+  }
+
+  Future<void> _saveCameraImage(CameraImage image) async {
+    imglib.Image img = convertCameraImage(image);
+    String filePath = sprintf("$_rollviDir/frame_%d.jpg", [_frameNum++]);
+    new File(filePath)..writeAsBytes(imglib.encodeJpg(img));
+  }
+
+  Future _saveImageToFile() async {
+    for (int i = 0; i < _frameNum; i++) {
+      String filePath = sprintf("$_rollviDir/frame_%d.jpg", [i]);
+      new File(filePath)..writeAsBytes(imglib.encodeJpg(_imageSequence[i]));
+      print("Saved File: $filePath / $_frameNum");
+    }
   }
 
   _detectFaces(CameraImage cameraImage, ImageRotation rotation) async {
@@ -271,66 +287,6 @@ class _CameraPageState extends State<CameraPage> {
     );
   }
 
-  Icon _getCaptureIcon(CaptureType captureType) {
-    switch(captureType) {
-      case CaptureType.Video:
-        return Icon(
-          Icons.videocam,
-          color: Colors.grey.shade400,
-        );
-      case CaptureType.Image:
-        return Icon(
-          Icons.camera_alt,
-          color: Colors.grey.shade400,
-        );
-      case CaptureType.ImageSequence:
-        return Icon(
-          Icons.camera_roll,
-          color: Colors.grey.shade400,
-        );
-    }
-    return Icon(
-      Icons.settings,
-      color: Colors.grey.shade400,
-    );
-  }
-
-  Icon _getFilterIcon(int index) {
-    Color color = Colors.grey.shade700;
-    switch (index) {
-      case 1:
-        return Icon(
-          Icons.looks_one,
-          color: color,
-        );
-      case 2:
-        return Icon(
-          Icons.looks_two,
-          color: color,
-        );
-      case 3:
-        return Icon(
-          Icons.looks_3,
-          color: color,
-        );
-      case 4:
-        return Icon(
-          Icons.looks_4,
-          color: color,
-        );
-      case 5:
-        return Icon(
-          Icons.looks_5,
-          color: color,
-        );
-      default:
-        return Icon(
-          Icons.settings,
-          color: color,
-        );
-    }
-  }
-
   Widget _getRecordButton(BuildContext context) {
     FloatingActionButton recordButton = FloatingActionButton(
       child: Icon(Icons.camera),
@@ -387,14 +343,22 @@ class _CameraPageState extends State<CameraPage> {
                   });
                 }
                 else if (_captureType == CaptureType.ImageSequence) {
-                  _initialize();
+
                   print("Caputre Over!!!!!!");
 
-                  Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => SequencePreviewPage(
-                        rollviDir: _rollviDir,
-                      )
-                  ));
+                  _saveImageToFile().then((value) => {
+
+                  _initialize(),
+
+                    Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => SequencePreviewPage(
+                    rollviDir: _rollviDir,
+                    )
+                    ))
+
+                  });
+
+//
 
 //                  Navigator.push(
 //                      context,
@@ -491,5 +455,66 @@ class _CameraPageState extends State<CameraPage> {
     }
 
     return null;
+  }
+
+
+  Icon _getCaptureIcon(CaptureType captureType) {
+    switch(captureType) {
+      case CaptureType.Video:
+        return Icon(
+          Icons.videocam,
+          color: Colors.grey.shade400,
+        );
+      case CaptureType.Image:
+        return Icon(
+          Icons.camera_alt,
+          color: Colors.grey.shade400,
+        );
+      case CaptureType.ImageSequence:
+        return Icon(
+          Icons.camera_roll,
+          color: Colors.grey.shade400,
+        );
+    }
+    return Icon(
+      Icons.settings,
+      color: Colors.grey.shade400,
+    );
+  }
+
+  Icon _getFilterIcon(int index) {
+    Color color = Colors.grey.shade700;
+    switch (index) {
+      case 1:
+        return Icon(
+          Icons.looks_one,
+          color: color,
+        );
+      case 2:
+        return Icon(
+          Icons.looks_two,
+          color: color,
+        );
+      case 3:
+        return Icon(
+          Icons.looks_3,
+          color: color,
+        );
+      case 4:
+        return Icon(
+          Icons.looks_4,
+          color: color,
+        );
+      case 5:
+        return Icon(
+          Icons.looks_5,
+          color: color,
+        );
+      default:
+        return Icon(
+          Icons.settings,
+          color: color,
+        );
+    }
   }
 }

@@ -32,7 +32,7 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
   }
 
   void _initialize() async {
-//    await _checkVideoPath();
+    await _checkVideoPath();
     _outputPath = '${widget.rollviDir}/output.mp4';
 
     bool fileExist = await File(_outputPath).exists();
@@ -78,7 +78,6 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
 
     final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
 
-//    String cmd = "-r 1/5 -start_number 1 -i ${tempDirectory.path}/test%d.jpg -c:v mpeg4 -pix_fmt yuv420p $outputPath";
     String cmd =
         "-y -framerate 5 -i $rawDocumentPath/frame_%d.jpg -c:v mpeg4 $_outputPath";
 

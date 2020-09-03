@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:rollvi/concat_rollvi_page.dart';
 import 'package:rollvi/select_video_page.dart';
 import 'package:rollvi/test/countdown_timer.dart';
 import 'package:rollvi/test/make_video_page.dart';
@@ -27,10 +29,23 @@ class HomeScreen extends StatelessWidget{
           children: <Widget>[
             RaisedButton(
               child: Text(
+                  "Concat Video",
+                  style: TextStyle(color: Colors.white)
+              ),
+              color: Colors.red,
+              onPressed: () async {
+                final rawDir = (await getTemporaryDirectory()).path;
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) => ConcatRollviPage(rollviDir: '$rawDir/rollvi',))
+                );
+              },
+            ),
+            RaisedButton(
+              child: Text(
                   "Select Video",
                   style: TextStyle(color: Colors.white)
               ),
-              color: Colors.blue,
+              color: Colors.red,
               onPressed: () {
                 Navigator.of(context)
                     .push(MaterialPageRoute(builder: (context) => SelectVideoPage())
@@ -54,7 +69,7 @@ class HomeScreen extends StatelessWidget{
                   "Camera - Face Detection",
                   style: TextStyle(color: Colors.white)
               ),
-              color: Colors.blue,
+              color: Colors.red,
               onPressed: () {
                 Navigator.of(context)
                     .push(MaterialPageRoute(builder: (context) => CameraPage())
@@ -78,7 +93,7 @@ class HomeScreen extends StatelessWidget{
                   "CountDown UI",
                   style: TextStyle(color: Colors.white)
               ),
-              color: Colors.red,
+              color: Colors.blue,
               onPressed: () {
                 Navigator.of(context)
                     .push(MaterialPageRoute(builder: (context) => CountDownTimer())
@@ -90,7 +105,7 @@ class HomeScreen extends StatelessWidget{
                   "Remote obj",
                   style: TextStyle(color: Colors.white)
               ),
-              color: Colors.red,
+              color: Colors.blue,
               onPressed: () {
                 Navigator.of(context)
                     .push(MaterialPageRoute(builder: (context) => RemoteObject())
@@ -102,7 +117,7 @@ class HomeScreen extends StatelessWidget{
                 "AR Face",
                 style: TextStyle(color: Colors.white)
               ),
-              color: Colors.red,
+              color: Colors.blue,
               onPressed: () {
                 Navigator.of(context)
                     .push(MaterialPageRoute(builder: (context) => AugmentedFacesScreen())

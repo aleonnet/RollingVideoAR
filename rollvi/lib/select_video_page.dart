@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:rollvi/camera_page.dart';
 import 'package:rollvi/insta_downloader.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
@@ -87,6 +88,7 @@ class _SelectVideoPageState extends State<SelectVideoPage> {
                 (_controller == null)
                     ? Container()
                     : FloatingActionButton(
+                  heroTag: null,
                         onPressed: () {
                           setState(() {
                             if (_controller.value.isPlaying) {
@@ -102,6 +104,18 @@ class _SelectVideoPageState extends State<SelectVideoPage> {
                               : Icons.play_arrow,
                         ),
                       ),
+                SizedBox(height: 10),
+                (_controller == null)
+                    ? Container()
+                    : FloatingActionButton(
+                  heroTag: null,
+                        onPressed: () {
+                          Navigator.of(context)
+                              .push(MaterialPageRoute(builder: (context) => CameraPage()));
+
+                        },
+                        child: Icon(Icons.skip_next),
+                      ),
               ],
             )
           ],
@@ -112,13 +126,17 @@ class _SelectVideoPageState extends State<SelectVideoPage> {
     FlutterInsta flutterInsta = new FlutterInsta();
 
     await flutterInsta.downloadReels(instaLink).then((instaUrl) {
-      print("Download Done!!!");
-      setState(() {
-        _controller = VideoPlayerController.network(instaUrl);
-        _initializeVideoPlayerFuture = _controller.initialize();
-        _controller.setLooping(true);
-        _controller.play();
-      });
+      try {
+        print("Download Insta Link: $instaUrl");
+        setState(() {
+          _controller = VideoPlayerController.network(instaUrl);
+          _initializeVideoPlayerFuture = _controller.initialize();
+          _controller.setLooping(true);
+          _controller.play();
+        });
+      } catch (e) {
+       print("Unsupported Link");
+      }
     });
   }
 
