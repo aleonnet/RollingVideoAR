@@ -4,14 +4,14 @@ import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:gallery_saver/gallery_saver.dart';
+import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
-
 
 class ConcatRollviPage extends StatefulWidget {
   final String rollviDir;
 
-  ConcatRollviPage({Key key, this.rollviDir})
-      : super(key: key);
+  ConcatRollviPage({Key key, this.rollviDir}) : super(key: key);
 
   @override
   State createState() => new _ConcatRollviPageState();
@@ -26,11 +26,20 @@ class _ConcatRollviPageState extends State<ConcatRollviPage> {
   String _preVideoPath;
   String _curVideoPath;
 
+  bool isComplete;
+
   @override
   void initState() {
-    _preVideoPath = '/data/user/0/kr.hispace.rollvi/cache/file_picker/1599119080613.mp4';
-    _curVideoPath = '/data/user/0/kr.hispace.rollvi/cache/file_picker/1599104468394.mp4';
+    isComplete = false;
+
+    _preVideoPath =
+        '/data/user/0/kr.hispace.rollvi/cache/file_picker/1599119080613.mp4';
+    _curVideoPath =
+        '/data/user/0/kr.hispace.rollvi/cache/file_picker/1599104468394.mp4';
+
     _initializePath();
+    _makeVideoAndPlay();
+
     super.initState();
   }
 
@@ -46,15 +55,15 @@ class _ConcatRollviPageState extends State<ConcatRollviPage> {
 
   void _makeVideoAndPlay() async {
     await _concatVideo().then((outputPath) {
-      setState(() {
+      setState(() async {
         print("@@@ Make Rolling Video File - $outputPath");
+
+        _controller = await VideoPlayerController.file(File(_rollviPath));
+        _initializeVideoPlayerFuture = _controller.initialize();
+        _controller.setLooping(true);
+        _controller.play();
       });
     });
-
-    _controller = await VideoPlayerController.file(File(_rollviPath));
-    _initializeVideoPlayerFuture = _controller.initialize();
-    _controller.setLooping(true);
-    _controller.play();
   }
 
   Future<String> _concatVideo() async {
@@ -63,18 +72,37 @@ class _ConcatRollviPageState extends State<ConcatRollviPage> {
 
     final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
 
-    String cmd = '-y -i $_preVideoPath -i $_curVideoPath -filter_complex \'[0:0][1:0]concat=n=2:v=1:a=0[out]\' -map \'[out]\' $_rollviPath';
+    String cmd =
+        '-y -i $_preVideoPath -i $_curVideoPath -filter_complex \'[0:0][1:0]concat=n=2:v=1:a=0[out]\' -map \'[out]\' $_rollviPath';
 
-    await _flutterFFmpeg
-        .execute(cmd)
-        .then((rc) => print("FFmpeg process exited with rc $rc"));
+    await _flutterFFmpeg.execute(cmd).then((rc) {
+      print("FFmpeg process exited with rc $rc");
+      if (rc == 0) {
+        setState(() {
+          isComplete = true;
+        });
+      }
+    });
 
     return _rollviPath;
   }
 
   @override
   Widget build(BuildContext context) {
+    final GlobalKey<ScaffoldState> _scaffoldKey =
+        new GlobalKey<ScaffoldState>();
+
+    void showInSnackBar(String value) {
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(
+          content: new Text(value),
+          action: SnackBarAction(
+            label: 'OK',
+            onPressed: _scaffoldKey.currentState.hideCurrentSnackBar,
+          )));
+    }
+
     return Scaffold(
+      key: _scaffoldKey,
       body: FutureBuilder(
         future: _initializeVideoPlayerFuture,
         builder: (context, snapshot) {
@@ -94,46 +122,54 @@ class _ConcatRollviPageState extends State<ConcatRollviPage> {
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              FloatingActionButton(
-                heroTag: null,
-                child: Icon(Icons.image),
-                onPressed: () async {
-                  File file = await FilePicker.getFile(type: FileType.video);
-                  print(file.path);
-                  setState(() {
-                      _controller = VideoPlayerController.file(file);
-                      _initializeVideoPlayerFuture = _controller.initialize();
-                      _controller.setLooping(true);
-                      _controller.play();
-                    });
-                },
-              ),
-              SizedBox(height: 10,),
-              FloatingActionButton(
-                heroTag: null,
-                child: Icon(Icons.movie_creation),
-                onPressed: () async {
-                  _makeVideoAndPlay();
-                },
-              ),
+              (isComplete == true)
+                  ? FloatingActionButton(
+                      heroTag: null,
+                      child: Icon(Icons.share),
+                      onPressed: () async {
+                        print("Shaer Video: $_rollviPath");
+                        Share.shareFiles([_rollviPath], text: 'Rollvi Video');
+                      },
+                    )
+                  : Container(),
+              SizedBox(height: 10),
+              (isComplete == true)
+                  ? FloatingActionButton(
+                      heroTag: null,
+                      child: Icon(Icons.file_download),
+                      onPressed: () async {
+                        print("Save Video to Gallery: $_rollviPath");
+                        GallerySaver.saveVideo(_rollviPath, albumName: 'Media')
+                            .then((bool success) {
+                          if (success) {
+                            showInSnackBar("Video Saved!");
+                            print("Video Saved!");
+                          } else {
+                            showInSnackBar("Failed to save the video");
+                            print("Video Save Failed");
+                          }
+                        });
+                      },
+                    )
+                  : Container(),
               SizedBox(height: 10),
               (_controller != null)
                   ? FloatingActionButton(
-                heroTag: null,
-                onPressed: () {
-                  setState(() {
-                    _controller.value.isPlaying
-                        ? _controller.pause()
-                        : _controller.play();
-                  });
-                },
-                // Display the correct icon depending on the state of the player.
-                child: Icon(
-                  _controller.value.isPlaying
-                      ? Icons.pause
-                      : Icons.play_arrow,
-                ),
-              )
+                      heroTag: null,
+                      onPressed: () {
+                        setState(() {
+                          _controller.value.isPlaying
+                              ? _controller.pause()
+                              : _controller.play();
+                        });
+                      },
+                      // Display the correct icon depending on the state of the player.
+                      child: Icon(
+                        _controller.value.isPlaying
+                            ? Icons.pause
+                            : Icons.play_arrow,
+                      ),
+                    )
                   : Container(),
             ],
           )

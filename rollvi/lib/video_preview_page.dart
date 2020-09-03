@@ -88,11 +88,6 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
                 FloatingActionButton(
                     heroTag: null,
                     onPressed: () async {
-                      final path = join(
-                        (await getExternalStorageDirectory()).path,
-                        '${DateTime.now()}.mp4',
-                      );
-
                       print("Recorded Video Path ${widget.videoPath}");
                       GallerySaver.saveVideo(widget.videoPath, albumName: 'Media').then((bool success) {
                         if (success) {
@@ -104,7 +99,7 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
                         }
                       });
                     },
-                    child: Icon(Icons.input)),
+                    child: Icon(Icons.file_download)),
                 SizedBox(height: 10),
                 FloatingActionButton(
                     heroTag: null,
