@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPreviewPage extends StatefulWidget {
@@ -92,7 +93,7 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
                         '${DateTime.now()}.mp4',
                       );
 
-                      print("Recorded Video Path $widget.imagePath");
+                      print("Recorded Video Path ${widget.videoPath}");
                       GallerySaver.saveVideo(widget.videoPath, albumName: 'Media').then((bool success) {
                         if (success) {
                           showInSnackBar("Video Saved!");
@@ -102,6 +103,20 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
                           print("Video Save Failed");
                         }
                       });
+                    },
+                    child: Icon(Icons.input)),
+                SizedBox(height: 10),
+                FloatingActionButton(
+                    heroTag: null,
+                    onPressed: () async {
+                      print("Recorded Video Path ${widget.videoPath}");
+
+                      Share.shareFiles([widget.videoPath], text: 'Rollvi Video');
+
+//                      await FlutterShare.shareFile(title: "rollvi video share", filePath: widget.videoPath);
+
+
+
                     },
                     child: Icon(Icons.share)),
                 SizedBox(height: 10),
