@@ -1,11 +1,21 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
 
 import 'package:image/image.dart' as imglib;
 
+Future<String> getRollviDirectory() async {
+  final tempDir = (await getTemporaryDirectory()).path;
+  return "$tempDir/rollvi";
+}
+
+bool existDirectory(String directoryPath) {
+  return Directory(directoryPath).existsSync();
+}
 
 ImageRotation rotationIntToImageRotation(int rotation) {
   switch (rotation) {

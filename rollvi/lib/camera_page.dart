@@ -112,8 +112,6 @@ class _CameraPageState extends State<CameraPage> {
 
     await _camera.initialize();
 
-    bool dirExists = Directory(_rollviDir).existsSync();
-
     _camera.startImageStream((CameraImage image) {
       _lastImage = image;
 

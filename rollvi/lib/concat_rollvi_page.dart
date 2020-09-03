@@ -163,7 +163,6 @@ class _ConcatRollviPageState extends State<ConcatRollviPage> {
                               : _controller.play();
                         });
                       },
-                      // Display the correct icon depending on the state of the player.
                       child: Icon(
                         _controller.value.isPlaying
                             ? Icons.pause

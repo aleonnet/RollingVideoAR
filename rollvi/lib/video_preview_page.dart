@@ -13,13 +13,11 @@ import 'package:video_player/video_player.dart';
 class VideoPreviewPage extends StatefulWidget {
   final String videoPath;
 
-  VideoPreviewPage({Key key, this.videoPath})
-      : super(key: key);
+  VideoPreviewPage({Key key, this.videoPath}) : super(key: key);
 
   @override
   State createState() => new VideoPreviewPageState();
 }
-
 
 class VideoPreviewPageState extends State<VideoPreviewPage> {
   VideoPlayerController _controller;
@@ -46,16 +44,16 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+    final GlobalKey<ScaffoldState> _scaffoldKey =
+        new GlobalKey<ScaffoldState>();
 
     void showInSnackBar(String value) {
-      _scaffoldKey.currentState.showSnackBar(
-          new SnackBar(
-              content: new Text(value),
-              action: SnackBarAction(
-                label: 'OK',
-                onPressed: _scaffoldKey.currentState.hideCurrentSnackBar,
-              )));
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(
+          content: new Text(value),
+          action: SnackBarAction(
+            label: 'OK',
+            onPressed: _scaffoldKey.currentState.hideCurrentSnackBar,
+          )));
     }
 
     return Scaffold(
@@ -89,7 +87,9 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
                     heroTag: null,
                     onPressed: () async {
                       print("Recorded Video Path ${widget.videoPath}");
-                      GallerySaver.saveVideo(widget.videoPath, albumName: 'Media').then((bool success) {
+                      GallerySaver.saveVideo(widget.videoPath,
+                              albumName: 'Media')
+                          .then((bool success) {
                         if (success) {
                           showInSnackBar("Video Saved!");
                           print("Video Saved!");
@@ -105,7 +105,8 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
                     heroTag: null,
                     onPressed: () async {
                       print("Recorded Video Path ${widget.videoPath}");
-                      Share.shareFiles([widget.videoPath], text: 'Rollvi Video');
+                      Share.shareFiles([widget.videoPath],
+                          text: 'Rollvi Video');
                     },
                     child: Icon(Icons.share)),
                 SizedBox(height: 10),
@@ -171,4 +172,3 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
     );
   }
 }
-
