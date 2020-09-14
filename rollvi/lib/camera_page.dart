@@ -172,8 +172,10 @@ class _CameraPageState extends State<CameraPage> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final deviceRatio = size.width / size.height;
+    final _scaffoldKey = new GlobalKey<ScaffoldState>();
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text('ROLLVI'),
         centerTitle: true,
@@ -224,81 +226,89 @@ class _CameraPageState extends State<CameraPage> {
         ],
       ),
 
-      bottomNavigationBar: BottomAppBar(
-        child: Container(
-          margin: EdgeInsets.only(left: 12.0, right: 12.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              IconButton(
-                iconSize: 27.0,
-                icon: _getCaptureIcon(_captureType),
-                onPressed: () async {
-                  switch (_captureType) {
-                    case CaptureType.Video:
-                      _captureType = CaptureType.Image;
-                      break;
-                    case CaptureType.Image:
-                      _captureType = CaptureType.ImageSequence;
-                      break;
-                    case CaptureType.ImageSequence:
-                      _captureType = CaptureType.Video;
-                  }
-                },
-              ),
-              IconButton(
-                iconSize: 27.0,
-                icon: Icon(
-                  Icons.adjust,
-                  color: (_showShootButton == true)
-                      ? Colors.redAccent
-                      : Colors.grey.shade400,
-                ),
-                onPressed: () {
-                  _showShootButton = !_showShootButton;
-                },
-              ),
-              SizedBox(
-                width: 50.0,
-              ),
-              IconButton(
-                iconSize: 27.0,
-                icon: Icon(
-                  Icons.face,
-                  color: (_showFaceContour == true)
-                      ? Colors.redAccent
-                      : Colors.grey.shade400,
-                ),
-                onPressed: () {
-                  _showFaceContour = !_showFaceContour;
-                },
-              ),
-              IconButton(
-                iconSize: 27.0,
-                icon: _getFilterIcon(_selectedFilter),
-                onPressed: () {
-                  _selectedFilter =
-                      (_selectedFilter > 4) ? 1 : _selectedFilter += 1;
-                },
-              ),
-            ],
-          ),
+      floatingActionButton: Container(
+        padding: EdgeInsets.only(top: size.height * deviceRatio * 1.80),
+        child: FloatingActionButton(
+          child: Icon(Icons.camera),
         ),
-        //to add a space between the FAB and BottomAppBar
-        shape: CircularNotchedRectangle(),
-        //color of the BottomAppBar
-        color: Colors.white,
       ),
-      floatingActionButton: (_showShootButton == false)
-          ? null
-          : (isRecording == false)
-              ? _getRecordButton(context)
-              : FloatingActionButton(
-                  child: Icon(Icons.fiber_manual_record),
-                  backgroundColor: Colors.grey,
-                ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerTop,
+
+//      bottomNavigationBar: BottomAppBar(
+//        child: Container(
+//          margin: EdgeInsets.only(left: 12.0, right: 12.0),
+//          child: Row(
+//            mainAxisSize: MainAxisSize.max,
+//            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//            children: <Widget>[
+//              IconButton(
+//                iconSize: 27.0,
+//                icon: _getCaptureIcon(_captureType),
+//                onPressed: () async {
+//                  switch (_captureType) {
+//                    case CaptureType.Video:
+//                      _captureType = CaptureType.Image;
+//                      break;
+//                    case CaptureType.Image:
+//                      _captureType = CaptureType.ImageSequence;
+//                      break;
+//                    case CaptureType.ImageSequence:
+//                      _captureType = CaptureType.Video;
+//                  }
+//                },
+//              ),
+//              IconButton(
+//                iconSize: 27.0,
+//                icon: Icon(
+//                  Icons.adjust,
+//                  color: (_showShootButton == true)
+//                      ? Colors.redAccent
+//                      : Colors.grey.shade400,
+//                ),
+//                onPressed: () {
+//                  _showShootButton = !_showShootButton;
+//                },
+//              ),
+//              SizedBox(
+//                width: 50.0,
+//              ),
+//              IconButton(
+//                iconSize: 27.0,
+//                icon: Icon(
+//                  Icons.face,
+//                  color: (_showFaceContour == true)
+//                      ? Colors.redAccent
+//                      : Colors.grey.shade400,
+//                ),
+//                onPressed: () {
+//                  _showFaceContour = !_showFaceContour;
+//                },
+//              ),
+//              IconButton(
+//                iconSize: 27.0,
+//                icon: _getFilterIcon(_selectedFilter),
+//                onPressed: () {
+//                  _selectedFilter =
+//                      (_selectedFilter > 4) ? 1 : _selectedFilter += 1;
+//                },
+//              ),
+//            ],
+//          ),
+//        ),
+//        //to add a space between the FAB and BottomAppBar
+//        shape: CircularNotchedRectangle(),
+//        //color of the BottomAppBar
+//        color: Colors.white,
+//      ),
+//      floatingActionButton: (_showShootButton == false)
+//          ? null
+//          : (isRecording == false)
+//              ? _getRecordButton(context)
+//              : FloatingActionButton(
+//                  child: Icon(Icons.fiber_manual_record),
+//                  backgroundColor: Colors.grey,
+//                ),
+//      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
