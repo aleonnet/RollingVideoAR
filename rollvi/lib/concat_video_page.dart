@@ -46,11 +46,13 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
 
     _initializePath();
 
-    _capturedVideoController = VideoPlayerController.network('https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4');
+    _capturedVideoController = VideoPlayerController.network(
+        'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4');
     _capturedVideoController.initialize();
     _capturedVideoController.setLooping(true);
 
-    _gottenVideoController = VideoPlayerController.network('https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4');
+    _gottenVideoController = VideoPlayerController.network(
+        'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4');
     _gottenVideoController.initialize();
     _gottenVideoController.setLooping(true);
 
@@ -90,7 +92,7 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
     });
   }
 
-  Future<String> _concatVideo([bool reverse=false]) async {
+  Future<String> _concatVideo([bool reverse = false]) async {
     String rawDocumentPath = widget.rollviDir;
     _rollviPath = "$rawDocumentPath/rollvi.mp4";
 
@@ -100,8 +102,8 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
     String secondVideoPath = _capturedVideoPath;
 
     if (reverse) {
-     firstVideoPath = _capturedVideoPath;
-     secondVideoPath = _gottenVideoPath;
+      firstVideoPath = _capturedVideoPath;
+      secondVideoPath = _gottenVideoPath;
     }
 
     String cmd =
@@ -149,7 +151,8 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                 color: Colors.white,
               ),
               onPressed: () {
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (BuildContext context) => HomePage()));
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (BuildContext context) => HomePage()));
               },
             )
           ],
@@ -167,58 +170,76 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                 child: Transform(
                   alignment: Alignment.center,
                   transform: Matrix4.rotationY(pi),
-                  child: (_curVideoController != null) ? VideoPlayer(_curVideoController) : Container(),
+                  child: (_curVideoController != null)
+                      ? VideoPlayer(_curVideoController)
+                      : Container(),
                 ),
               ),
             ),
           ),
           Expanded(
-              child: Container(
-                color: AppColor.nearlyWhite,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    FloatingActionButton(
-                      heroTag: null,
-                      child: Icon(Icons.queue_play_next),
-                      backgroundColor: Colors.blueAccent,
-                      onPressed: () {
-                        setState(() {
-                          _curVideoController = (!reverse) ? _capturedVideoController : _gottenVideoController;
-                          _curVideoController.play();
+            child: Container(
+              color: AppColor.nearlyWhite,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      FlatButton(
+                          child: (!reverse)
+                              ? Icon(Icons.videocam)
+                              : Icon(Icons.panorama),
+                      ),
+                      FlatButton(
+                          child: (!reverse)
+                              ? Icon(Icons.panorama)
+                              : Icon(Icons.videocam),
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        FloatingActionButton(
+                          heroTag: null,
+                          child: Icon(Icons.queue_play_next),
+                          backgroundColor: Colors.blueAccent,
+                          onPressed: () {
+                            setState(() {
+                              _curVideoController = (!reverse)
+                                  ? _capturedVideoController
+                                  : _gottenVideoController;
+                              _curVideoController.play();
 
-                          reverse = !reverse;
-                        });
-                      },
+                              reverse = !reverse;
+                            });
+                          },
+                        ),
+                        FloatingActionButton(
+                          heroTag: null,
+                          child: Icon(Icons.undo),
+                          onPressed: () {},
+                        ),
+                        FloatingActionButton(
+                          heroTag: null,
+                          child: Icon(Icons.repeat),
+                          onPressed: () {},
+                        ),
+                        FloatingActionButton(
+                          heroTag: null,
+                          child: Icon(Icons.check),
+                          onPressed: () {},
+                        ),
+                      ],
                     ),
-
-                    FloatingActionButton(
-                      heroTag: null,
-                      child: Icon(Icons.undo),
-                      onPressed: () {
-
-                      },
-                    ),
-
-                    FloatingActionButton(
-                      heroTag: null,
-                      child: Icon(Icons.repeat),
-                      onPressed: () {
-
-                      },
-                    ),
-
-                    FloatingActionButton(
-                      heroTag: null,
-                      child: Icon(Icons.check),
-                      onPressed: () {
-
-                      },
-                    ),
-                  ],
-                ),
-              )
+                  )
+                ],
+              ),
+            ),
           )
         ],
       ),
