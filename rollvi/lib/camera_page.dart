@@ -53,14 +53,14 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   CameraController _camera;
   bool _isDetecting = false;
 
-  final int _maxTime = 2;
+  final int _maxTime = 5;
   bool isRecording = false;
   int _frameNum = 0;
   Timer _timer;
   CameraImage _lastImage;
   List<imglib.Image> _imageSequence;
 
-  CaptureType _captureType = CaptureType.ImageSequence;
+  CaptureType _captureType = CaptureType.Video;
   int _selectedFilter = 1;
   bool _showFaceContour = false;
 
@@ -233,28 +233,34 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
           Expanded(
             child: Container(
               alignment: Alignment.bottomCenter,
-              color: AppColor.white,
-              child: GridView.builder(
-                padding: EdgeInsets.all(10),
-                itemCount: 5,
-                gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4),
-                itemBuilder: (BuildContext context, int index) {
-                  return Card(
-                    margin: EdgeInsets.all(10),
-                    color: AppColor.nearlyWhite,
-                    child: InkResponse(
-                      child: Image.asset(
-                        'assets/say_m0${index + 1}.webp',
-                        color: Colors.redAccent,
-                      ),
-                      onTap: () {
-                        _selectedFilter = index + 1;
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                color: AppColor.nearlyWhite,
+              ),
+              child: (_animationController.isAnimating)
+                  ? Container()
+                  : GridView.builder(
+                      padding: EdgeInsets.all(10),
+                      itemCount: 5,
+                      gridDelegate:
+                          new SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 4),
+                      itemBuilder: (BuildContext context, int index) {
+                        return Card(
+                          margin: EdgeInsets.all(10),
+                          color: AppColor.grey_10,
+                          child: InkResponse(
+                            child: Image.asset(
+                              'assets/say_m0${index + 1}.webp',
+                              color: Colors.redAccent,
+                            ),
+                            onTap: () {
+                              _selectedFilter = index + 1;
+                            },
+                          ),
+                        );
                       },
                     ),
-                  );
-                },
-              ),
             ),
           ),
         ],
@@ -299,12 +305,17 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.center,
                                         children: <Widget>[
-                                          Text(
-                                            timerString,
-                                            style: TextStyle(
-                                                fontSize: 15.0,
-                                                color: Colors.redAccent),
-                                          ),
+                                          _animationController.value == 0.0
+                                              ? Icon(
+                                                  Icons.camera,
+                                                  color: Colors.redAccent,
+                                                )
+                                              : Text(
+                                                  timerString,
+                                                  style: TextStyle(
+                                                      fontSize: 15.0,
+                                                      color: Colors.redAccent),
+                                                ),
                                         ],
                                       ),
                                     ),
@@ -319,7 +330,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                   ],
                 );
               }),
-          onPressed: () {
+          onPressed: () async {
             if (_animationController.isAnimating)
               _animationController.stop();
             else {
@@ -328,102 +339,79 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                       ? 1.0
                       : _animationController.value);
             }
+
+            isRecording = true;
+
+            // for recording video
+            String videoPath = '';
+            if (_captureType == CaptureType.Video) {
+              await _camera.stopImageStream();
+              _startVideoRecording().then((String filePath) {
+                if (filePath != null) {
+                  print("Recording Start");
+                  setState(() {
+                    videoPath = filePath;
+                  });
+                }
+              });
+            }
+
+            if (_captureType == CaptureType.Image) {
+              imglib.Image capturedImage = convertCameraImage(_lastImage);
+              _imageCapture().then((path) => {
+                imageCache.clear(),
+                print("Capture Complete : $path"),
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ImagePreviewPage(
+                          cameraImg: capturedImage,
+                          imagePath: path,
+                        )))
+                  ..then((value) => _initialize())
+              });
+            } else {
+              int _time = _maxTime;
+              _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
+                print('[timer] : $_time');
+
+                if (_time < 1) {
+                  if (_captureType == CaptureType.Video) {
+                    _stopVideoRecording().then((_) {
+                      print("Stop Video Recording");
+
+                      _stopRecording();
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  VideoPreviewPage(videoPath: videoPath)))
+                        ..then((value) => _initialize());
+                    });
+                  } else if (_captureType == CaptureType.ImageSequence) {
+                    print("Caputre Over!!!!!!");
+
+                    _saveImageToFile().then((value) => {
+                      _initialize(),
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SequencePreviewPage(
+                                rollviDir: _rollviDir,
+                              )))
+                    });
+                  }
+                  _timer.cancel();
+                } else {
+                  _time -= 1;
+                }
+              });
+            }
           },
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
-  }
-
-  Widget _getRecordButton(BuildContext context) {
-    FloatingActionButton recordButton = FloatingActionButton(
-      child: Icon(Icons.camera),
-      onPressed: () async {
-        try {
-          // for image stream
-          isRecording = true;
-
-          // for recording video
-          String videoPath = '';
-          if (_captureType == CaptureType.Video) {
-            await _camera.stopImageStream();
-            _startVideoRecording().then((String filePath) {
-              if (filePath != null) {
-                print("Recording Start");
-                setState(() {
-                  videoPath = filePath;
-                });
-              }
-            });
-          }
-
-          if (_captureType == CaptureType.Image) {
-            imglib.Image capturedImage = convertCameraImage(_lastImage);
-            _imageCapture().then((path) => {
-                  imageCache.clear(),
-                  print("Capture Complete : $path"),
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ImagePreviewPage(
-                                cameraImg: capturedImage,
-                                imagePath: path,
-                              )))
-                    ..then((value) => _initialize())
-                });
-          } else {
-            int _time = _maxTime;
-            _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
-              print('[timer] : $_time');
-
-              if (_time < 1) {
-                if (_captureType == CaptureType.Video) {
-                  _stopVideoRecording().then((_) {
-                    print("Stop Video Recording");
-
-                    _stopRecording();
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                VideoPreviewPage(videoPath: videoPath)))
-                      ..then((value) => _initialize());
-                  });
-                } else if (_captureType == CaptureType.ImageSequence) {
-                  print("Caputre Over!!!!!!");
-
-                  _saveImageToFile().then((value) => {
-                        _initialize(),
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SequencePreviewPage(
-                                      rollviDir: _rollviDir,
-                                    )))
-                      });
-
-//
-
-//                  Navigator.push(
-//                      context,
-//                      MaterialPageRoute(
-//                          builder: (context) => SequencePreviewPage(
-//                              cameraSequence: _imageSequence)))
-//                    ..then((value) => _initialize());
-                }
-
-                _timer.cancel();
-              } else {
-                _time -= 1;
-              }
-            });
-          }
-        } catch (e) {
-          print(e);
-        }
-      },
-    );
-    return recordButton;
   }
 
   Future<String> _startVideoRecording() async {
@@ -499,66 +487,6 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     }
 
     return null;
-  }
-
-  Icon _getCaptureIcon(CaptureType captureType) {
-    switch (captureType) {
-      case CaptureType.Video:
-        return Icon(
-          Icons.videocam,
-          color: Colors.grey.shade400,
-        );
-      case CaptureType.Image:
-        return Icon(
-          Icons.camera_alt,
-          color: Colors.grey.shade400,
-        );
-      case CaptureType.ImageSequence:
-        return Icon(
-          Icons.camera_roll,
-          color: Colors.grey.shade400,
-        );
-    }
-    return Icon(
-      Icons.settings,
-      color: Colors.grey.shade400,
-    );
-  }
-
-  Icon _getFilterIcon(int index) {
-    Color color = Colors.grey.shade700;
-    switch (index) {
-      case 1:
-        return Icon(
-          Icons.looks_one,
-          color: color,
-        );
-      case 2:
-        return Icon(
-          Icons.looks_two,
-          color: color,
-        );
-      case 3:
-        return Icon(
-          Icons.looks_3,
-          color: color,
-        );
-      case 4:
-        return Icon(
-          Icons.looks_4,
-          color: color,
-        );
-      case 5:
-        return Icon(
-          Icons.looks_5,
-          color: color,
-        );
-      default:
-        return Icon(
-          Icons.settings,
-          color: color,
-        );
-    }
   }
 
   String get timerString {
