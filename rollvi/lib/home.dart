@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/main.dart';
 import 'package:rollvi/select_video_page.dart';
 import 'package:rollvi/camera_page.dart';
@@ -21,9 +22,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     mediaQuery.size.width;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('ROLLVI'),
-        centerTitle: true,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(AppSize.AppBarHeight),
+        child: AppBar(
+          title: Text('ROLLVI'),
+          centerTitle: true,
+        ),
       ),
       backgroundColor: Colors.white,
       body: Column(
@@ -53,49 +57,5 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ],
       ),
     );
-
-
-//    return Scaffold(
-//      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-//      floatingActionButton:  FloatingActionButton(
-//        heroTag: null,
-//        backgroundColor: Colors.redAccent,
-//        child: Icon(Icons.camera_alt),
-//        onPressed: () {
-//          Navigator.of(context)
-//              .push(MaterialPageRoute(builder: (context) => CameraPage())
-//          );
-//        },
-//      ),
-//
-//      body: Container(
-//          child: Row(
-//            crossAxisAlignment: CrossAxisAlignment.stretch,
-//            mainAxisAlignment: MainAxisAlignment.spaceAround,
-//            children: <Widget>[
-//              FloatingActionButton(
-//                heroTag: null,
-//                  backgroundColor: Colors.redAccent,
-//                  child: Icon(Icons.camera_alt),
-//                onPressed: () {
-//                  Navigator.of(context)
-//                      .push(MaterialPageRoute(builder: (context) => CameraPage())
-//                  );
-//                },
-//              ),
-//              FloatingActionButton(
-//                  heroTag: null,
-//                backgroundColor: Colors.redAccent,
-//                child: Icon(Icons.image),
-//                onPressed: () {
-//                  Navigator.of(context)
-//                      .push(MaterialPageRoute(builder: (context) => SelectVideoPage())
-//                  );
-//                },
-//              ),
-//            ],
-//          )
-//      ),
-//    );
   }
 }

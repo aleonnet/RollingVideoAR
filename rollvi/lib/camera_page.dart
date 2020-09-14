@@ -21,6 +21,8 @@ import 'package:rollvi/ui/progress_painter.dart';
 import 'package:rollvi/video_preview_page.dart';
 import 'package:sprintf/sprintf.dart';
 
+import 'home.dart';
+import 'home.dart';
 import 'rollvi_camera.dart';
 import 'test/make_video_page.dart';
 import 'utils.dart';
@@ -195,9 +197,11 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                 color: Colors.white,
               ),
               onPressed: () {
-                print("size : $_size");
-                print("deviceRation: $_deviceRatio");
-                print("_camera: ${_camera.value.aspectRatio}");
+//                print("size : $_size");
+//                print("deviceRation: $_deviceRatio");
+//                print("_camera: ${_camera.value.aspectRatio}");
+
+                Navigator.of(context).pop();
               },
             )
           ],
@@ -229,14 +233,28 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
           ),
           Expanded(
             child: Container(
+              alignment: Alignment.bottomCenter,
               color: AppColor.white,
-              child: GridView.count(
-                crossAxisCount: 4,
-                children: List.generate(30, (index) {
-                  return Center(
-                    child: Text("Tiem $index"),
+              child: GridView.builder(
+                padding: EdgeInsets.all(10),
+                itemCount: 5,
+                gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4),
+                itemBuilder: (BuildContext context, int index) {
+                  return Card(
+                    margin: EdgeInsets.all(10),
+                    color: AppColor.nearlyWhite,
+                    child: InkResponse(
+                      child: Image.asset(
+                        'assets/say_m0${index + 1}.webp',
+                        color: Colors.redAccent,
+                      ),
+                      onTap: () {
+                        _selectedFilter = index + 1;
+                      },
+                    ),
                   );
-                }),
+                },
               ),
             ),
           ),
