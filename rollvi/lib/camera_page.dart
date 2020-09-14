@@ -59,7 +59,6 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
 
   CaptureType _captureType = CaptureType.ImageSequence;
   int _selectedFilter = 1;
-  bool _showShootButton = true;
   bool _showFaceContour = false;
 
   String _rollviDir;
@@ -182,6 +181,24 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
 
     return Scaffold(
       backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text('ROLLVI'),
+        centerTitle: true,
+        actions: [
+          new IconButton(
+            icon: Icon(
+              Icons.home,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              print("size : $size");
+              print("deviceRation: $deviceRatio");
+              print("_camera: ${_camera.value.aspectRatio}");
+
+            },
+          )
+        ],
+      ),
       body: Column(
         children: [
           RepaintBoundary(
@@ -190,7 +207,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
               child: Align(
                 alignment: Alignment.center,
                 widthFactor: 1,
-                heightFactor: deviceRatio, // 0.8, 0.56
+                heightFactor: _camera.value.aspectRatio, // 0.8, 0.56
                 child: _camera == null ? Container(color: Colors.black,)
                     : AspectRatio(
                   aspectRatio: _camera.value.aspectRatio, // 9 / 15
@@ -203,11 +220,16 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
               ),
             ),
           ),
+          Expanded(
+            child: Container(
+              color: Colors.red,
+            ),
+          )
 //          Expanded(
 //            child: Container(
 //              child: GridView.count(
 //                  crossAxisCount: 4,
-//                  children: List.generate(100, (index) {
+//                  children: List.generate(30, (index) {
 //                    return Center(
 //                      child: Text("Item $index"),
 //                    );
@@ -218,139 +240,77 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
 //          )
         ],
       ),
-      bottomNavigationBar: BottomAppBar(
-        child: Container(
-          margin: EdgeInsets.only(left: 12.0, right: 12.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              IconButton(
-                iconSize: 27.0,
-                icon: _getCaptureIcon(_captureType),
-                onPressed: () async {
-                  switch (_captureType) {
-                    case CaptureType.Video:
-                      _captureType = CaptureType.Image;
-                      break;
-                    case CaptureType.Image:
-                      _captureType = CaptureType.ImageSequence;
-                      break;
-                    case CaptureType.ImageSequence:
-                      _captureType = CaptureType.Video;
-                  }
-                },
-              ),
-              IconButton(
-                iconSize: 27.0,
-                icon: Icon(
-                  Icons.adjust,
-                  color: (_showShootButton == true)
-                      ? Colors.redAccent
-                      : Colors.grey.shade400,
-                ),
-                onPressed: () {
-                  _showShootButton = !_showShootButton;
-                },
-              ),
-              SizedBox(
-                width: 50.0,
-              ),
-              IconButton(
-                iconSize: 27.0,
-                icon: Icon(
-                  Icons.face,
-                  color: (_showFaceContour == true)
-                      ? Colors.redAccent
-                      : Colors.grey.shade400,
-                ),
-                onPressed: () {
-                  _showFaceContour = !_showFaceContour;
-                },
-              ),
-              IconButton(
-                iconSize: 27.0,
-                icon: _getFilterIcon(_selectedFilter),
-                onPressed: () {
-                  _selectedFilter =
-                  (_selectedFilter > 4) ? 1 : _selectedFilter += 1;
-                },
-              ),
-            ],
-          ),
-        ),
-        //to add a space between the FAB and BottomAppBar
-        shape: CircularNotchedRectangle(),
-        //color of the BottomAppBar
-        color: Colors.white,
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.white,
-        child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              return Stack(
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.all(0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Expanded(
-                          child: Align(
-                            alignment: FractionalOffset.center,
-                            child: AspectRatio(
-                              aspectRatio: 1.0,
-                              child: Stack(
-                                children: <Widget>[
-                                  Positioned.fill(
-                                    child: CustomPaint(
-                                        painter: ProgressTimerPainter(
-                                          animation: _animationController,
-                                          backgroundColor: Colors.white,
-                                          color: Colors.redAccent,
-                                        )),
-                                  ),
-                                  Align(
-                                    alignment: FractionalOffset.center,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.center,
-                                      children: <Widget>[
-                                        Text(
-                                          timerString,
-                                          style: TextStyle(
-                                              fontSize: 15.0,
-                                              color: Colors.redAccent),
+      floatingActionButton: Container(
+        alignment: Alignment.bottomCenter,
+        child:FloatingActionButton(
+            backgroundColor: Colors.white,
+            child: AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return Stack(
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.all(5),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Expanded(
+                              child: Align(
+                                alignment: FractionalOffset.center,
+                                child: AspectRatio(
+                                  aspectRatio: 1.0,
+                                  child: Stack(
+                                    children: <Widget>[
+                                      Positioned.fill(
+                                        child: CustomPaint(
+                                            painter: ProgressTimerPainter(
+                                              animation: _animationController,
+                                              backgroundColor: Colors.white,
+                                              color: Colors.redAccent,
+                                            )),
+                                      ),
+                                      Align(
+                                        alignment: FractionalOffset.center,
+                                        child: Column(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                          crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                          children: <Widget>[
+                                            Text(
+                                              timerString,
+                                              style: TextStyle(
+                                                  fontSize: 15.0,
+                                                  color: Colors.redAccent),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            }),
-        onPressed: () {
-          if (_animationController.isAnimating)
-            _animationController.stop();
-          else {
-            _animationController.reverse(
-                from: _animationController.value == 0.0
-                    ? 1.0
-                    : _animationController.value);
-          }
-        },
+                      ),
+                    ],
+                  );
+                }),
+            onPressed: () {
+              if (_animationController.isAnimating)
+                _animationController.stop();
+              else {
+                _animationController.reverse(
+                    from: _animationController.value == 0.0
+                        ? 1.0
+                        : _animationController.value);
+              }
+            },
+          ),
+
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerTop,
     );
   }
 
