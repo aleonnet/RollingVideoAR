@@ -7,6 +7,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:rollvi/const/app_colors.dart';
+import 'package:rollvi/const/app_size.dart';
+import 'package:rollvi/home.dart';
 import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
 
@@ -27,11 +30,9 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
   void initState() {
     print("video path : ${widget.videoPath}");
     _controller = VideoPlayerController.file(File(widget.videoPath));
-//    _controller = VideoPlayerController.network(
-//      'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
-//    );
     _initializeVideoPlayerFuture = _controller.initialize();
     _controller.setLooping(true);
+    _controller.play();
 
     super.initState();
   }
@@ -44,6 +45,8 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
 
   @override
   Widget build(BuildContext context) {
+    final _size = MediaQuery.of(context).size;
+
     final GlobalKey<ScaffoldState> _scaffoldKey =
         new GlobalKey<ScaffoldState>();
 
@@ -59,79 +62,111 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
     return Scaffold(
         key: _scaffoldKey,
         backgroundColor: Colors.black,
-        appBar: AppBar(
-          title: const Text('ROLLVI'),
-          backgroundColor: Colors.redAccent,
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(AppSize.AppBarHeight),
+          child: AppBar(
+            title: Text('ROLLVI'),
+            centerTitle: true,
+            actions: [
+              new IconButton(
+                icon: Icon(
+                  Icons.home,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  print("size: ${_size}");
+//                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (BuildContext context) => HomePage()));
+                },
+              )
+            ],
+          ),
         ),
-        body: FutureBuilder(
-          future: _initializeVideoPlayerFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return Transform(
-                alignment: Alignment.center,
-                transform: Matrix4.rotationY(pi),
-                child: VideoPlayer(_controller),
-              );
-            } else {
-              return Center(child: CircularProgressIndicator());
-            }
-          },
-        ),
-        floatingActionButton: Stack(
-          alignment: Alignment.bottomRight,
+        body: Column(
           children: [
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                FloatingActionButton(
-                    heroTag: null,
-                    onPressed: () async {
-                      print("Recorded Video Path ${widget.videoPath}");
-                      GallerySaver.saveVideo(widget.videoPath,
-                              albumName: 'Media')
-                          .then((bool success) {
-                        if (success) {
-                          showInSnackBar("Video Saved!");
-                          print("Video Saved!");
-                        } else {
-                          showInSnackBar("Failed to save the video");
-                          print("Video Save Failed");
-                        }
-                      });
-                    },
-                    child: Icon(Icons.file_download)),
-                SizedBox(height: 10),
-                FloatingActionButton(
-                    heroTag: null,
-                    onPressed: () async {
-                      print("Recorded Video Path ${widget.videoPath}");
-                      Share.shareFiles([widget.videoPath],
-                          text: 'Rollvi Video');
-                    },
-                    child: Icon(Icons.share)),
-                SizedBox(height: 10),
-                FloatingActionButton(
-                  heroTag: null,
-                  onPressed: () {
-                    setState(() {
-                      if (_controller.value.isPlaying) {
-                        _controller.pause();
-                      } else {
-                        _controller.play();
-                      }
-                    });
-                  },
-                  // Display the correct icon depending on the state of the player.
-                  child: Icon(
-                    _controller.value.isPlaying
-                        ? Icons.pause
-                        : Icons.play_arrow,
+            ClipRect(
+              child: Align(
+                alignment: Alignment.center,
+                widthFactor: 1,
+                heightFactor: _size.width / _size.height,
+                child: AspectRatio(
+                  aspectRatio: _size.width / _size.height,
+                  child: Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.rotationY(pi),
+                    child: VideoPlayer(_controller),
                   ),
                 ),
-              ],
+              ),
+            ),
+            Expanded(
+              child: Container(
+                color: AppColor.nearlyWhite,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    FloatingActionButton(
+                      heroTag: null,
+                      child: ImageIcon(
+                        AssetImage("assets/insta_logo.png"),
+                      ),
+                    ),
+                    FloatingActionButton(
+                      heroTag: null,
+                      child: Icon(Icons.file_download),
+                      onPressed: () async {
+                        print("Recorded Video Path ${widget.videoPath}");
+                        GallerySaver.saveVideo(widget.videoPath,
+                            albumName: 'Media')
+                            .then((bool success) {
+                          if (success) {
+                            showInSnackBar("Video Saved!");
+                          } else {
+                            showInSnackBar("Failed to save the video");
+                          }
+                        });
+                      },
+                    ),
+                    FloatingActionButton(
+                      heroTag: null,
+                      child: Icon(Icons.share),
+                      onPressed: () async {
+                        print("Recorded Video Path ${widget.videoPath}");
+                        Share.shareFiles([widget.videoPath],
+                            text: 'Rollvi Video');
+                      },
+                    ),
+                  ],
+                ),
+              )
             )
           ],
-        ));
+        ),
+
+
+//        body: FutureBuilder(
+//          future: _initializeVideoPlayerFuture,
+//          builder: (context, snapshot) {
+//            if (snapshot.connectionState == ConnectionState.done) {
+//              return ClipRect(
+//                child: Align(
+//                  alignment: Alignment.center,
+//                  widthFactor: 1,
+//                  heightFactor: _size.width / _size.height,
+//                  child: Transform(
+//                    alignment: Alignment.center,
+//                    transform: Matrix4.rotationY(pi),
+//                    child: VideoPlayer(_controller),
+//                  ),
+//                ),
+//              );
+//            } else {
+//              return Center(child: CircularProgressIndicator());
+//            }
+//          },
+//        ),
+
+    );
   }
 
   Widget _getFAB() {
