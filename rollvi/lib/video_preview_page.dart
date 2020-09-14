@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 
@@ -10,6 +12,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/home.dart';
+import 'package:rollvi/insta_downloader.dart';
+import 'package:rollvi/ui/instalink_dialog.dart';
 import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
 
@@ -110,6 +114,31 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
                       child: ImageIcon(
                         AssetImage("assets/insta_logo.png"),
                       ),
+                      onPressed: () async {
+                        String _clipData =
+                            (await Clipboard.getData('text/plain')).text;
+                        final inputText = await showDialog(
+                            context: context,
+                            builder: (BuildContext context) => InstaLinkDialog(
+                              clipData: _clipData,
+                            ));
+
+                        if (inputText != null) {
+                          FlutterInsta flutterInsta = new FlutterInsta();
+                          await flutterInsta.downloadReels(inputText).then((String instaLink) {
+                            print(instaLink);
+                          });
+                        }
+                      },
+                    ),
+                    FloatingActionButton(
+                      heroTag: null,
+                      child: Icon(Icons.photo),
+                      onPressed: () {
+                        FilePicker.getFile(type: FileType.video).then((File file) async {
+                          print(file);
+                        });
+                      },
                     ),
                     FloatingActionButton(
                       heroTag: null,
