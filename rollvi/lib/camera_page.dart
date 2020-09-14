@@ -223,6 +223,16 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
           Expanded(
             child: Container(
               color: Colors.red,
+              child: GridView.count(
+                crossAxisCount: 4,
+                children:
+                  List.generate(30, (index) {
+                    return Center(
+                      child: Text("Tiem $index"),
+                    );
+                  }),
+
+              ),
             ),
           )
 //          Expanded(
