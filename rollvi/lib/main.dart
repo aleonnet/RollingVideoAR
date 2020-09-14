@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:rollvi/home.dart';
 
+import 'test/countdown_timer.dart';
+
 void main() {
   runApp(App());
 }
@@ -15,7 +17,7 @@ class App extends StatelessWidget{
           primarySwatch: Colors.red,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: new HomePage()
+        home: new CountDownTimer()
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'progress_painter.dart';
+import 'package:rollvi/ui/progress_painter.dart';
+import 'package:rollvi/ui/timer_button.dart';
 
 class CountDownTimer extends StatefulWidget {
   @override
@@ -12,7 +13,8 @@ class _CountDownTimerState extends State<CountDownTimer>
 
   String get timerString {
     Duration duration = controller.duration * controller.value;
-    return '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+//    return '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+    return (duration.inSeconds % 60).toString();
   }
 
   @override
@@ -29,20 +31,77 @@ class _CountDownTimerState extends State<CountDownTimer>
     ThemeData themeData = Theme.of(context);
     return Scaffold(
       backgroundColor: Colors.white10,
-      body:
-      AnimatedBuilder(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.white,
+        child: AnimatedBuilder(
+            animation: controller,
+            builder: (context, child) {
+              return Stack(
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Expanded(
+                          child: Align(
+                            alignment: FractionalOffset.center,
+                            child: AspectRatio(
+                              aspectRatio: 1.0,
+                              child: Stack(
+                                children: <Widget>[
+                                  Positioned.fill(
+                                    child: CustomPaint(
+                                        painter: ProgressTimerPainter(
+                                      animation: controller,
+                                      backgroundColor: Colors.white,
+                                      color: themeData.indicatorColor,
+                                    )),
+                                  ),
+                                  Align(
+                                    alignment: FractionalOffset.center,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        Text(
+                                          timerString,
+                                          style: TextStyle(
+                                              fontSize: 15.0,
+                                              color: Colors.redAccent),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }),
+        onPressed: () {
+          if (controller.isAnimating)
+            controller.stop();
+          else {
+            controller.reverse(
+                from: controller.value == 0.0
+                    ? 1.0
+                    : controller.value);
+          }
+        },
+      ),
+      body: AnimatedBuilder(
           animation: controller,
           builder: (context, child) {
             return Stack(
               children: <Widget>[
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    color: Colors.amber,
-                    height:
-                    controller.value * MediaQuery.of(context).size.height,
-                  ),
-                ),
                 Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Column(
@@ -58,29 +117,23 @@ class _CountDownTimerState extends State<CountDownTimer>
                                 Positioned.fill(
                                   child: CustomPaint(
                                       painter: ProgressTimerPainter(
-                                        animation: controller,
-                                        backgroundColor: Colors.white,
-                                        color: themeData.indicatorColor,
-                                      )),
+                                    animation: controller,
+                                    backgroundColor: Colors.white,
+                                    color: themeData.indicatorColor,
+                                  )),
                                 ),
                                 Align(
                                   alignment: FractionalOffset.center,
                                   child: Column(
                                     mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
+                                        MainAxisAlignment.spaceEvenly,
                                     crossAxisAlignment:
-                                    CrossAxisAlignment.center,
+                                        CrossAxisAlignment.center,
                                     children: <Widget>[
-                                      Text(
-                                        "Count Down Timer",
-                                        style: TextStyle(
-                                            fontSize: 20.0,
-                                            color: Colors.white),
-                                      ),
                                       Text(
                                         timerString,
                                         style: TextStyle(
-                                            fontSize: 112.0,
+                                            fontSize: 10.0,
                                             color: Colors.white),
                                       ),
                                     ],
