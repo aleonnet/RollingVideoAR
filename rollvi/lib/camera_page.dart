@@ -95,18 +95,17 @@ class _CameraPageState extends State<CameraPage> {
 
     _initializeCamera();
 
-
     await getExternalStorageDirectory();
   }
 
   void _initializeCamera() async {
     CameraDescription description = await availableCameras().then(
-            (List<CameraDescription> cameras) => cameras.firstWhere(
-                (CameraDescription camera) =>
-            camera.lensDirection == CameraLensDirection.front));
+        (List<CameraDescription> cameras) => cameras.firstWhere(
+            (CameraDescription camera) =>
+                camera.lensDirection == CameraLensDirection.front));
 
     ImageRotation rotation =
-    rotationIntToImageRotation(description.sensorOrientation);
+        rotationIntToImageRotation(description.sensorOrientation);
 
     _camera = CameraController(description, ResolutionPreset.high);
 
@@ -120,11 +119,12 @@ class _CameraPageState extends State<CameraPage> {
       _isDetecting = true;
 
       _detectFaces(image, rotation).then(
-            (dynamic result) {
+        (dynamic result) {
           setState(() {
             _faces = result;
 
-            if (_captureType == CaptureType.ImageSequence && isRecording == true) {
+            if (_captureType == CaptureType.ImageSequence &&
+                isRecording == true) {
               _imageSequence.add(convertCameraImage(image));
 
               print("Frame Num: $_frameNum");
@@ -170,125 +170,151 @@ class _CameraPageState extends State<CameraPage> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final deviceRatio = size.width / size.height;
+    final _scaffoldKey = new GlobalKey<ScaffoldState>();
+
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: RepaintBoundary(
-        key: previewContainer,
-//        child:
-//            ClipRect(
-//              child: Align(
-//                alignment: Alignment.center,
-//                widthFactor: 1,
-//                heightFactor: 1, // 0.8, 0.56
-//                child: AspectRatio(
-//                  aspectRatio: 9 / 15, // 9 / 15
-//                  child: _camera == null
-//                      ? Container(color: Colors.black)
-//                      : FaceCamera(faces: _faces, camera: _camera),
-//                ),
-//              ),
-//            ),
-//        child: _camera == null
-//            ? Container(color: Colors.black)
-//            : RollviCamera(
-//                faces: _faces,
-//                camera: _camera,
-//                showFaceContour: _showFaceContour,
-//                filterIndex: _selectedFilter),
-        child: Stack(
-          children: <Widget>[
-            _camera == null
-                ? Container(color: Colors.black)
-                : RollviCamera(
-                faces: _faces,
-                camera: _camera,
-                showFaceContour: _showFaceContour,
-                filterIndex: _selectedFilter),
-          ],
-        ),
+      key: _scaffoldKey,
+      appBar: AppBar(
+        title: Text('ROLLVI'),
+        centerTitle: true,
+        actions: [
+          new IconButton(
+            icon: Icon(
+              Icons.home,
+              color: Colors.white,
+            ),
+            onPressed: () {},
+          )
+        ],
       ),
-      bottomNavigationBar: BottomAppBar(
-        child: Container(
-          margin: EdgeInsets.only(left: 12.0, right: 12.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              IconButton(
-                iconSize: 27.0,
-                icon: _getCaptureIcon(_captureType),
-                onPressed: () async {
-                  switch (_captureType) {
-                    case CaptureType.Video:
-                      _captureType = CaptureType.Image;
-                      break;
-                    case CaptureType.Image:
-                      _captureType = CaptureType.ImageSequence;
-                      break;
-                    case CaptureType.ImageSequence:
-                      _captureType = CaptureType.Video;
-                  }
-                },
-              ),
-              IconButton(
-                iconSize: 27.0,
-                icon: Icon(
-                  Icons.adjust,
-                  color: (_showShootButton == true)
-                      ? Colors.redAccent
-                      : Colors.grey.shade400,
+      body: Column(
+        children: [
+          RepaintBoundary(
+            key: previewContainer,
+            child: ClipRect(
+              child: Align(
+                alignment: Alignment.center,
+                widthFactor: 1,
+                heightFactor: deviceRatio, // 0.8, 0.56
+                child: _camera == null ? Container(color: Colors.black,)
+                : AspectRatio(
+                  aspectRatio: _camera.value.aspectRatio, // 9 / 15
+                  child: RollviCamera(
+                          faces: _faces,
+                          camera: _camera,
+                          showFaceContour: _showFaceContour,
+                          filterIndex: _selectedFilter),
                 ),
-                onPressed: () {
-                  _showShootButton = !_showShootButton;
-                },
               ),
-              SizedBox(
-                width: 50.0,
-              ),
-              IconButton(
-                iconSize: 27.0,
-                icon: Icon(
-                  Icons.face,
-                  color: (_showFaceContour == true)
-                      ? Colors.redAccent
-                      : Colors.grey.shade400,
-                ),
-                onPressed: () {
-                  _showFaceContour = !_showFaceContour;
-                },
-              ),
-              IconButton(
-                iconSize: 27.0,
-                icon: _getFilterIcon(_selectedFilter),
-                onPressed: () {
-                  _selectedFilter =
-                  (_selectedFilter > 4) ? 1 : _selectedFilter += 1;
-                },
-              ),
-            ],
+            ),
           ),
+          Expanded(
+            child: Container(
+              child: GridView.count(
+                  crossAxisCount: 4,
+                  children: List.generate(100, (index) {
+                    return Center(
+                      child: Text("Item $index"),
+                    );
+                  })
+              ),
+//              color: Colors.red,
+            ),
+          )
+        ],
+      ),
+
+      floatingActionButton: Container(
+        padding: EdgeInsets.only(top: size.height * deviceRatio * 1.80),
+        child: FloatingActionButton(
+          child: Icon(Icons.camera),
         ),
-        //to add a space between the FAB and BottomAppBar
-        shape: CircularNotchedRectangle(),
-        //color of the BottomAppBar
-        color: Colors.white,
       ),
-      floatingActionButton: (_showShootButton == false)
-          ? null
-          : (isRecording == false)
-          ? _getRecordButton(context)
-          : FloatingActionButton(
-        child: Icon(Icons.fiber_manual_record),
-        backgroundColor: Colors.grey,
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerTop,
+
+//      bottomNavigationBar: BottomAppBar(
+//        child: Container(
+//          margin: EdgeInsets.only(left: 12.0, right: 12.0),
+//          child: Row(
+//            mainAxisSize: MainAxisSize.max,
+//            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//            children: <Widget>[
+//              IconButton(
+//                iconSize: 27.0,
+//                icon: _getCaptureIcon(_captureType),
+//                onPressed: () async {
+//                  switch (_captureType) {
+//                    case CaptureType.Video:
+//                      _captureType = CaptureType.Image;
+//                      break;
+//                    case CaptureType.Image:
+//                      _captureType = CaptureType.ImageSequence;
+//                      break;
+//                    case CaptureType.ImageSequence:
+//                      _captureType = CaptureType.Video;
+//                  }
+//                },
+//              ),
+//              IconButton(
+//                iconSize: 27.0,
+//                icon: Icon(
+//                  Icons.adjust,
+//                  color: (_showShootButton == true)
+//                      ? Colors.redAccent
+//                      : Colors.grey.shade400,
+//                ),
+//                onPressed: () {
+//                  _showShootButton = !_showShootButton;
+//                },
+//              ),
+//              SizedBox(
+//                width: 50.0,
+//              ),
+//              IconButton(
+//                iconSize: 27.0,
+//                icon: Icon(
+//                  Icons.face,
+//                  color: (_showFaceContour == true)
+//                      ? Colors.redAccent
+//                      : Colors.grey.shade400,
+//                ),
+//                onPressed: () {
+//                  _showFaceContour = !_showFaceContour;
+//                },
+//              ),
+//              IconButton(
+//                iconSize: 27.0,
+//                icon: _getFilterIcon(_selectedFilter),
+//                onPressed: () {
+//                  _selectedFilter =
+//                      (_selectedFilter > 4) ? 1 : _selectedFilter += 1;
+//                },
+//              ),
+//            ],
+//          ),
+//        ),
+//        //to add a space between the FAB and BottomAppBar
+//        shape: CircularNotchedRectangle(),
+//        //color of the BottomAppBar
+//        color: Colors.white,
+//      ),
+//      floatingActionButton: (_showShootButton == false)
+//          ? null
+//          : (isRecording == false)
+//              ? _getRecordButton(context)
+//              : FloatingActionButton(
+//                  child: Icon(Icons.fiber_manual_record),
+//                  backgroundColor: Colors.grey,
+//                ),
+//      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
   Widget _getRecordButton(BuildContext context) {
     FloatingActionButton recordButton = FloatingActionButton(
       child: Icon(Icons.camera),
-
       onPressed: () async {
         try {
           // for image stream
@@ -311,17 +337,18 @@ class _CameraPageState extends State<CameraPage> {
           if (_captureType == CaptureType.Image) {
             imglib.Image capturedImage = convertCameraImage(_lastImage);
             _imageCapture().then((path) => {
-              imageCache.clear(),
-              print("Capture Complete : $path"),
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          ImagePreviewPage(cameraImg: capturedImage, imagePath: path,)))
-                ..then((value) => _initialize())
-            });
-          }
-          else {
+                  imageCache.clear(),
+                  print("Capture Complete : $path"),
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ImagePreviewPage(
+                                cameraImg: capturedImage,
+                                imagePath: path,
+                              )))
+                    ..then((value) => _initialize())
+                });
+          } else {
             int _time = _maxTime;
             _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
               print('[timer] : $_time');
@@ -339,22 +366,18 @@ class _CameraPageState extends State<CameraPage> {
                                 VideoPreviewPage(videoPath: videoPath)))
                       ..then((value) => _initialize());
                   });
-                }
-                else if (_captureType == CaptureType.ImageSequence) {
-
+                } else if (_captureType == CaptureType.ImageSequence) {
                   print("Caputre Over!!!!!!");
 
                   _saveImageToFile().then((value) => {
-
-                  _initialize(),
-
-                    Navigator.push(context, MaterialPageRoute(
-                    builder: (context) => SequencePreviewPage(
-                    rollviDir: _rollviDir,
-                    )
-                    ))
-
-                  });
+                        _initialize(),
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SequencePreviewPage(
+                                      rollviDir: _rollviDir,
+                                    )))
+                      });
 
 //
 
@@ -441,7 +464,7 @@ class _CameraPageState extends State<CameraPage> {
       ui.Image image = await renderObject.toImage();
 
       ByteData byteData =
-      await image.toByteData(format: ui.ImageByteFormat.png);
+          await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData.buffer.asUint8List();
 
       File imgFile = new File(path);
@@ -455,9 +478,8 @@ class _CameraPageState extends State<CameraPage> {
     return null;
   }
 
-
   Icon _getCaptureIcon(CaptureType captureType) {
-    switch(captureType) {
+    switch (captureType) {
       case CaptureType.Video:
         return Icon(
           Icons.videocam,

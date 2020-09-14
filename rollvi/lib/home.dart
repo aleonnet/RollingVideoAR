@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rollvi/main.dart';
 import 'package:rollvi/select_video_page.dart';
 import 'package:rollvi/camera_page.dart';
 
@@ -20,29 +21,36 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     mediaQuery.size.width;
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text('ROLLVI'),
+        centerTitle: true,
+      ),
       backgroundColor: Colors.white,
-      body: Stack(
+      body: Column(
         children: <Widget>[
           Container(
-            height: MediaQuery.of(context).size.height,
+            height: MediaQuery.of(context).size.width,
             width: MediaQuery.of(context).size.width,
             decoration: BoxDecoration(
                 image: DecorationImage(
                     image: AssetImage("assets/onBoarding.gif"),
                     fit: BoxFit.cover)),
           ),
+          Expanded(
+            child: Container(
+              child: FloatingActionButton(
+                heroTag: null,
+                backgroundColor: Colors.redAccent,
+                child: Icon(Icons.add),
+                onPressed: () {
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (context) => CameraPage())
+                  );
+                },
+              ),
+            ),
+          ),
         ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton:  FloatingActionButton(
-        heroTag: null,
-        backgroundColor: Colors.redAccent,
-        child: Icon(Icons.add_to_photos),
-        onPressed: () {
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => CameraPage())
-          );
-        },
       ),
     );
 
