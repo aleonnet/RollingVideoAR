@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/rendering.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
-import 'backup/face_painter.dart';
+import 'package:rollvi/ui/face_painter.dart';
+
 
 enum FilterLocation {
   Mouse,
