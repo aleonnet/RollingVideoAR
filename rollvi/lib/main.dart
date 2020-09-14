@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rollvi/concat_video_page.dart';
 import 'package:rollvi/home.dart';
 
 import 'camera_page.dart';
@@ -18,7 +19,7 @@ class App extends StatelessWidget{
           primarySwatch: Colors.red,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: new HomePage()
+        home: new ConcatVideoPage()
     );
   }
 }

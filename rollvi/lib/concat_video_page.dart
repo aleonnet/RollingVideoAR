@@ -1,10 +1,14 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery_saver/gallery_saver.dart';
+import 'package:rollvi/const/app_colors.dart';
+import 'package:rollvi/const/app_size.dart';
+import 'package:rollvi/home.dart';
 import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
 
@@ -21,24 +25,42 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
   VideoPlayerController _controller;
   Future<void> _initializeVideoPlayerFuture;
 
+  VideoPlayerController _capturedVideoController;
+  VideoPlayerController _gottenVideoController;
+
+  VideoPlayerController _curVideoController;
+
   String _rollviPath;
 
-  String _preVideoPath;
-  String _curVideoPath;
+  String _capturedVideoPath;
+  String _gottenVideoPath;
 
   bool isComplete;
+
+  bool reverse;
 
   @override
   void initState() {
     isComplete = false;
-
-    _preVideoPath =
-        '/data/user/0/kr.hispace.rollvi/cache/file_picker/1599119080613.mp4';
-    _curVideoPath =
-        '/data/user/0/kr.hispace.rollvi/cache/file_picker/1599104468394.mp4';
+    reverse = false;
 
     _initializePath();
-    _makeVideoAndPlay();
+
+    _capturedVideoController = VideoPlayerController.network('https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4');
+    _capturedVideoController.initialize();
+    _capturedVideoController.setLooping(true);
+
+    _gottenVideoController = VideoPlayerController.network('https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4');
+    _gottenVideoController.initialize();
+    _gottenVideoController.setLooping(true);
+
+//    _preVideoPath =
+//        '/data/user/0/kr.hispace.rollvi/cache/file_picker/1599119080613.mp4';
+//    _curVideoPath =
+//        '/data/user/0/kr.hispace.rollvi/cache/file_picker/1599104468394.mp4';
+//
+
+//    _makeVideoAndPlay();
 
     super.initState();
   }
@@ -50,6 +72,8 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
   @override
   void dispose() {
     _controller.dispose();
+    _capturedVideoController.dispose();
+    _gottenVideoController.dispose();
     super.dispose();
   }
 
@@ -66,14 +90,22 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
     });
   }
 
-  Future<String> _concatVideo() async {
+  Future<String> _concatVideo([bool reverse=false]) async {
     String rawDocumentPath = widget.rollviDir;
     _rollviPath = "$rawDocumentPath/rollvi.mp4";
 
     final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
 
+    String firstVideoPath = _gottenVideoPath;
+    String secondVideoPath = _capturedVideoPath;
+
+    if (reverse) {
+     firstVideoPath = _capturedVideoPath;
+     secondVideoPath = _gottenVideoPath;
+    }
+
     String cmd =
-        '-y -i $_preVideoPath -i $_curVideoPath -filter_complex \'[0:0][1:0]concat=n=2:v=1:a=0[out]\' -map \'[out]\' $_rollviPath';
+        '-y -i $firstVideoPath -i $secondVideoPath -filter_complex \'[0:0][1:0]concat=n=2:v=1:a=0[out]\' -map \'[out]\' $_rollviPath';
 
     await _flutterFFmpeg.execute(cmd).then((rc) {
       print("FFmpeg process exited with rc $rc");
@@ -89,6 +121,8 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
 
   @override
   Widget build(BuildContext context) {
+    final _size = MediaQuery.of(context).size;
+
     final GlobalKey<ScaffoldState> _scaffoldKey =
         new GlobalKey<ScaffoldState>();
 
@@ -103,77 +137,105 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
 
     return Scaffold(
       key: _scaffoldKey,
-      body: FutureBuilder(
-        future: _initializeVideoPlayerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(_controller),
-            );
-          } else {
-            return Center(child: CircularProgressIndicator());
-          }
-        },
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(AppSize.AppBarHeight),
+        child: AppBar(
+          title: Text('ROLLVI'),
+          centerTitle: true,
+          actions: [
+            new IconButton(
+              icon: Icon(
+                Icons.home,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (BuildContext context) => HomePage()));
+              },
+            )
+          ],
+        ),
       ),
-      floatingActionButton: Stack(
-        alignment: Alignment.bottomRight,
+      body: Column(
         children: [
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              (isComplete == true)
-                  ? FloatingActionButton(
+          ClipRect(
+            child: Align(
+              alignment: Alignment.center,
+              widthFactor: 1,
+              heightFactor: _size.width / _size.height,
+              child: AspectRatio(
+                aspectRatio: _size.width / _size.height,
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(pi),
+                  child: (_curVideoController != null) ? VideoPlayer(_curVideoController) : Container(),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+              child: Container(
+                color: AppColor.nearlyWhite,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    FloatingActionButton(
                       heroTag: null,
-                      child: Icon(Icons.share),
-                      onPressed: () async {
-                        print("Shaer Video: $_rollviPath");
-                        Share.shareFiles([_rollviPath], text: 'Rollvi Video');
-                      },
-                    )
-                  : Container(),
-              SizedBox(height: 10),
-              (isComplete == true)
-                  ? FloatingActionButton(
-                      heroTag: null,
-                      child: Icon(Icons.file_download),
-                      onPressed: () async {
-                        print("Save Video to Gallery: $_rollviPath");
-                        GallerySaver.saveVideo(_rollviPath, albumName: 'Media')
-                            .then((bool success) {
-                          if (success) {
-                            showInSnackBar("Video Saved!");
-                            print("Video Saved!");
-                          } else {
-                            showInSnackBar("Failed to save the video");
-                            print("Video Save Failed");
-                          }
-                        });
-                      },
-                    )
-                  : Container(),
-              SizedBox(height: 10),
-              (_controller != null)
-                  ? FloatingActionButton(
-                      heroTag: null,
+                      child: Icon(Icons.queue_play_next),
+                      backgroundColor: Colors.blueAccent,
                       onPressed: () {
                         setState(() {
-                          _controller.value.isPlaying
-                              ? _controller.pause()
-                              : _controller.play();
+                          _curVideoController = (!reverse) ? _capturedVideoController : _gottenVideoController;
+                          _curVideoController.play();
+
+                          reverse = !reverse;
                         });
                       },
-                      child: Icon(
-                        _controller.value.isPlaying
-                            ? Icons.pause
-                            : Icons.play_arrow,
-                      ),
-                    )
-                  : Container(),
-            ],
+                    ),
+
+                    FloatingActionButton(
+                      heroTag: null,
+                      child: Icon(Icons.undo),
+                      onPressed: () {
+
+                      },
+                    ),
+
+                    FloatingActionButton(
+                      heroTag: null,
+                      child: Icon(Icons.repeat),
+                      onPressed: () {
+
+                      },
+                    ),
+
+                    FloatingActionButton(
+                      heroTag: null,
+                      child: Icon(Icons.check),
+                      onPressed: () {
+
+                      },
+                    ),
+                  ],
+                ),
+              )
           )
         ],
       ),
+
+//      body: FutureBuilder(
+//        future: _initializeVideoPlayerFuture,
+//        builder: (context, snapshot) {
+//          if (snapshot.connectionState == ConnectionState.done) {
+//            return AspectRatio(
+//              aspectRatio: _gottenVideoController.value.aspectRatio,
+//              child: VideoPlayer(_gottenVideoController),
+//            );
+//          } else {
+//            return Center(child: CircularProgressIndicator());
+//          }
+//        },
+//      ),
     );
   }
 }
