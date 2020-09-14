@@ -12,6 +12,8 @@ import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:rollvi/const/app_colors.dart';
+import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'package:rollvi/image_preview_page.dart';
 import 'package:rollvi/sequence_preview_page.dart';
@@ -35,7 +37,7 @@ class CameraPage extends StatefulWidget {
   _CameraPageState createState() => _CameraPageState();
 }
 
-class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
+class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   final GlobalKey previewContainer = new GlobalKey();
   AnimationController _animationController;
 
@@ -101,18 +103,17 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
 
     _initializeCamera();
 
-
     await getExternalStorageDirectory();
   }
 
   void _initializeCamera() async {
     CameraDescription description = await availableCameras().then(
-            (List<CameraDescription> cameras) => cameras.firstWhere(
-                (CameraDescription camera) =>
-            camera.lensDirection == CameraLensDirection.front));
+        (List<CameraDescription> cameras) => cameras.firstWhere(
+            (CameraDescription camera) =>
+                camera.lensDirection == CameraLensDirection.front));
 
     ImageRotation rotation =
-    rotationIntToImageRotation(description.sensorOrientation);
+        rotationIntToImageRotation(description.sensorOrientation);
 
     _camera = CameraController(description, ResolutionPreset.high);
 
@@ -126,11 +127,12 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
       _isDetecting = true;
 
       _detectFaces(image, rotation).then(
-            (dynamic result) {
+        (dynamic result) {
           setState(() {
             _faces = result;
 
-            if (_captureType == CaptureType.ImageSequence && isRecording == true) {
+            if (_captureType == CaptureType.ImageSequence &&
+                isRecording == true) {
               _imageSequence.add(convertCameraImage(image));
 
               print("Frame Num: $_frameNum");
@@ -176,28 +178,30 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final deviceRatio = size.width / size.height;
+    final _size = MediaQuery.of(context).size;
+    final _deviceRatio = _size.width / _size.height;
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: Text('ROLLVI'),
-        centerTitle: true,
-        actions: [
-          new IconButton(
-            icon: Icon(
-              Icons.home,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              print("size : $size");
-              print("deviceRation: $deviceRatio");
-              print("_camera: ${_camera.value.aspectRatio}");
-
-            },
-          )
-        ],
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(AppSize.AppBarHeight),
+        child: AppBar(
+          title: Text('ROLLVI'),
+          centerTitle: true,
+          actions: [
+            new IconButton(
+              icon: Icon(
+                Icons.home,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                print("size : $_size");
+                print("deviceRation: $_deviceRatio");
+                print("_camera: ${_camera.value.aspectRatio}");
+              },
+            )
+          ],
+        ),
       ),
       body: Column(
         children: [
@@ -208,126 +212,115 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
                 alignment: Alignment.center,
                 widthFactor: 1,
                 heightFactor: _camera.value.aspectRatio, // 0.8, 0.56
-                child: _camera == null ? Container(color: Colors.black,)
+                child: _camera == null
+                    ? Container(
+                        color: Colors.black,
+                      )
                     : AspectRatio(
-                  aspectRatio: _camera.value.aspectRatio, // 9 / 15
-                  child: RollviCamera(
-                      faces: _faces,
-                      camera: _camera,
-                      showFaceContour: _showFaceContour,
-                      filterIndex: _selectedFilter),
-                ),
+                        aspectRatio: _camera.value.aspectRatio, // 9 / 15
+                        child: RollviCamera(
+                            faces: _faces,
+                            camera: _camera,
+                            showFaceContour: _showFaceContour,
+                            filterIndex: _selectedFilter),
+                      ),
               ),
             ),
           ),
           Expanded(
             child: Container(
-              color: Colors.red,
+              color: AppColor.white,
               child: GridView.count(
                 crossAxisCount: 4,
-                children:
-                  List.generate(30, (index) {
-                    return Center(
-                      child: Text("Tiem $index"),
-                    );
-                  }),
-
+                children: List.generate(30, (index) {
+                  return Center(
+                    child: Text("Tiem $index"),
+                  );
+                }),
               ),
             ),
-          )
-//          Expanded(
-//            child: Container(
-//              child: GridView.count(
-//                  crossAxisCount: 4,
-//                  children: List.generate(30, (index) {
-//                    return Center(
-//                      child: Text("Item $index"),
-//                    );
-//                  })
-//              ),
-////              color: Colors.red,
-//            ),
-//          )
+          ),
         ],
       ),
       floatingActionButton: Container(
-        alignment: Alignment.bottomCenter,
-        child:FloatingActionButton(
-            backgroundColor: Colors.white,
-            child: AnimatedBuilder(
-                animation: _animationController,
-                builder: (context, child) {
-                  return Stack(
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.all(5),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Expanded(
-                              child: Align(
-                                alignment: FractionalOffset.center,
-                                child: AspectRatio(
-                                  aspectRatio: 1.0,
-                                  child: Stack(
-                                    children: <Widget>[
-                                      Positioned.fill(
-                                        child: CustomPaint(
-                                            painter: ProgressTimerPainter(
-                                              animation: _animationController,
-                                              backgroundColor: Colors.white,
-                                              color: Colors.redAccent,
-                                            )),
+        padding: EdgeInsets.only(
+            top:
+                _size.width * _camera.value.aspectRatio + AppSize.AppBarHeight),
+        alignment: Alignment.center,
+        child: FloatingActionButton(
+          backgroundColor: Colors.white,
+          child: AnimatedBuilder(
+              animation: _animationController,
+              builder: (context, child) {
+                return Stack(
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.all(5),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Expanded(
+                            child: Align(
+                              alignment: FractionalOffset.center,
+                              child: AspectRatio(
+                                aspectRatio: 1.0,
+                                child: Stack(
+                                  children: <Widget>[
+                                    Positioned.fill(
+                                      child: CustomPaint(
+                                          painter: ProgressTimerPainter(
+                                        animation: _animationController,
+                                        backgroundColor: Colors.white,
+                                        color: Colors.redAccent,
+                                      )),
+                                    ),
+                                    Align(
+                                      alignment: FractionalOffset.center,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          Text(
+                                            timerString,
+                                            style: TextStyle(
+                                                fontSize: 15.0,
+                                                color: Colors.redAccent),
+                                          ),
+                                        ],
                                       ),
-                                      Align(
-                                        alignment: FractionalOffset.center,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                          crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                          children: <Widget>[
-                                            Text(
-                                              timerString,
-                                              style: TextStyle(
-                                                  fontSize: 15.0,
-                                                  color: Colors.redAccent),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  );
-                }),
-            onPressed: () {
-              if (_animationController.isAnimating)
-                _animationController.stop();
-              else {
-                _animationController.reverse(
-                    from: _animationController.value == 0.0
-                        ? 1.0
-                        : _animationController.value);
-              }
-            },
-          ),
-
+                    ),
+                  ],
+                );
+              }),
+          onPressed: () {
+            if (_animationController.isAnimating)
+              _animationController.stop();
+            else {
+              _animationController.reverse(
+                  from: _animationController.value == 0.0
+                      ? 1.0
+                      : _animationController.value);
+            }
+          },
+        ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerTop,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
   Widget _getRecordButton(BuildContext context) {
     FloatingActionButton recordButton = FloatingActionButton(
       child: Icon(Icons.camera),
-
       onPressed: () async {
         try {
           // for image stream
@@ -350,17 +343,18 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
           if (_captureType == CaptureType.Image) {
             imglib.Image capturedImage = convertCameraImage(_lastImage);
             _imageCapture().then((path) => {
-              imageCache.clear(),
-              print("Capture Complete : $path"),
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          ImagePreviewPage(cameraImg: capturedImage, imagePath: path,)))
-                ..then((value) => _initialize())
-            });
-          }
-          else {
+                  imageCache.clear(),
+                  print("Capture Complete : $path"),
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ImagePreviewPage(
+                                cameraImg: capturedImage,
+                                imagePath: path,
+                              )))
+                    ..then((value) => _initialize())
+                });
+          } else {
             int _time = _maxTime;
             _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
               print('[timer] : $_time');
@@ -378,22 +372,18 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
                                 VideoPreviewPage(videoPath: videoPath)))
                       ..then((value) => _initialize());
                   });
-                }
-                else if (_captureType == CaptureType.ImageSequence) {
-
+                } else if (_captureType == CaptureType.ImageSequence) {
                   print("Caputre Over!!!!!!");
 
                   _saveImageToFile().then((value) => {
-
-                    _initialize(),
-
-                    Navigator.push(context, MaterialPageRoute(
-                        builder: (context) => SequencePreviewPage(
-                          rollviDir: _rollviDir,
-                        )
-                    ))
-
-                  });
+                        _initialize(),
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SequencePreviewPage(
+                                      rollviDir: _rollviDir,
+                                    )))
+                      });
 
 //
 
@@ -480,7 +470,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
       ui.Image image = await renderObject.toImage();
 
       ByteData byteData =
-      await image.toByteData(format: ui.ImageByteFormat.png);
+          await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData.buffer.asUint8List();
 
       File imgFile = new File(path);
@@ -494,9 +484,8 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
     return null;
   }
 
-
   Icon _getCaptureIcon(CaptureType captureType) {
-    switch(captureType) {
+    switch (captureType) {
       case CaptureType.Video:
         return Icon(
           Icons.videocam,
@@ -556,7 +545,8 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin{
   }
 
   String get timerString {
-    Duration duration = _animationController.duration * _animationController.value;
+    Duration duration =
+        _animationController.duration * _animationController.value;
 //    return '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
     return (duration.inSeconds % 60).toString();
   }
