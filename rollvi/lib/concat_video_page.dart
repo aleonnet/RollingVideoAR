@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 
 import 'package:flutter/foundation.dart';
@@ -11,6 +12,7 @@ import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/home.dart';
 import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 class ConcatVideoPage extends StatefulWidget {
   final String rollviDir;
@@ -50,11 +52,13 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
         'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4');
     _capturedVideoController.initialize();
     _capturedVideoController.setLooping(true);
+    _capturedVideoController.play();
 
     _gottenVideoController = VideoPlayerController.network(
         'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4');
     _gottenVideoController.initialize();
     _gottenVideoController.setLooping(true);
+    _gottenVideoController.play();
 
 //    _preVideoPath =
 //        '/data/user/0/kr.hispace.rollvi/cache/file_picker/1599119080613.mp4';
@@ -124,6 +128,7 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
   @override
   Widget build(BuildContext context) {
     final _size = MediaQuery.of(context).size;
+    int _current = 0;
 
     final GlobalKey<ScaffoldState> _scaffoldKey =
         new GlobalKey<ScaffoldState>();
@@ -167,13 +172,54 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
               heightFactor: _size.width / _size.height,
               child: AspectRatio(
                 aspectRatio: _size.width / _size.height,
-                child: Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.rotationY(pi),
-                  child: (_curVideoController != null)
-                      ? VideoPlayer(_curVideoController)
-                      : Container(),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CarouselSlider(
+                        options: CarouselOptions(
+                            aspectRatio: 1,
+                            viewportFraction: 1,
+                            enableInfiniteScroll: false,
+                            reverse: reverse,
+                            onPageChanged: (index, reason) {
+//                              setState(() {
+                            print(_current);
+                                _current = index;
+//                              });
+                            }),
+                        items: [
+                          Container(
+                            color: Colors.red,
+                            child: Transform(
+                              alignment: Alignment.center,
+                              transform: Matrix4.rotationY(pi),
+                              child: (_capturedVideoController != null)
+                                  ? VideoPlayer(_capturedVideoController)
+                                  : Container(),
+                            ),
+                          ),
+                          Container(
+                            color: Colors.blue,
+                            child: Transform(
+                              alignment: Alignment.center,
+                              transform: Matrix4.rotationY(pi),
+                              child: (_gottenVideoController != null)
+                                  ? VideoPlayer(_gottenVideoController)
+                                  : Container(),
+                            ),
+                          ),
+                        ]),
+
+                  ],
                 ),
+
+//                Transform(
+//                  alignment: Alignment.center,
+//                  transform: Matrix4.rotationY(pi),
+//                  child: (_curVideoController != null)
+//                      ? VideoPlayer(_curVideoController)
+//                      : Container(),
+//                ),
               ),
             ),
           ),
@@ -188,14 +234,14 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       FlatButton(
-                          child: (!reverse)
-                              ? Icon(Icons.videocam)
-                              : Icon(Icons.panorama),
+                        child: (!reverse)
+                            ? Icon(Icons.videocam, color: (_current== 0) ? Colors.black : Colors.grey)
+                            : Icon(Icons.panorama, color: (_current== 1) ? Colors.black : Colors.grey)
                       ),
                       FlatButton(
-                          child: (!reverse)
-                              ? Icon(Icons.panorama)
-                              : Icon(Icons.videocam),
+                        child: (!reverse)
+                            ? Icon(Icons.panorama, color: (_current== 1) ? Colors.black : Colors.grey)
+                            : Icon(Icons.videocam, color: (_current== 0) ? Colors.black : Colors.grey),
                       ),
                     ],
                   ),
@@ -210,10 +256,10 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                           backgroundColor: Colors.blueAccent,
                           onPressed: () {
                             setState(() {
-                              _curVideoController = (!reverse)
-                                  ? _capturedVideoController
-                                  : _gottenVideoController;
-                              _curVideoController.play();
+//                              _curVideoController = (!reverse)
+//                                  ? _capturedVideoController
+//                                  : _gottenVideoController;
+//                              _curVideoController.play();
 
                               reverse = !reverse;
                             });

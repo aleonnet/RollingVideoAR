@@ -40,16 +40,11 @@ dependencies:
   intl: ^0.16.1
   path: ^1.6.4
   image_picker: ^0.6.5+2
-
   firebase_ml_vision: ^0.9.2+1
-  carousel_pro: ^1.0.0
-
+  carousel_slider: ^2.2.1
   photofilters: ^2.0.1
-
   image_editor: ^0.7.1
-
   flutter_speed_dial: ^1.2.5
-
   gallery_saver: ^2.0.1
 
   sprintf: ^4.0.0
