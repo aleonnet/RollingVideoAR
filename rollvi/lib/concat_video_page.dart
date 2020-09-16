@@ -40,6 +40,7 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
   bool isComplete;
 
   bool reverse;
+  int _current = 0;
 
   @override
   void initState() {
@@ -128,22 +129,8 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
   @override
   Widget build(BuildContext context) {
     final _size = MediaQuery.of(context).size;
-    int _current = 0;
-
-    final GlobalKey<ScaffoldState> _scaffoldKey =
-        new GlobalKey<ScaffoldState>();
-
-    void showInSnackBar(String value) {
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(
-          content: new Text(value),
-          action: SnackBarAction(
-            label: 'OK',
-            onPressed: _scaffoldKey.currentState.hideCurrentSnackBar,
-          )));
-    }
 
     return Scaffold(
-      key: _scaffoldKey,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(AppSize.AppBarHeight),
         child: AppBar(
@@ -182,10 +169,9 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                             enableInfiniteScroll: false,
                             reverse: reverse,
                             onPageChanged: (index, reason) {
-//                              setState(() {
-                            print(_current);
+                              setState(() {
                                 _current = index;
-//                              });
+                              });
                             }),
                         items: [
                           Container(
@@ -209,17 +195,8 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                             ),
                           ),
                         ]),
-
                   ],
                 ),
-
-//                Transform(
-//                  alignment: Alignment.center,
-//                  transform: Matrix4.rotationY(pi),
-//                  child: (_curVideoController != null)
-//                      ? VideoPlayer(_curVideoController)
-//                      : Container(),
-//                ),
               ),
             ),
           ),
@@ -234,14 +211,25 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       FlatButton(
-                        child: (!reverse)
-                            ? Icon(Icons.videocam, color: (_current== 0) ? Colors.black : Colors.grey)
-                            : Icon(Icons.panorama, color: (_current== 1) ? Colors.black : Colors.grey)
-                      ),
+                          child: (!reverse)
+                              ? Icon(Icons.videocam,
+                                  color: (_current == 0)
+                                      ? Colors.black
+                                      : Colors.grey)
+                              : Icon(Icons.panorama,
+                                  color: (_current == 1)
+                                      ? Colors.black
+                                      : Colors.grey)),
                       FlatButton(
                         child: (!reverse)
-                            ? Icon(Icons.panorama, color: (_current== 1) ? Colors.black : Colors.grey)
-                            : Icon(Icons.videocam, color: (_current== 0) ? Colors.black : Colors.grey),
+                            ? Icon(Icons.panorama,
+                                color: (_current == 1)
+                                    ? Colors.black
+                                    : Colors.grey)
+                            : Icon(Icons.videocam,
+                                color: (_current == 0)
+                                    ? Colors.black
+                                    : Colors.grey),
                       ),
                     ],
                   ),
