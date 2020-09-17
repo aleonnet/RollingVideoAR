@@ -171,26 +171,40 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                             onPageChanged: (index, reason) {
                               setState(() {
                                 _current = index;
+
+                                if (_current == 0) {
+                                  _capturedVideoController.play();
+                                } else if (_current == 1) {
+                                  _gottenVideoController.play();
+                                }
                               });
                             }),
                         items: [
                           Container(
-                            color: Colors.red,
+                            padding: EdgeInsets.all(10),
                             child: Transform(
                               alignment: Alignment.center,
                               transform: Matrix4.rotationY(pi),
                               child: (_capturedVideoController != null)
-                                  ? VideoPlayer(_capturedVideoController)
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child:
+                                          VideoPlayer(_capturedVideoController),
+                                    )
                                   : Container(),
                             ),
                           ),
                           Container(
-                            color: Colors.blue,
+                            padding: EdgeInsets.all(10),
                             child: Transform(
                               alignment: Alignment.center,
                               transform: Matrix4.rotationY(pi),
                               child: (_gottenVideoController != null)
-                                  ? VideoPlayer(_gottenVideoController)
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child:
+                                          VideoPlayer(_gottenVideoController),
+                                    )
                                   : Container(),
                             ),
                           ),
@@ -211,15 +225,16 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       FlatButton(
-                          child: (!reverse)
-                              ? Icon(Icons.videocam,
-                                  color: (_current == 0)
-                                      ? Colors.black
-                                      : Colors.grey)
-                              : Icon(Icons.panorama,
-                                  color: (_current == 1)
-                                      ? Colors.black
-                                      : Colors.grey)),
+                        child: (!reverse)
+                            ? Icon(Icons.videocam,
+                                color: (_current == 0)
+                                    ? Colors.black
+                                    : Colors.grey)
+                            : Icon(Icons.panorama,
+                                color: (_current == 1)
+                                    ? Colors.black
+                                    : Colors.grey),
+                      ),
                       FlatButton(
                         child: (!reverse)
                             ? Icon(Icons.panorama,
@@ -240,23 +255,12 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                       children: [
                         FloatingActionButton(
                           heroTag: null,
-                          child: Icon(Icons.queue_play_next),
-                          backgroundColor: Colors.blueAccent,
+                          child: Icon(Icons.undo),
                           onPressed: () {
                             setState(() {
-//                              _curVideoController = (!reverse)
-//                                  ? _capturedVideoController
-//                                  : _gottenVideoController;
-//                              _curVideoController.play();
-
                               reverse = !reverse;
                             });
                           },
-                        ),
-                        FloatingActionButton(
-                          heroTag: null,
-                          child: Icon(Icons.undo),
-                          onPressed: () {},
                         ),
                         FloatingActionButton(
                           heroTag: null,
