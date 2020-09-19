@@ -23,7 +23,7 @@ import 'package:sprintf/sprintf.dart';
 
 import 'home.dart';
 import 'home.dart';
-import 'rollvi_camera.dart';
+import 'ui/rollvi_camera.dart';
 import 'utils.dart';
 import 'utils.dart';
 
@@ -183,7 +183,6 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     final _deviceRatio = _size.width / _size.height;
 
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(AppSize.AppBarHeight),
         child: AppBar(
@@ -208,25 +207,29 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
       ),
       body: Column(
         children: [
-          RepaintBoundary(
-            key: previewContainer,
-            child: ClipRect(
-              child: Align(
-                alignment: Alignment.center,
-                widthFactor: 1,
-                heightFactor: _camera.value.aspectRatio, // 0.8, 0.56
-                child: _camera == null
-                    ? Container(
-                        color: Colors.black,
-                      )
-                    : AspectRatio(
-                        aspectRatio: _camera.value.aspectRatio, // 9 / 15
-                        child: RollviCamera(
-                            faces: _faces,
-                            camera: _camera,
-                            showFaceContour: _showFaceContour,
-                            filterIndex: _selectedFilter),
-                      ),
+          Container(
+            padding: EdgeInsets.all(10),
+            child: RepaintBoundary(
+              key: previewContainer,
+              child: ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                child:  (_camera != null) ? Align(
+                  alignment: Alignment.center,
+                  widthFactor: 1,
+                  heightFactor: _camera.value.aspectRatio, // 0.8, 0.56
+                  child: _camera == null
+                      ? Container(
+                    color: Colors.black,
+                  )
+                      : AspectRatio(
+                    aspectRatio: _camera.value.aspectRatio, // 9 / 15
+                    child: RollviCamera(
+                        faces: _faces,
+                        camera: _camera,
+                        showFaceContour: _showFaceContour,
+                        filterIndex: _selectedFilter),
+                  ),
+                ) : Container(),
               ),
             ),
           ),
@@ -234,7 +237,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
             child: Container(
               alignment: Alignment.bottomCenter,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
+//                borderRadius: BorderRadius.all(Radius.circular(10)),
                 color: AppColor.nearlyWhite,
               ),
               child: (_animationController.isAnimating)
@@ -244,7 +247,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                       itemCount: 5,
                       gridDelegate:
                           new SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 4),
+                              crossAxisCount: 5),
                       itemBuilder: (BuildContext context, int index) {
                         return Card(
                           margin: EdgeInsets.all(10),
@@ -265,10 +268,10 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
           ),
         ],
       ),
-      floatingActionButton: Container(
+      floatingActionButton: (_camera != null) ? Container(
         padding: EdgeInsets.only(
             top:
-                _size.width * _camera.value.aspectRatio + AppSize.AppBarHeight),
+                _size.width * _camera.value.aspectRatio),
         alignment: Alignment.center,
         child: FloatingActionButton(
           backgroundColor: Colors.white,
@@ -409,7 +412,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
             }
           },
         ),
-      ),
+      ) : Container(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }

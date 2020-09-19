@@ -54,7 +54,10 @@ class _FaceCameraState extends State<RollviCamera> {
 
     return Stack(
       children: <Widget>[
-        CameraPreview(widget.camera),
+        Container(
+          child: CameraPreview(widget.camera),
+        ),
+        
         widget.showFaceContour ? _getFaceContourPaint(widget.faces, widget.camera) : Container(),
         _getLeftEarStickerWidget(widget.faces, widget.filterIndex),
         _getMouthStickerWidget(widget.faces, widget.filterIndex),
