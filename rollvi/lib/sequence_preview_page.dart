@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:image/image.dart' as imglib;
 
 import 'package:flutter/foundation.dart';
@@ -9,6 +12,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/home.dart';
+import 'package:rollvi/insta_downloader.dart';
+import 'package:rollvi/ui/instalink_dialog.dart';
+import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
 
 class SequencePreviewPage extends StatefulWidget {
@@ -92,7 +98,21 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
   @override
   Widget build(BuildContext context) {
     final _size = MediaQuery.of(context).size;
+
+    final GlobalKey<ScaffoldState> _scaffoldKey =
+    new GlobalKey<ScaffoldState>();
+
+    void showInSnackBar(String value) {
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(
+          content: new Text(value),
+          action: SnackBarAction(
+            label: 'OK',
+            onPressed: _scaffoldKey.currentState.hideCurrentSnackBar,
+          )));
+    }
+
     return Scaffold(
+      key: _scaffoldKey,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(AppSize.AppBarHeight),
         child: AppBar(
@@ -146,46 +166,71 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
             ),
           ),
           Expanded(
-            child: Container(
-              color: AppColor.nearlyWhite,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        FloatingActionButton(
-                          heroTag: null,
-                          child: Icon(Icons.movie_creation),
-                          onPressed: () {
-                            _makeVideoAndPlay();
-                          },
-                        ),
-                        FloatingActionButton(
-                          heroTag: null,
-                          onPressed: () {
-                            setState(() {
-                              _controller.value.isPlaying
-                                  ? _controller.pause()
-                                  : _controller.play();
-                            });
-                          },
-                          // Display the correct icon depending on the state of the player.
-                          child: Icon(
-                            _controller.value.isPlaying
-                                ? Icons.pause
-                                : Icons.play_arrow,
-                          ),
-                        ),
-                      ],
+              child: Container(
+                color: AppColor.nearlyWhite,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    FloatingActionButton(
+                      heroTag: null,
+                      child: ImageIcon(
+                        AssetImage("assets/insta_logo.png"),
+                      ),
+                      onPressed: () async {
+                        String _clipData =
+                            (await Clipboard.getData('text/plain')).text;
+                        final inputText = await showDialog(
+                            context: context,
+                            builder: (BuildContext context) => InstaLinkDialog(
+                              clipData: _clipData,
+                            ));
+
+                        if (inputText != null) {
+                          FlutterInsta flutterInsta = new FlutterInsta();
+                          await flutterInsta.downloadReels(inputText).then((String instaLink) {
+                            print(instaLink);
+                          });
+                        }
+                      },
                     ),
-                  )
-                ],
-              ),
-            ),
+                    FloatingActionButton(
+                      heroTag: null,
+                      child: Icon(Icons.photo),
+                      onPressed: () {
+                        FilePicker.getFile(type: FileType.video).then((File file) async {
+                          print(file);
+                        });
+                      },
+                    ),
+                    FloatingActionButton(
+                      heroTag: null,
+                      child: Icon(Icons.file_download),
+                      onPressed: () async {
+                        print("Recorded Video Path $_outputPath");
+                        GallerySaver.saveVideo(_outputPath,
+                            albumName: 'Media')
+                            .then((bool success) {
+                          if (success) {
+                            showInSnackBar("Video Saved!");
+                          } else {
+                            showInSnackBar("Failed to save the video");
+                          }
+                        });
+                      },
+                    ),
+                    FloatingActionButton(
+                      heroTag: null,
+                      child: Icon(Icons.share),
+                      onPressed: () async {
+                        print("Recorded Video Path $_outputPath");
+                        Share.shareFiles([_outputPath],
+                            text: 'Rollvi Video');
+                      },
+                    ),
+                  ],
+                ),
+              )
           )
         ],
       ),
