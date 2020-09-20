@@ -142,8 +142,8 @@ class _FaceCameraState extends State<FaceCamera> {
         return null;
     }
 
-    final double left = (filterIndex == 5) ?  0 : mouthCenterPoint.dx;
-    final double top = (filterIndex == 5) ? 20 : mouthCenterPoint.dy - (arFilter.height / 2) - 20;
+    final double left = (filterIndex == 5) ?  mouthCenterPoint.dx - (arFilter.width / 2) : mouthCenterPoint.dx;
+    final double top = mouthCenterPoint.dy - (arFilter.height / 2) - 20;
     arFilter.offset = Offset(left, top);
 
     return arFilter;

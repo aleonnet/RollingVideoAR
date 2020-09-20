@@ -191,12 +191,10 @@ class _FacePageState extends State<RealtimeFaceDetect> {
                 iconSize: 27.0,
                 icon: Icon(
                   Icons.adjust,
-                  color: (_showShootButton == true)
-                      ? Colors.redAccent
-                      : Colors.grey.shade400,
+                  color: Colors.grey.shade400,
                 ),
                 onPressed: () {
-                  _showShootButton = !_showShootButton;
+//                  _showShootButton = !_showShootButton;
                 },
               ),
               SizedBox(
