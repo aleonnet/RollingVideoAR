@@ -60,7 +60,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   CameraImage _lastImage;
   List<imglib.Image> _imageSequence;
 
-  CaptureType _captureType = CaptureType.Video;
+  CaptureType _captureType = CaptureType.ImageSequence;
   int _selectedFilter = 1;
   bool _showFaceContour = false;
 
