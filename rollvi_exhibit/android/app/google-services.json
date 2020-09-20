@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "832734247060",
+    "firebase_url": "https://rollviexhibit.firebaseio.com",
+    "project_id": "rollviexhibit",
+    "storage_bucket": "rollviexhibit.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:832734247060:android:c810996d2fdee21e9ddc81",
+        "android_client_info": {
+          "package_name": "kr.hispace.rollvi_exhibit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "832734247060-3f5768kpug484jsvcbdsclm5tl6o9b3p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkNmbgYUbSb1Zp76puldZoYkurqxR4wY0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "832734247060-3f5768kpug484jsvcbdsclm5tl6o9b3p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
