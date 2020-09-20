@@ -9,15 +9,6 @@ import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'package:image/image.dart' as imglib;
 
 
-Future<String> getRollviDirectory() async {
-  final tempDir = (await getTemporaryDirectory()).path;
-  return "$tempDir/rollvi";
-}
-
-bool existDirectory(String directoryPath) {
-  return Directory(directoryPath).existsSync();
-}
-
 ImageRotation rotationIntToImageRotation(int rotation) {
   switch (rotation) {
     case 0:

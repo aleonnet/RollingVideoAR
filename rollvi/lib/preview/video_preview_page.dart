@@ -64,114 +64,113 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
     }
 
     return Scaffold(
-        key: _scaffoldKey,
-        backgroundColor: Colors.black,
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(AppSize.AppBarHeight),
-          child: AppBar(
-            title: Text('ROLLVI'),
-            centerTitle: true,
-            actions: [
-              new IconButton(
-                icon: Icon(
-                  Icons.home,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  print("size: ${_size}");
-//                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (BuildContext context) => HomePage()));
-                },
-              )
-            ],
-          ),
-        ),
-        body: Column(
-          children: [
-            ClipRect(
-              child: Align(
-                alignment: Alignment.center,
-                widthFactor: 1,
-                heightFactor: _size.width / _size.height,
-                child: AspectRatio(
-                  aspectRatio: _size.width / _size.height,
-                  child: Transform(
-                    alignment: Alignment.center,
-                    transform: Matrix4.rotationY(pi),
-                    child: VideoPlayer(_controller),
-                  ),
-                ),
+      key: _scaffoldKey,
+      backgroundColor: Colors.black,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(AppSize.AppBarHeight),
+        child: AppBar(
+          title: Text('ROLLVI'),
+          centerTitle: true,
+          actions: [
+            new IconButton(
+              icon: Icon(
+                Icons.home,
+                color: Colors.white,
               ),
-            ),
-            Expanded(
-              child: Container(
-                color: AppColor.nearlyWhite,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    FloatingActionButton(
-                      heroTag: null,
-                      child: ImageIcon(
-                        AssetImage("assets/insta_logo.png"),
-                      ),
-                      onPressed: () async {
-                        String _clipData =
-                            (await Clipboard.getData('text/plain')).text;
-                        final inputText = await showDialog(
-                            context: context,
-                            builder: (BuildContext context) => InstaLinkDialog(
-                              clipData: _clipData,
-                            ));
-
-                        if (inputText != null) {
-                          FlutterInsta flutterInsta = new FlutterInsta();
-                          await flutterInsta.downloadReels(inputText).then((String instaLink) {
-                            print(instaLink);
-                          });
-                        }
-                      },
-                    ),
-                    FloatingActionButton(
-                      heroTag: null,
-                      child: Icon(Icons.photo),
-                      onPressed: () {
-                        FilePicker.getFile(type: FileType.video).then((File file) async {
-                          print(file);
-                        });
-                      },
-                    ),
-                    FloatingActionButton(
-                      heroTag: null,
-                      child: Icon(Icons.file_download),
-                      onPressed: () async {
-                        print("Recorded Video Path ${widget.videoPath}");
-                        GallerySaver.saveVideo(widget.videoPath,
-                            albumName: 'Media')
-                            .then((bool success) {
-                          if (success) {
-                            showInSnackBar("Video Saved!");
-                          } else {
-                            showInSnackBar("Failed to save the video");
-                          }
-                        });
-                      },
-                    ),
-                    FloatingActionButton(
-                      heroTag: null,
-                      child: Icon(Icons.share),
-                      onPressed: () async {
-                        print("Recorded Video Path ${widget.videoPath}");
-                        Share.shareFiles([widget.videoPath],
-                            text: 'Rollvi Video');
-                      },
-                    ),
-                  ],
-                ),
-              )
+              onPressed: () {
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (BuildContext context) => HomePage()));
+              },
             )
           ],
         ),
+      ),
+      body: Column(
+        children: [
+          ClipRect(
+            child: Align(
+              alignment: Alignment.center,
+              widthFactor: 1,
+              heightFactor: _size.width / _size.height,
+              child: AspectRatio(
+                aspectRatio: _size.width / _size.height,
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(pi),
+                  child: VideoPlayer(_controller),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+              child: Container(
+            color: AppColor.nearlyWhite,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                FloatingActionButton(
+                  heroTag: null,
+                  child: ImageIcon(
+                    AssetImage("assets/insta_logo.png"),
+                  ),
+                  onPressed: () async {
+                    String _clipData =
+                        (await Clipboard.getData('text/plain')).text;
+                    final inputText = await showDialog(
+                        context: context,
+                        builder: (BuildContext context) => InstaLinkDialog(
+                              clipData: _clipData,
+                            ));
 
+                    if (inputText != null) {
+                      FlutterInsta flutterInsta = new FlutterInsta();
+                      await flutterInsta
+                          .downloadReels(inputText)
+                          .then((String instaLink) {
+                        print(instaLink);
+                      });
+                    }
+                  },
+                ),
+                FloatingActionButton(
+                  heroTag: null,
+                  child: Icon(Icons.photo),
+                  onPressed: () {
+                    FilePicker.getFile(type: FileType.video)
+                        .then((File file) async {
+                      print(file);
+                    });
+                  },
+                ),
+                FloatingActionButton(
+                  heroTag: null,
+                  child: Icon(Icons.file_download),
+                  onPressed: () async {
+                    print("Recorded Video Path ${widget.videoPath}");
+                    GallerySaver.saveVideo(widget.videoPath, albumName: 'Media')
+                        .then((bool success) {
+                      if (success) {
+                        showInSnackBar("Video Saved!");
+                      } else {
+                        showInSnackBar("Failed to save the video");
+                      }
+                    });
+                  },
+                ),
+                FloatingActionButton(
+                  heroTag: null,
+                  child: Icon(Icons.share),
+                  onPressed: () async {
+                    print("Recorded Video Path ${widget.videoPath}");
+                    Share.shareFiles([widget.videoPath], text: 'Rollvi Video');
+                  },
+                ),
+              ],
+            ),
+          ))
+        ],
+      ),
 
 //        body: FutureBuilder(
 //          future: _initializeVideoPlayerFuture,
@@ -194,7 +193,6 @@ class VideoPreviewPageState extends State<VideoPreviewPage> {
 //            }
 //          },
 //        ),
-
     );
   }
 

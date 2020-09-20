@@ -1,23 +1,23 @@
 import 'dart:io';
 import 'dart:math';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:gallery_saver/gallery_saver.dart';
 import 'package:rollvi/const/app_colors.dart';
+import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/home.dart';
-import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 class ConcatVideoPage extends StatefulWidget {
-  final String rollviDir;
+  final File currentFile;
+  final File galleryFile;
+  final String instaLink;
 
-  ConcatVideoPage({Key key, this.rollviDir}) : super(key: key);
+  ConcatVideoPage({Key key, this.currentFile, this.galleryFile, this.instaLink}) : super(key: key);
 
   @override
   State createState() => new _ConcatVideoPageState();
@@ -49,23 +49,21 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
 
     _initializePath();
 
-    _capturedVideoController = VideoPlayerController.network(
-        'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4');
+    _capturedVideoController = VideoPlayerController.file(widget.currentFile);
     _capturedVideoController.initialize();
     _capturedVideoController.setLooping(true);
     _capturedVideoController.play();
 
-    _gottenVideoController = VideoPlayerController.network(
-        'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4');
+    if (widget.galleryFile != null) {
+      _gottenVideoController = VideoPlayerController.file(widget.galleryFile);
+    } else if (widget.instaLink != null) {
+      _gottenVideoController = VideoPlayerController.network(widget.instaLink);
+    }
+
     _gottenVideoController.initialize();
     _gottenVideoController.setLooping(true);
     _gottenVideoController.play();
 
-//    _preVideoPath =
-//        '/data/user/0/kr.hispace.rollvi/cache/file_picker/1599119080613.mp4';
-//    _curVideoPath =
-//        '/data/user/0/kr.hispace.rollvi/cache/file_picker/1599104468394.mp4';
-//
 
 //    _makeVideoAndPlay();
 
@@ -73,7 +71,8 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
   }
 
   void _initializePath() async {
-    Directory(widget.rollviDir).createSync(recursive: true);
+    String rollviDir = await getRollviTempDir();
+    Directory(rollviDir).createSync(recursive: true);
   }
 
   @override
@@ -98,7 +97,7 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
   }
 
   Future<String> _concatVideo([bool reverse = false]) async {
-    String rawDocumentPath = widget.rollviDir;
+    String rawDocumentPath = await getRollviTempDir();
     _rollviPath = "$rawDocumentPath/rollvi.mp4";
 
     final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();

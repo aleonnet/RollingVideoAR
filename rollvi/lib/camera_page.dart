@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:gallery_saver/gallery_saver.dart';
 import 'package:image/image.dart' as imglib;
 
 import 'package:flutter/material.dart';
@@ -13,18 +12,16 @@ import 'package:flutter/rendering.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rollvi/const/app_colors.dart';
+import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
-import 'package:rollvi/image_preview_page.dart';
-import 'package:rollvi/sequence_preview_page.dart';
+import 'file:///D:/01-workspace/01-hispace/RollingVideoAR/rollvi/lib/preview/image_preview_page.dart';
+import 'package:rollvi/preview/sequence_preview_page.dart';
 import 'package:rollvi/ui/progress_painter.dart';
-import 'package:rollvi/video_preview_page.dart';
+import 'file:///D:/01-workspace/01-hispace/RollingVideoAR/rollvi/lib/preview/video_preview_page.dart';
 import 'package:sprintf/sprintf.dart';
 
-import 'home.dart';
-import 'home.dart';
 import 'ui/rollvi_camera.dart';
-import 'utils.dart';
 import 'utils.dart';
 
 enum CaptureType {
@@ -89,9 +86,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   }
 
   void _initializePath() async {
-    final rawDir = (await getTemporaryDirectory()).path;
-    _rollviDir = '$rawDir/rollvi';
-
+    _rollviDir = await getRollviTempDir();
     Directory(_rollviDir).createSync(recursive: true);
   }
 
@@ -195,10 +190,6 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                 color: Colors.white,
               ),
               onPressed: () {
-//                print("size : $_size");
-//                print("deviceRation: $_deviceRatio");
-//                print("_camera: ${_camera.value.aspectRatio}");
-
                 Navigator.of(context).pop();
               },
             )
