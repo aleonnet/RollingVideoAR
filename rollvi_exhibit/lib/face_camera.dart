@@ -50,7 +50,8 @@ class _FaceCameraState extends State<FaceCamera> {
       children: <Widget>[
         CameraPreview(widget.camera),
         widget.showFaceContour ? _getFaceContourPaint(widget.faces, widget.camera) : Container(),
-        _getLeftEarStickerWidget(widget.faces, widget.filterIndex),
+//        _getLeftEarStickerWidget(widget.faces, widget.filterIndex),
+        _getBottomStickerWidget(widget.filterIndex),
         _getMouthStickerWidget(widget.faces, widget.filterIndex),
       ],
     );
@@ -103,6 +104,27 @@ class _FaceCameraState extends State<FaceCamera> {
     return stickerWidgets;
   }
 
+
+  Widget _getBottomStickerWidget(int filterIndex) {
+    final ARFilter arFilter = _getBottomARFilter(filterIndex);
+
+    if (arFilter == null) {
+      return Container();
+    }
+
+    Widget stickerWidgets = new Positioned(
+//        right: arFilter.offset.dx,
+//        top: arFilter.offset.dy,
+        child: new Stack(
+          children: <Widget>[
+            for (var assetName in arFilter.assetNames)
+              _getStickerWidget(assetName, arFilter.width, arFilter.height, boxfit: BoxFit.fill),
+          ],
+        ));
+
+    return stickerWidgets;
+  }
+
   ARFilter _getMouseARFilter(int filterIndex) {
     ARFilter arFilter = new ARFilter();
     arFilter.location = FilterLocation.Mouse;
@@ -115,18 +137,20 @@ class _FaceCameraState extends State<FaceCamera> {
     switch(filterIndex) {
       case 1:
         arFilter.assetNames.add("assets/say_m01.webp");
-        arFilter.width = 200;
-        arFilter.height = 100;
+//        arFilter.width = 200;
+//        arFilter.height = 100;
+        arFilter.width = 600;
+        arFilter.height = 1200;
         break;
       case 2:
         arFilter.assetNames.add("assets/say_m02.webp");
-        arFilter.width = 300;
-        arFilter.height = 250;
+        arFilter.width = 600;
+        arFilter.height = 1200;
         break;
       case 3:
         arFilter.assetNames.add("assets/say_m03.webp");
-        arFilter.width = 450;
-        arFilter.height = 400;
+        arFilter.width = 500;
+        arFilter.height = 1000;
         break;
       case 4:
         arFilter.assetNames.add("assets/say_m04.webp");
@@ -142,12 +166,35 @@ class _FaceCameraState extends State<FaceCamera> {
         return null;
     }
 
-    final double left = mouthCenterPoint.dx;
-    final double top = (filterIndex == 5) ? 20 : mouthCenterPoint.dy - (arFilter.height / 2) - 20;
+    final double left = (filterIndex == 2) ? mouthCenterPoint.dx : mouthCenterPoint.dx - (arFilter.width / 2);
+    final double top = mouthCenterPoint.dy - (arFilter.height / 2) - 20;
     arFilter.offset = Offset(left, top);
 
     return arFilter;
   }
+
+
+  ARFilter _getBottomARFilter(int filterIndex) {
+    ARFilter arFilter = new ARFilter();
+
+    switch(filterIndex) {
+      case 2:
+        arFilter.assetNames.add("assets/bottom_m02.webp");
+        arFilter.width = 600;
+        arFilter.height = 1200;
+        break;
+      case 3:
+        arFilter.assetNames.add("assets/bottom_m03.webp");
+        arFilter.width = 600;
+        arFilter.height = 1200;
+        break;
+      default:
+        return null;
+    }
+
+    return arFilter;
+  }
+
 
   ARFilter _getLeftEarARFilter(int filterIndex) {
     ARFilter arFilter = new ARFilter();
@@ -194,13 +241,13 @@ class _FaceCameraState extends State<FaceCamera> {
     return arFilter;
   }
 
-  Widget _getStickerWidget(String assetName, double width, double height) {
+  Widget _getStickerWidget(String assetName, double width, double height, {BoxFit boxfit = BoxFit.contain}) {
 
     Widget stickerWidget = Positioned(
       child: new Container(
 //        color: Colors.blue,
           child: new Image(
-            fit: BoxFit.contain,
+            fit: boxfit,
             image: new AssetImage(assetName),
             width: width,
             height: height,

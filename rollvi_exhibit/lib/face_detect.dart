@@ -203,7 +203,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
                 icon: _getFilterIcon(_selectedFilter),
                 onPressed: () {
                   _selectedFilter =
-                      (_selectedFilter > 4) ? 1 : _selectedFilter += 1;
+                      (_selectedFilter > 2) ? 1 : _selectedFilter += 1;
                 },
               ),
             ],
