@@ -142,8 +142,8 @@ class _FaceCameraState extends State<FaceCamera> {
         return null;
     }
 
-    final double left = (filterIndex == 5) ?  mouthCenterPoint.dx - (arFilter.width / 2) : mouthCenterPoint.dx;
-    final double top = mouthCenterPoint.dy - (arFilter.height / 2) - 20;
+    final double left = mouthCenterPoint.dx;
+    final double top = (filterIndex == 5) ? 20 : mouthCenterPoint.dy - (arFilter.height / 2) - 20;
     arFilter.offset = Offset(left, top);
 
     return arFilter;
@@ -200,12 +200,12 @@ class _FaceCameraState extends State<FaceCamera> {
       child: new Container(
 //        color: Colors.blue,
           child: new Image(
-        fit: BoxFit.contain,
-        image: new AssetImage(assetName),
-        width: width,
-        height: height,
-        alignment: Alignment.center,
-      )..image.evict()
+            fit: BoxFit.contain,
+            image: new AssetImage(assetName),
+            width: width,
+            height: height,
+            alignment: Alignment.center,
+          )..image.evict()
       ),
     );
 
@@ -280,9 +280,9 @@ class _FaceCameraState extends State<FaceCamera> {
     try {
       Face face = faces[0];
       Offset upperLipBottom =
-          face.getContour(FaceContourType.upperLipBottom).positionsList[4];
+      face.getContour(FaceContourType.upperLipBottom).positionsList[4];
       Offset lowerLipTop =
-          face.getContour(FaceContourType.lowerLipTop).positionsList[4];
+      face.getContour(FaceContourType.lowerLipTop).positionsList[4];
 
       double offsetMouse = lowerLipTop.dy - upperLipBottom.dy;
 
@@ -301,8 +301,8 @@ class _FaceCameraState extends State<FaceCamera> {
 
   Offset _scalePoint(
       {Offset offset,
-      @required Size widgetSize,
-      CameraLensDirection cameraLensDirection}) {
+        @required Size widgetSize,
+        CameraLensDirection cameraLensDirection}) {
     final double scaleX = widgetSize.width / _imageSize.width;
     final double scaleY = widgetSize.height / _imageSize.height;
 

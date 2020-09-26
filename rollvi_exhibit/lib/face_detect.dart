@@ -142,20 +142,6 @@ class _FacePageState extends State<RealtimeFaceDetect> {
       ),
       body: RepaintBoundary(
         key: previewContainer,
-//        child:
-//            ClipRect(
-//              child: Align(
-//                alignment: Alignment.center,
-//                widthFactor: 1,
-//                heightFactor: 1, // 0.8, 0.56
-//                child: AspectRatio(
-//                  aspectRatio: 9 / 15, // 9 / 15
-//                  child: _camera == null
-//                      ? Container(color: Colors.black)
-//                      : FaceCamera(faces: _faces, camera: _camera),
-//                ),
-//              ),
-//            ),
         child: _camera == null
             ? Container(color: Colors.black)
             : FaceCamera(

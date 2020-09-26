@@ -226,6 +226,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
           ),
           Expanded(
             child: Container(
+              padding: EdgeInsets.only(top: 30),
               alignment: Alignment.bottomCenter,
               decoration: BoxDecoration(
 //                borderRadius: BorderRadius.all(Radius.circular(10)),
