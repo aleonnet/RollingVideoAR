@@ -137,23 +137,25 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   Widget build(BuildContext context) {
     final Size _size = MediaQuery.of(context).size;
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          RepaintBoundary(
-            key: previewContainer,
-            child: _camera == null
-                ? Container(color: Colors.black)
-                : FaceCamera(
-                    faces: _faces,
-                    camera: _camera,
-                    showFaceContour: _showFaceContour,
-                    filterIndex: _selectedFilter),
-          ),
-          Container(
-            width: 150,
-                        alignment: Alignment.bottomCenter,
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            RepaintBoundary(
+              key: previewContainer,
+              child: _camera == null
+                  ? Container(color: Colors.black)
+                  : FaceCamera(
+                  faces: _faces,
+                  camera: _camera,
+                  showFaceContour: _showFaceContour,
+                  filterIndex: _selectedFilter),
+            ),
+            Container(
+              width: 150,
+              alignment: Alignment.bottomCenter,
               margin: EdgeInsets.only(left: _size.width - 150),
 
 //              alignment: Alignment.topLeft,
@@ -162,18 +164,21 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 //            alignment: Alignment.topRight,
 //            margin: EdgeInsets.only(top: 50, left: _size.width - 150),
 
-            child: Opacity(
-              opacity: 0.8,
-              child: FlatButton(
-                child: Image.asset('assets/rollvi_logo_v_wh.png'),
-                onLongPress: () {
-                  _selectedFilter =
-                      (_selectedFilter > 2) ? 1 : _selectedFilter += 1;
-                },
+              child: Opacity(
+                opacity: 0.8,
+                child: FlatButton(
+                  child: Image.asset('assets/rollvi_logo_v_wh.png'),
+                  onLongPress: () {
+                    _selectedFilter =
+                    (_selectedFilter > 2) ? 1 : _selectedFilter += 1;
+
+                    writeLog("(Select Filter) $_selectedFilter");
+                  },
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -6,6 +6,8 @@ import 'package:darwin_camera/darwin_camera.dart';
 import 'package:rollvi_exhibit/face_painter.dart';
 import 'dart:math' as math;
 
+import 'package:rollvi_exhibit/utils.dart';
+
 enum FilterLocation {
   Mouse,
   LeftEar,
@@ -79,6 +81,8 @@ class _FaceCameraState extends State<FaceCamera> {
         return Container();
       }
 
+      writeLog("<MouthFilter> (${arFilter.offset.dx}, ${arFilter.offset.dy})");
+
       Widget stickerWidgets = new Positioned(
           left: arFilter.offset.dx,
           top: arFilter.offset.dy,
@@ -145,6 +149,7 @@ class _FaceCameraState extends State<FaceCamera> {
 
     try {
       final face = faces[0].boundingBox;
+      writeLog("<Face> (${face.left}, ${face.top}, ${face.right}, ${face.bottom})");
 
       Widget stickerWidgets = new Positioned(
           child: Transform(
