@@ -109,7 +109,8 @@ class _FacePageState extends State<RealtimeFaceDetect> {
           setState(() {
             _faces = result;
 
-            if (_captureType == CaptureType.ImageSequence && isRecording == true) {
+            if (_captureType == CaptureType.ImageSequence &&
+                isRecording == true) {
               _imageSequence.add(_convertCameraImage(image));
             }
           });
@@ -134,27 +135,46 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 
   @override
   Widget build(BuildContext context) {
+    final Size _size = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: Colors.black,
-      body: RepaintBoundary(
-        key: previewContainer,
-        child: _camera == null
-            ? Container(color: Colors.black)
-            : FaceCamera(
-                faces: _faces,
-                camera: _camera,
-                showFaceContour: _showFaceContour,
-                filterIndex: _selectedFilter),
+      body: Stack(
+        children: [
+          RepaintBoundary(
+            key: previewContainer,
+            child: _camera == null
+                ? Container(color: Colors.black)
+                : FaceCamera(
+                    faces: _faces,
+                    camera: _camera,
+                    showFaceContour: _showFaceContour,
+                    filterIndex: _selectedFilter),
+          ),
+          Container(
+            width: 150,
+                        alignment: Alignment.bottomCenter,
+              margin: EdgeInsets.only(left: _size.width - 150),
+
+//              alignment: Alignment.topLeft,
+//              margin: EdgeInsets.only(top: 50),
+
+//            alignment: Alignment.topRight,
+//            margin: EdgeInsets.only(top: 50, left: _size.width - 150),
+
+            child: Opacity(
+              opacity: 0.8,
+              child: FlatButton(
+                child: Image.asset('assets/rollvi_logo_v_wh.png'),
+                onLongPress: () {
+                  _selectedFilter =
+                      (_selectedFilter > 2) ? 1 : _selectedFilter += 1;
+                },
+              ),
+            ),
+          ),
+        ],
       ),
-      floatingActionButton: IconButton(
-        iconSize: 27.0,
-        icon: _getFilterIcon(_selectedFilter),
-        onPressed: () {
-          _selectedFilter =
-          (_selectedFilter > 2) ? 1 : _selectedFilter += 1;
-        },
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
   }
 
@@ -197,7 +217,6 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   Widget _getRecordButton(BuildContext context) {
     FloatingActionButton recordButton = FloatingActionButton(
       child: Icon(Icons.camera),
-
       onPressed: () async {
         try {
           // for image stream
@@ -220,17 +239,17 @@ class _FacePageState extends State<RealtimeFaceDetect> {
           if (_captureType == CaptureType.Image) {
             imglib.Image capturedImage = _convertCameraImage(_lastImage);
             _capture().then((path) => {
-              imageCache.clear(),
-              print("Capture Complete : $path"),
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          ImagePreview(cameraImg: capturedImage,)))
-                  ..then((value) => _initialize())
-            });
-          }
-          else {
+                  imageCache.clear(),
+                  print("Capture Complete : $path"),
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ImagePreview(
+                                cameraImg: capturedImage,
+                              )))
+                    ..then((value) => _initialize())
+                });
+          } else {
             int _time = _maxTime;
             _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
               print('[timer] : $_time');
@@ -248,8 +267,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
                                 VideoPreview(videoPath: videoPath)))
                       ..then((value) => _initialize());
                   });
-                }
-                else if (_captureType == CaptureType.ImageSequence) {
+                } else if (_captureType == CaptureType.ImageSequence) {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
