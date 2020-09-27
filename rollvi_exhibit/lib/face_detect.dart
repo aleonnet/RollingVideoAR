@@ -136,10 +136,6 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text('ROLLVI'),
-        backgroundColor: Colors.redAccent,
-      ),
       body: RepaintBoundary(
         key: previewContainer,
         child: _camera == null
@@ -150,103 +146,15 @@ class _FacePageState extends State<RealtimeFaceDetect> {
                 showFaceContour: _showFaceContour,
                 filterIndex: _selectedFilter),
       ),
-      bottomNavigationBar: BottomAppBar(
-        child: Container(
-          margin: EdgeInsets.only(left: 12.0, right: 12.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              IconButton(
-                iconSize: 27.0,
-                icon: _getCaptureIcon(_captureType),
-                onPressed: () async {
-                  switch (_captureType) {
-                    case CaptureType.Video:
-                      _captureType = CaptureType.Image;
-                      break;
-                    case CaptureType.Image:
-                      _captureType = CaptureType.ImageSequence;
-                      break;
-                    case CaptureType.ImageSequence:
-                      _captureType = CaptureType.Video;
-                  }
-                },
-              ),
-              IconButton(
-                iconSize: 27.0,
-                icon: Icon(
-                  Icons.adjust,
-                  color: Colors.grey.shade400,
-                ),
-                onPressed: () {
-//                  _showShootButton = !_showShootButton;
-                },
-              ),
-              SizedBox(
-                width: 50.0,
-              ),
-              IconButton(
-                iconSize: 27.0,
-                icon: Icon(
-                  Icons.face,
-                  color: (_showFaceContour == true)
-                      ? Colors.redAccent
-                      : Colors.grey.shade400,
-                ),
-                onPressed: () {
-                  _showFaceContour = !_showFaceContour;
-                },
-              ),
-              IconButton(
-                iconSize: 27.0,
-                icon: _getFilterIcon(_selectedFilter),
-                onPressed: () {
-                  _selectedFilter =
-                      (_selectedFilter > 2) ? 1 : _selectedFilter += 1;
-                },
-              ),
-            ],
-          ),
-        ),
-        //to add a space between the FAB and BottomAppBar
-        shape: CircularNotchedRectangle(),
-        //color of the BottomAppBar
-        color: Colors.white,
+      floatingActionButton: IconButton(
+        iconSize: 27.0,
+        icon: _getFilterIcon(_selectedFilter),
+        onPressed: () {
+          _selectedFilter =
+          (_selectedFilter > 2) ? 1 : _selectedFilter += 1;
+        },
       ),
-      floatingActionButton: (_showShootButton == false)
-          ? null
-          : (isRecording == false)
-              ? _getRecordButton(context)
-              : FloatingActionButton(
-                  child: Icon(Icons.fiber_manual_record),
-                  backgroundColor: Colors.grey,
-                ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-    );
-  }
-
-  Icon _getCaptureIcon(CaptureType captureType) {
-    switch(captureType) {
-      case CaptureType.Video:
-        return Icon(
-          Icons.videocam,
-          color: Colors.grey.shade400,
-        );
-      case CaptureType.Image:
-        return Icon(
-          Icons.camera_alt,
-          color: Colors.grey.shade400,
-        );
-      case CaptureType.ImageSequence:
-        return Icon(
-          Icons.camera_roll,
-          color: Colors.grey.shade400,
-        );
-    }
-    return Icon(
-      Icons.settings,
-      color: Colors.grey.shade400,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
   }
 
