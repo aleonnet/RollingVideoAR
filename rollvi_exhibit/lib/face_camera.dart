@@ -202,8 +202,8 @@ class _FaceCameraState extends State<FaceCamera> {
     arFilter.height *= ratio;
 
     final double left = (filterIndex == 2)
-        ? mouthCenterPoint.dx
-        : mouthCenterPoint.dx - (arFilter.width / 2) + 10;
+        ? mouthCenterPoint.dx - 60
+        : mouthCenterPoint.dx - (arFilter.width / 2) - 20;
     final double top = mouthCenterPoint.dy - (arFilter.height / 2) - 10;
     arFilter.offset = Offset(left, top);
 
@@ -216,12 +216,12 @@ class _FaceCameraState extends State<FaceCamera> {
     switch (filterIndex) {
       case 2:
         arFilter.assetNames.add("assets/bottom_m02.webp");
-        arFilter.width = 600;
+        arFilter.width = 800;
         arFilter.height = 1200;
         break;
       case 3:
         arFilter.assetNames.add("assets/bottom_m03.webp");
-        arFilter.width = 600;
+        arFilter.width = 800;
         arFilter.height = 1200;
         break;
       default:

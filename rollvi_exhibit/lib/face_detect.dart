@@ -14,7 +14,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:darwin_camera/darwin_camera.dart';
 import 'package:rollvi_exhibit/image_preview.dart';
 import 'package:rollvi_exhibit/image_sequence_preview.dart';
-import 'package:rollvi_exhibit/progress_painter.dart';
 import 'package:rollvi_exhibit/video_preview.dart';
 
 import 'face_camera.dart';
@@ -143,27 +142,45 @@ class _FacePageState extends State<RealtimeFaceDetect> {
         backgroundColor: Colors.black,
         body: Stack(
           children: [
+//            RepaintBoundary(
+//              key: previewContainer,
+//              child: _camera == null
+//                  ? Container(color: Colors.black)
+//                  : FaceCamera(
+//                  faces: _faces,
+//                  camera: _camera,
+//                  showFaceContour: _showFaceContour,
+//                  filterIndex: _selectedFilter),
+//            ),
             RepaintBoundary(
               key: previewContainer,
-              child: _camera == null
-                  ? Container(color: Colors.black)
-                  : FaceCamera(
-                  faces: _faces,
-                  camera: _camera,
-                  showFaceContour: _showFaceContour,
-                  filterIndex: _selectedFilter),
+              child: ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                child:  (_camera != null) ? Align(
+                  alignment: Alignment.center,
+//                  widthFactor: 1,
+//                  heightFactor: _camera.value.aspectRatio,
+                  child: _camera == null
+                      ? Container(
+                    color: Colors.black,
+                  )
+                      : AspectRatio(
+                    aspectRatio: _camera.value.aspectRatio,
+                    child: FaceCamera(
+                        faces: _faces,
+                        camera: _camera,
+                        showFaceContour: _showFaceContour,
+                        filterIndex: _selectedFilter),
+                  ),
+                ) : Container(),
+              ),
             ),
+
+
             Container(
-              width: 150,
+              width: 200,
               alignment: Alignment.bottomCenter,
-              margin: EdgeInsets.only(left: _size.width - 150),
-
-//              alignment: Alignment.topLeft,
-//              margin: EdgeInsets.only(top: 50),
-
-//            alignment: Alignment.topRight,
-//            margin: EdgeInsets.only(top: 50, left: _size.width - 150),
-
+              margin: EdgeInsets.only(left: _size.width - 200, bottom: 10),
               child: Opacity(
                 opacity: 0.8,
                 child: FlatButton(
