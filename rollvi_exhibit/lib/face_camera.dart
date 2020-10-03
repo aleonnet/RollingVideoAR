@@ -1,3 +1,5 @@
+import 'package:audioplayers/audio_cache.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
@@ -44,6 +46,10 @@ class FaceCamera extends StatefulWidget {
 class _FaceCameraState extends State<FaceCamera> {
   Size _imageSize;
 
+  final AudioCache  _audioCache = AudioCache();
+  AudioPlayer _audioPlayer = AudioPlayer(mode: PlayerMode.LOW_LATENCY);
+
+
   @override
   Widget build(BuildContext context) {
     _imageSize = Size(
@@ -78,10 +84,17 @@ class _FaceCameraState extends State<FaceCamera> {
           _getMouseARFilter(filterIndex, ratio, widgetSize);
 
       if (arFilter == null) {
+        stopAudioAsset();
         return Container();
       }
 
       writeLog("<MouthFilter> (${arFilter.offset.dx}, ${arFilter.offset.dy})");
+
+      if (_audioPlayer.state != AudioPlayerState.PLAYING) {
+        playAudioAsset('say_sfx01.wav');
+      } else {
+        print("Not Started");
+      }
 
       Widget stickerWidgets = new Positioned(
           left: arFilter.offset.dx,
@@ -296,6 +309,15 @@ class _FaceCameraState extends State<FaceCamera> {
     return stickerWidget;
   }
 
+  void playAudioAsset(String assetName) async {
+    _audioPlayer = await _audioCache.loop(assetName);
+    _audioPlayer.setPlaybackRate(playbackRate: 0.9);
+  }
+
+  void stopAudioAsset() async {
+    await _audioPlayer.stop();
+  }
+
   Widget _getFaceContourPaint(List<Face> faces, CameraController camera) {
     if (faces == null || camera == null) return Text("");
 
@@ -395,5 +417,19 @@ class _FaceCameraState extends State<FaceCamera> {
           widgetSize.width - (offset.dx * scaleX), offset.dy * scaleY);
     }
     return Offset(offset.dx * scaleX, offset.dy * scaleY);
+  }
+}
+
+class Audio {
+  final audioCache = AudioCache();
+  AudioPlayer audioPlayer;
+
+  void play(String assetName) async {
+    print(assetName);
+    audioPlayer = await audioCache.play(assetName);
+  }
+
+  void stop() {
+    audioPlayer.stop();
   }
 }

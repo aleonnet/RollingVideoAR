@@ -46,6 +46,7 @@ dependencies:
   image_editor: ^0.7.1
   flutter_speed_dial: ^1.2.5
   gallery_saver: ^2.0.1
+  audioplayers: ^0.16.1
 
 dev_dependencies:
   flutter_test:
