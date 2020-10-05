@@ -46,9 +46,8 @@ class FaceCamera extends StatefulWidget {
 class _FaceCameraState extends State<FaceCamera> {
   Size _imageSize;
 
-  final AudioCache  _audioCache = AudioCache();
-  AudioPlayer _audioPlayer = AudioPlayer(mode: PlayerMode.LOW_LATENCY);
-
+  final Audio mouthAudio = Audio();
+  final Audio bottomAudio = Audio();
 
   @override
   Widget build(BuildContext context) {
@@ -84,17 +83,13 @@ class _FaceCameraState extends State<FaceCamera> {
           _getMouseARFilter(filterIndex, ratio, widgetSize);
 
       if (arFilter == null) {
-        stopAudioAsset();
+        mouthAudio.stop();
         return Container();
       }
 
       writeLog("<MouthFilter> (${arFilter.offset.dx}, ${arFilter.offset.dy})");
 
-      if (_audioPlayer.state != AudioPlayerState.PLAYING) {
-        playAudioAsset('say_sfx01.wav');
-      } else {
-        print("Not Started");
-      }
+      mouthAudio.play('say_sfx0$filterIndex.wav', playbackRate: 0.9);
 
       Widget stickerWidgets = new Positioned(
           left: arFilter.offset.dx,
@@ -141,6 +136,9 @@ class _FaceCameraState extends State<FaceCamera> {
 
     try {
       final face = faces[0].boundingBox;
+      
+//      playBottomAudioAsset('bottom_sfx0$filterIndex.wav');
+      bottomAudio.play('bottom_sfx0$filterIndex.wav');
 
       Widget stickerWidgets = new Positioned(
           child: new Stack(
@@ -153,6 +151,8 @@ class _FaceCameraState extends State<FaceCamera> {
 
       return stickerWidgets;
     } catch (e) {
+//      stopBottomAudioAsset();
+      bottomAudio.stop();
       return Container();
     }
   }
@@ -193,17 +193,17 @@ class _FaceCameraState extends State<FaceCamera> {
 
     switch (filterIndex) {
       case 1:
-        arFilter.assetNames.add("assets/say_m01.webp");
+        arFilter.assetNames.add("assets/say_m01_gallaxy.webp");
         arFilter.width = 200;
         arFilter.height = 400;
         break;
       case 2:
-        arFilter.assetNames.add("assets/say_m02.webp");
+        arFilter.assetNames.add("assets/say_m02_gallaxy.webp");
         arFilter.width = 200;
         arFilter.height = 400;
         break;
       case 3:
-        arFilter.assetNames.add("assets/say_m03.webp");
+        arFilter.assetNames.add("assets/say_m03_gallaxy.webp");
         arFilter.width = 200;
         arFilter.height = 400;
         break;
@@ -214,9 +214,7 @@ class _FaceCameraState extends State<FaceCamera> {
     arFilter.width *= ratio;
     arFilter.height *= ratio;
 
-    final double left = (filterIndex == 2)
-        ? mouthCenterPoint.dx - 60
-        : mouthCenterPoint.dx - (arFilter.width / 2) - 20;
+    final double left = mouthCenterPoint.dx - (arFilter.width / 2) - 20;
     final double top = mouthCenterPoint.dy - (arFilter.height / 2) - 10;
     arFilter.offset = Offset(left, top);
 
@@ -228,12 +226,12 @@ class _FaceCameraState extends State<FaceCamera> {
 
     switch (filterIndex) {
       case 2:
-        arFilter.assetNames.add("assets/bottom_m02.webp");
+        arFilter.assetNames.add("assets/bottom_m02_gallaxy.webp");
         arFilter.width = 800;
         arFilter.height = 1200;
         break;
       case 3:
-        arFilter.assetNames.add("assets/bottom_m03.webp");
+        arFilter.assetNames.add("assets/bottom_m03_gallaxy.webp");
         arFilter.width = 800;
         arFilter.height = 1200;
         break;
@@ -307,15 +305,6 @@ class _FaceCameraState extends State<FaceCamera> {
     );
 
     return stickerWidget;
-  }
-
-  void playAudioAsset(String assetName) async {
-    _audioPlayer = await _audioCache.loop(assetName);
-    _audioPlayer.setPlaybackRate(playbackRate: 0.9);
-  }
-
-  void stopAudioAsset() async {
-    await _audioPlayer.stop();
   }
 
   Widget _getFaceContourPaint(List<Face> faces, CameraController camera) {
@@ -421,15 +410,21 @@ class _FaceCameraState extends State<FaceCamera> {
 }
 
 class Audio {
-  final audioCache = AudioCache();
-  AudioPlayer audioPlayer;
+  final AudioCache cache = AudioCache();
+  AudioPlayer player;
 
-  void play(String assetName) async {
-    print(assetName);
-    audioPlayer = await audioCache.play(assetName);
+  Audio() {
+    player = AudioPlayer(mode: PlayerMode.LOW_LATENCY);
+  }
+
+  void play(String assetName, {double playbackRate = 1.0}) async {
+    if (player.state != AudioPlayerState.PLAYING) {
+      player = await cache.play(assetName);
+      player.setPlaybackRate(playbackRate: playbackRate);
+    }
   }
 
   void stop() {
-    audioPlayer.stop();
+    player.stop();
   }
 }
