@@ -89,7 +89,7 @@ class _FaceCameraState extends State<FaceCamera> {
 
       writeLog("<MouthFilter> (${arFilter.offset.dx}, ${arFilter.offset.dy})");
 
-      mouthAudio.play('say_sfx0$filterIndex.wav', playbackRate: 0.9);
+      mouthAudio.play('say_sfx0$filterIndex.wav', playbackRate: 1.1);
 
       Widget stickerWidgets = new Positioned(
           left: arFilter.offset.dx,
@@ -136,9 +136,8 @@ class _FaceCameraState extends State<FaceCamera> {
 
     try {
       final face = faces[0].boundingBox;
-      
-//      playBottomAudioAsset('bottom_sfx0$filterIndex.wav');
-      bottomAudio.play('bottom_sfx0$filterIndex.wav');
+
+      bottomAudio.play('bottom_sfx0$filterIndex(5sec).wav');
 
       Widget stickerWidgets = new Positioned(
           child: new Stack(
@@ -151,7 +150,6 @@ class _FaceCameraState extends State<FaceCamera> {
 
       return stickerWidgets;
     } catch (e) {
-//      stopBottomAudioAsset();
       bottomAudio.stop();
       return Container();
     }
@@ -301,7 +299,7 @@ class _FaceCameraState extends State<FaceCamera> {
         width: width,
         height: height,
         alignment: Alignment.center,
-      )..image.evict()),
+      )),
     );
 
     return stickerWidget;
@@ -417,7 +415,7 @@ class Audio {
     player = AudioPlayer(mode: PlayerMode.LOW_LATENCY);
   }
 
-  void play(String assetName, {double playbackRate = 1.0}) async {
+  void play(String assetName, {double playbackRate = 0.9}) async {
     if (player.state != AudioPlayerState.PLAYING) {
       player = await cache.play(assetName);
       player.setPlaybackRate(playbackRate: playbackRate);
