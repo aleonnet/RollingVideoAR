@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
+import 'package:rollvi_exhibit/utils.dart';
 
 class FaceContourPainter extends CustomPainter {
   final List<Rect> rects = [];
@@ -14,6 +15,7 @@ class FaceContourPainter extends CustomPainter {
   FaceContourPainter(this.imageSize, this.faces, this.cameraLensDirection) {
     for (var i = 0; i < faces.length; i++) {
       rects.add(faces[i].boundingBox);
+      writeLog(faces[i].boundingBox.toString());
     }
   }
 

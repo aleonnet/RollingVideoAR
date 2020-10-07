@@ -14,7 +14,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:darwin_camera/darwin_camera.dart';
 import 'package:rollvi_exhibit/image_preview.dart';
 import 'package:rollvi_exhibit/image_sequence_preview.dart';
-import 'package:rollvi_exhibit/progress_painter.dart';
 import 'package:rollvi_exhibit/video_preview.dart';
 
 import 'face_camera.dart';
@@ -58,6 +57,10 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 
   @override
   void initState() {
+    SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+    ));
     super.initState();
     _imageSequence = new List<imglib.Image>();
     _initialize();
@@ -109,7 +112,8 @@ class _FacePageState extends State<RealtimeFaceDetect> {
           setState(() {
             _faces = result;
 
-            if (_captureType == CaptureType.ImageSequence && isRecording == true) {
+            if (_captureType == CaptureType.ImageSequence &&
+                isRecording == true) {
               _imageSequence.add(_convertCameraImage(image));
             }
           });
@@ -134,119 +138,69 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text('ROLLVI'),
-        backgroundColor: Colors.redAccent,
-      ),
-      body: RepaintBoundary(
-        key: previewContainer,
-        child: _camera == null
-            ? Container(color: Colors.black)
-            : FaceCamera(
-                faces: _faces,
-                camera: _camera,
-                showFaceContour: _showFaceContour,
-                filterIndex: _selectedFilter),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Container(
-          margin: EdgeInsets.only(left: 12.0, right: 12.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              IconButton(
-                iconSize: 27.0,
-                icon: _getCaptureIcon(_captureType),
-                onPressed: () async {
-                  switch (_captureType) {
-                    case CaptureType.Video:
-                      _captureType = CaptureType.Image;
-                      break;
-                    case CaptureType.Image:
-                      _captureType = CaptureType.ImageSequence;
-                      break;
-                    case CaptureType.ImageSequence:
-                      _captureType = CaptureType.Video;
-                  }
-                },
-              ),
-              IconButton(
-                iconSize: 27.0,
-                icon: Icon(
-                  Icons.adjust,
-                  color: Colors.grey.shade400,
-                ),
-                onPressed: () {
-//                  _showShootButton = !_showShootButton;
-                },
-              ),
-              SizedBox(
-                width: 50.0,
-              ),
-              IconButton(
-                iconSize: 27.0,
-                icon: Icon(
-                  Icons.face,
-                  color: (_showFaceContour == true)
-                      ? Colors.redAccent
-                      : Colors.grey.shade400,
-                ),
-                onPressed: () {
-                  _showFaceContour = !_showFaceContour;
-                },
-              ),
-              IconButton(
-                iconSize: 27.0,
-                icon: _getFilterIcon(_selectedFilter),
-                onPressed: () {
-                  _selectedFilter =
-                      (_selectedFilter > 4) ? 1 : _selectedFilter += 1;
-                },
-              ),
-            ],
-          ),
-        ),
-        //to add a space between the FAB and BottomAppBar
-        shape: CircularNotchedRectangle(),
-        //color of the BottomAppBar
-        color: Colors.white,
-      ),
-      floatingActionButton: (_showShootButton == false)
-          ? null
-          : (isRecording == false)
-              ? _getRecordButton(context)
-              : FloatingActionButton(
-                  child: Icon(Icons.fiber_manual_record),
-                  backgroundColor: Colors.grey,
-                ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-    );
-  }
+    final Size _size = MediaQuery.of(context).size;
 
-  Icon _getCaptureIcon(CaptureType captureType) {
-    switch(captureType) {
-      case CaptureType.Video:
-        return Icon(
-          Icons.videocam,
-          color: Colors.grey.shade400,
-        );
-      case CaptureType.Image:
-        return Icon(
-          Icons.camera_alt,
-          color: Colors.grey.shade400,
-        );
-      case CaptureType.ImageSequence:
-        return Icon(
-          Icons.camera_roll,
-          color: Colors.grey.shade400,
-        );
-    }
-    return Icon(
-      Icons.settings,
-      color: Colors.grey.shade400,
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+//            RepaintBoundary(
+//              key: previewContainer,
+//              child: _camera == null
+//                  ? Container(color: Colors.black)
+//                  : FaceCamera(
+//                  faces: _faces,
+//                  camera: _camera,
+//                  showFaceContour: _showFaceContour,
+//                  filterIndex: _selectedFilter),
+//            ),
+            RepaintBoundary(
+              key: previewContainer,
+              child: ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                child:  (_camera != null) ? Align(
+                  alignment: Alignment.center,
+//                  widthFactor: 1,
+//                  heightFactor: _camera.value.aspectRatio,
+                  child: _camera == null
+                      ? Container(
+                    color: Colors.black,
+                  )
+                      : AspectRatio(
+                    aspectRatio: _camera.value.aspectRatio,
+                    child: FaceCamera(
+                        faces: _faces,
+                        camera: _camera,
+                        showFaceContour: _showFaceContour,
+                        filterIndex: _selectedFilter),
+                  ),
+                ) : Container(),
+              ),
+            ),
+
+
+            Container(
+              width: 200,
+              alignment: Alignment.bottomCenter,
+              margin: EdgeInsets.only(left: _size.width - 200, bottom: 10),
+              child: Opacity(
+                opacity: 0.8,
+                child: FlatButton(
+                  child: Image.asset('assets/rollvi_logo_v_wh.png'),
+                  onLongPress: () {
+                    _selectedFilter =
+                    (_selectedFilter > 2) ? 1 : _selectedFilter += 1;
+
+                    writeLog("(Select Filter) $_selectedFilter");
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -289,7 +243,6 @@ class _FacePageState extends State<RealtimeFaceDetect> {
   Widget _getRecordButton(BuildContext context) {
     FloatingActionButton recordButton = FloatingActionButton(
       child: Icon(Icons.camera),
-
       onPressed: () async {
         try {
           // for image stream
@@ -312,17 +265,17 @@ class _FacePageState extends State<RealtimeFaceDetect> {
           if (_captureType == CaptureType.Image) {
             imglib.Image capturedImage = _convertCameraImage(_lastImage);
             _capture().then((path) => {
-              imageCache.clear(),
-              print("Capture Complete : $path"),
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          ImagePreview(cameraImg: capturedImage,)))
-                  ..then((value) => _initialize())
-            });
-          }
-          else {
+                  imageCache.clear(),
+                  print("Capture Complete : $path"),
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ImagePreview(
+                                cameraImg: capturedImage,
+                              )))
+                    ..then((value) => _initialize())
+                });
+          } else {
             int _time = _maxTime;
             _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
               print('[timer] : $_time');
@@ -340,8 +293,7 @@ class _FacePageState extends State<RealtimeFaceDetect> {
                                 VideoPreview(videoPath: videoPath)))
                       ..then((value) => _initialize());
                   });
-                }
-                else if (_captureType == CaptureType.ImageSequence) {
+                } else if (_captureType == CaptureType.ImageSequence) {
                   Navigator.push(
                       context,
                       MaterialPageRoute(

@@ -1,8 +1,27 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:darwin_camera/darwin_camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
+import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+
+
+Future<File> writeLog(String message) async {
+  final now = DateTime.now().toLocal();
+  final String curDate = DateFormat('MM-dd').format(now);
+  final String curTime = DateFormat('MM-dd hh:mm:ss').format(now);
+
+//  final directory = await getApplicationDocumentsDirectory();
+  final directory = await getExternalStorageDirectory();
+  final path = await directory.path;
+
+  File file = File('$path/log_$curDate.txt');
+  file.writeAsString('[$curTime] $message\n', mode: FileMode.append);
+
+  print(message);
+}
 
 List<Offset> _scalePoints({
   List<Offset> offsets,
