@@ -57,6 +57,10 @@ class _FacePageState extends State<RealtimeFaceDetect> {
 
   @override
   void initState() {
+    SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+    ));
     super.initState();
     _imageSequence = new List<imglib.Image>();
     _initialize();

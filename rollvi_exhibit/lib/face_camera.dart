@@ -78,7 +78,7 @@ class _FaceCameraState extends State<FaceCamera> {
   Widget _getMouthStickerWidget(
       List<Face> faces, int filterIndex, Size widgetSize) {
     try {
-      double ratio = (faces[0].boundingBox).height / 180;
+      double ratio = (faces[0].boundingBox).height / 140;
       final ARFilter arFilter =
           _getMouseARFilter(filterIndex, ratio, widgetSize);
 
@@ -191,19 +191,19 @@ class _FaceCameraState extends State<FaceCamera> {
 
     switch (filterIndex) {
       case 1:
-        arFilter.assetNames.add("assets/say_m01_gallaxy.webp");
-        arFilter.width = 200;
-        arFilter.height = 400;
+        arFilter.assetNames.add("assets/say_m01_gallaxy_2.webp");
+        arFilter.width = 250;
+        arFilter.height = 500;
         break;
       case 2:
-        arFilter.assetNames.add("assets/say_m02_gallaxy.webp");
-        arFilter.width = 200;
-        arFilter.height = 400;
+        arFilter.assetNames.add("assets/say_m02_gallaxy_2.webp");
+        arFilter.width = 250;
+        arFilter.height = 500;
         break;
       case 3:
-        arFilter.assetNames.add("assets/say_m03_gallaxy.webp");
-        arFilter.width = 200;
-        arFilter.height = 400;
+        arFilter.assetNames.add("assets/say_m03_gallaxy_2.webp");
+        arFilter.width = 250;
+        arFilter.height = 500;
         break;
       default:
         return null;
