@@ -190,6 +190,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                 color: Colors.white,
               ),
               onPressed: () {
+
                 Navigator.of(context).pop();
               },
             )

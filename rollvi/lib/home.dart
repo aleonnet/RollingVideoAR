@@ -14,6 +14,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final _size = MediaQuery.of(context).size;
+    final _deviceRatio = _size.width / _size.height;
 
     MediaQueryData mediaQuery = MediaQuery.of(context);
     mediaQuery.devicePixelRatio;
@@ -34,7 +36,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Container(
             height: MediaQuery.of(context).size.width,
             width: MediaQuery.of(context).size.width,
+            margin: EdgeInsets.all(10),
             decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
                 image: DecorationImage(
                     image: AssetImage("assets/onBoarding.gif"),
                     fit: BoxFit.cover)),
