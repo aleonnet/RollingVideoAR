@@ -1,9 +1,12 @@
+import 'package:audioplayers/audio_cache.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/rendering.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'package:rollvi/ui/face_painter.dart';
+import 'dart:math' as math;
 
 
 enum FilterLocation {
@@ -40,6 +43,9 @@ class _FaceCameraState extends State<RollviCamera> {
   final double _leftEarOffset = 70;
   Size _imageSize;
 
+  final Audio mouthAudio = Audio();
+  final Audio bottomAudio = Audio();
+
   @override
   Widget build(BuildContext context) {
 
@@ -52,6 +58,11 @@ class _FaceCameraState extends State<RollviCamera> {
       _imageSize = Size(0.0, 0.0);
     }
 
+    final Size _size = MediaQuery.of(context).size;
+    final _deviceRatio = _size.width / _size.height;
+
+    int filterIndex = widget.filterIndex;
+
     return Stack(
       children: <Widget>[
         Container(
@@ -59,137 +70,255 @@ class _FaceCameraState extends State<RollviCamera> {
         ),
         
         widget.showFaceContour ? _getFaceContourPaint(widget.faces, widget.camera) : Container(),
-        _getLeftEarStickerWidget(widget.faces, widget.filterIndex),
-        _getMouthStickerWidget(widget.faces, widget.filterIndex),
+        _getBottomStickerWidget(widget.faces, widget.filterIndex),
+        _getTopStickerWidget(widget.faces, widget.filterIndex),
+        _getLeftEarStickerWidget(widget.faces, widget.filterIndex, _size),
+        _getMouthStickerWidget(widget.faces, widget.filterIndex, _size),
       ],
     );
   }
 
-  Widget _getMouthStickerWidget(List<Face> faces, int filterIndex) {
+  Widget _getMouthStickerWidget(List<Face> faces, int filterIndex, Size widgetSize) {
     if (faces == null) {
       return Text("");
     }
 
-    final ARFilter arFilter = _getMouseARFilter(filterIndex);
+    try {
+      double ratio = (faces[0].boundingBox).height / 180;
+      final ARFilter arFilter = _getMouseARFilter(filterIndex, ratio, widgetSize);
 
-    if (arFilter == null) {
-      return Container();
+      if (arFilter == null) {
+        mouthAudio.stop();
+        return Container();
+      }
+
+      if (filterIndex == 6 || filterIndex == 7 || filterIndex == 8) {
+        mouthAudio.play('say_0$filterIndex.wav', playbackRate: 1.1);
+      }
+
+      Widget stickerWidgets = new Positioned(
+          left: arFilter.offset.dx,
+          top: arFilter.offset.dy,
+          child: new Stack(
+            children: <Widget>[
+              for (var assetName in arFilter.assetNames)
+                _getStickerWidget(assetName, arFilter.width, arFilter.height),
+            ],
+          ));
+      return stickerWidgets;
+    } catch (e) {
+      return Text("");
     }
-
-    Widget stickerWidgets = new Positioned(
-        left: arFilter.offset.dx,
-        top: arFilter.offset.dy,
-        child: new Stack(
-          children: <Widget>[
-            for (var assetName in arFilter.assetNames)
-              _getStickerWidget(assetName, arFilter.width, arFilter.height),
-          ],
-        ));
-    return stickerWidgets;
   }
 
-  Widget _getLeftEarStickerWidget(List<Face> faces, int filterIndex) {
+  Widget _getLeftEarStickerWidget(List<Face> faces, int filterIndex, Size widgetSize) {
     if (faces == null) {
       return new Text("");
     }
 
-    final ARFilter arFilter = _getLeftEarARFilter(filterIndex);
+    try {
+      double ratio = (faces[0].boundingBox).height / 180;
 
-    if (arFilter == null) {
+      final ARFilter arFilter = _getLeftEarARFilter(filterIndex, ratio, widgetSize);
+
+      Widget stickerWidgets = new Positioned(
+          right: arFilter.offset.dx,
+          top: arFilter.offset.dy,
+          child: new Stack(
+            children: <Widget>[
+              for (var assetName in arFilter.assetNames)
+                _getStickerWidget(assetName, arFilter.width, arFilter.height, once: true),
+            ],
+          ));
+
+      return stickerWidgets;
+
+    } catch (e) {
       return Container();
     }
-
-    Widget stickerWidgets = new Positioned(
-        right: arFilter.offset.dx,
-        top: arFilter.offset.dy,
-        child: new Stack(
-          children: <Widget>[
-            for (var assetName in arFilter.assetNames)
-              _getStickerWidget(assetName, arFilter.width, arFilter.height),
-          ],
-        ));
-
-    return stickerWidgets;
   }
 
-  ARFilter _getMouseARFilter(int filterIndex) {
+
+  Widget _getBottomStickerWidget(List<Face> faces, int filterIndex) {
+    final ARFilter arFilter = _getBottomARFilter(filterIndex);
+
+    try {
+      final face = faces[0].boundingBox;
+
+      if (filterIndex == 7 || filterIndex == 8) {
+        bottomAudio.play('bottom_0$filterIndex.wav');
+      }
+
+      Widget stickerWidgets = new Positioned(
+          child: new Stack(
+            children: <Widget>[
+              for (var assetName in arFilter.assetNames)
+                _getStickerWidget(assetName, arFilter.width, arFilter.height,
+                    boxfit: BoxFit.fill),
+            ],
+          ));
+
+      return stickerWidgets;
+    } catch (e) {
+      bottomAudio.stop();
+      return Container();
+    }
+  }
+
+  Widget _getTopStickerWidget(List<Face> faces, int filterIndex) {
+    final ARFilter arFilter = _getBottomARFilter(filterIndex);
+
+    try {
+      final face = faces[0].boundingBox;
+
+      Widget stickerWidgets = new Positioned(
+          child: Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.rotationZ(math.pi),
+              child: new Stack(
+                children: <Widget>[
+                  for (var assetName in arFilter.assetNames)
+                    _getStickerWidget(assetName, arFilter.width, arFilter.height,
+                        boxfit: BoxFit.fill),
+                ],
+              )));
+      return stickerWidgets;
+    } catch (e) {
+      return Container();
+    }
+  }
+
+  ARFilter _getBottomARFilter(int filterIndex) {
+    ARFilter arFilter = new ARFilter();
+
+    switch (filterIndex) {
+      case 7:
+        arFilter.assetNames.add("assets/bottom_07.webp");
+        arFilter.width = 400;
+        arFilter.height = 600;
+        break;
+      case 8:
+        arFilter.assetNames.add("assets/bottom_08.webp");
+        arFilter.width = 800;
+        arFilter.height = 1200;
+        break;
+      default:
+        return null;
+    }
+
+    return arFilter;
+  }
+
+  ARFilter _getMouseARFilter(int filterIndex, double ratio, Size widgetSize) {
     ARFilter arFilter = new ARFilter();
     arFilter.location = FilterLocation.Mouse;
 
-    final Offset mouthCenterPoint = _getMouthCenterPoint(widget.faces);
+    final Offset mouthCenterPoint = _getMouthCenterPoint(widget.faces, widgetSize);
     if (mouthCenterPoint == null) {
       return null;
     }
 
     switch(filterIndex) {
       case 1:
-        arFilter.assetNames.add("assets/say_m01.webp");
+        arFilter.assetNames.add("assets/say_01.webp");
         arFilter.width = 200;
         arFilter.height = 100;
         break;
       case 2:
-        arFilter.assetNames.add("assets/say_m02.webp");
+        arFilter.assetNames.add("assets/say_02.webp");
         arFilter.width = 300;
         arFilter.height = 250;
         break;
       case 3:
-        arFilter.assetNames.add("assets/say_m03.webp");
+        arFilter.assetNames.add("assets/say_03.webp");
         arFilter.width = 450;
         arFilter.height = 400;
         break;
       case 4:
-        arFilter.assetNames.add("assets/say_m04.webp");
+        arFilter.assetNames.add("assets/say_04.webp");
         arFilter.width = 450;
         arFilter.height = 400;
         break;
       case 5:
-        arFilter.assetNames.add("assets/say_m05.webp");
+        arFilter.assetNames.add("assets/say_05.webp");
         arFilter.width = 450;
         arFilter.height = 600;
+        break;
+      case 6:
+        arFilter.assetNames.add("assets/say_06.webp");
+        arFilter.width = 250;
+        arFilter.height = 500;
+        break;
+      case 7:
+        arFilter.assetNames.add("assets/say_07.webp");
+        arFilter.width = 250;
+        arFilter.height = 500;
+        break;
+      case 8:
+        arFilter.assetNames.add("assets/say_08.webp");
+        arFilter.width = 250;
+        arFilter.height = 500;
         break;
       default:
         return null;
     }
 
-    final double left = (filterIndex == 5) ?  mouthCenterPoint.dx - (arFilter.width / 2) : mouthCenterPoint.dx;
-    final double top = mouthCenterPoint.dy - (arFilter.height / 2) + 20;
+    double left = 0;
+    double top = 0;
+
+    if (filterIndex == 5) {
+      left = mouthCenterPoint.dx - (arFilter.width / 2);
+      top = mouthCenterPoint.dy - (arFilter.height / 2);
+    }
+    else if (filterIndex == 6 || filterIndex == 7 || filterIndex == 8) {
+      arFilter.width *= ratio;
+      arFilter.height *= ratio;
+
+      left = mouthCenterPoint.dx - (arFilter.width / 2);
+      top = mouthCenterPoint.dy - (arFilter.height / 2) - 40;
+    }
+    else {
+      left = mouthCenterPoint.dx;
+      top = mouthCenterPoint.dy - (arFilter.height / 2) - 40;
+    }
+
     arFilter.offset = Offset(left, top);
 
     return arFilter;
   }
 
-  ARFilter _getLeftEarARFilter(int filterIndex) {
+  ARFilter _getLeftEarARFilter(int filterIndex, double ratio, Size widgetSize) {
     ARFilter arFilter = new ARFilter();
     arFilter.location = FilterLocation.LeftEar;
 
-    final Offset leftEarPoint = _getLeftEarPoint(widget.faces);
+    final Offset leftEarPoint = _getLeftEarPoint(widget.faces, widgetSize);
     if (leftEarPoint == null) {
       return null;
     }
 
-    double offset = _getRightEarPoint(widget.faces).dx - _getNosePoint(widget.faces).dx;
+    double offset = _getRightEarPoint(widget.faces, widgetSize).dx - _getNosePoint(widget.faces, widgetSize).dx;
     if (offset >= _leftEarOffset) {
       return null;
     }
 
     switch(filterIndex) {
       case 2:
-        arFilter.assetNames.add("assets/hear_m02_once.webp");
+        arFilter.assetNames.add("assets/hear_02.webp");
         arFilter.width = 200;
         arFilter.height = 100;
         break;
       case 3:
-        arFilter.assetNames.add("assets/hear_m03_once.webp");
+        arFilter.assetNames.add("assets/hear_03.webp");
         arFilter.width = 220;
         arFilter.height = 150;
         break;
       case 4:
-        arFilter.assetNames.add("assets/hear_m04_once.webp");
+        arFilter.assetNames.add("assets/hear_04.webp");
         arFilter.width = 220;
         arFilter.height = 150;
         break;
       case 5:
-        arFilter.assetNames.add("assets/hear_m05_once.webp");
+        arFilter.assetNames.add("assets/hear_05.webp");
         arFilter.width = 300;
         arFilter.height = 250;
         break;
@@ -197,29 +326,48 @@ class _FaceCameraState extends State<RollviCamera> {
         return null;
     }
 
-    final double right = (filterIndex == 1) ? 0 : leftEarPoint.dx * -1 + 410;
-    final double top = (filterIndex == 1) ? 0 : leftEarPoint.dy - (arFilter.height / 2) + 20;
+//    arFilter.width *= ratio;
+//    arFilter.height *= ratio;
+
+    final double right = leftEarPoint.dx * -1 + widgetSize.width;
+    final double top = leftEarPoint.dy - (arFilter.height / 2) - 30;
+
     arFilter.offset = Offset(right, top);
 
     return arFilter;
   }
 
-  Widget _getStickerWidget(String assetName, double width, double height) {
 
-    Widget stickerWidget = Positioned(
-      child: new Container(
+  Widget _getStickerWidget(String assetName, double width, double height,
+      {BoxFit boxfit = BoxFit.contain, bool once = false}) {
+
+    if (!once) {
+      return Positioned(
+        child: new Container(
 //        color: Colors.blue,
-          child: new Image(
-        fit: BoxFit.contain,
-        image: new AssetImage(assetName),
-        width: width,
-        height: height,
-        alignment: Alignment.center,
-      )..image.evict()
-      ),
-    );
-
-    return stickerWidget;
+            child: new Image(
+              fit: boxfit,
+              image: new AssetImage(assetName),
+              width: width,
+              height: height,
+              alignment: Alignment.center,
+            )),
+      );
+    }
+    else {
+      return Positioned(
+        child: new Container(
+//        color: Colors.blue,
+            child: new Image(
+              fit: boxfit,
+              image: new AssetImage(assetName),
+              width: width,
+              height: height,
+              alignment: Alignment.center,
+            )..image.evict()
+        ),
+      );
+    }
   }
 
   Widget _getFaceContourPaint(List<Face> faces, CameraController camera) {
@@ -244,49 +392,49 @@ class _FaceCameraState extends State<RollviCamera> {
     }
   }
 
-  Offset _getNosePoint(List<Face> faces) {
+  Offset _getNosePoint(List<Face> faces, Size widgetSize) {
     if (faces == null) return null;
 
     try {
       Face face = faces[0];
       return _scalePoint(
           offset: face.getContour(FaceContourType.noseBottom).positionsList[1],
-          widgetSize: Size(411.4, 685.7),
+          widgetSize: widgetSize,
           cameraLensDirection: CameraLensDirection.front);
     } catch (e) {
       return null;
     }
   }
 
-  Offset _getRightEarPoint(List<Face> faces) {
+  Offset _getRightEarPoint(List<Face> faces, Size widgetSize) {
     if (faces == null) return null;
 
     try {
       Face face = faces[0];
       return _scalePoint(
           offset: face.getContour(FaceContourType.face).positionsList[27],
-          widgetSize: Size(411.4, 685.7),
+          widgetSize: widgetSize,
           cameraLensDirection: CameraLensDirection.front);
     } catch (e) {
       return null;
     }
   }
 
-  Offset _getLeftEarPoint(List<Face> faces) {
+  Offset _getLeftEarPoint(List<Face> faces, Size widgetSize) {
     if (faces == null) return null;
 
     try {
       Face face = faces[0];
       return _scalePoint(
           offset: face.getContour(FaceContourType.face).positionsList[9],
-          widgetSize: Size(411.4, 685.7),
+          widgetSize: widgetSize,
           cameraLensDirection: CameraLensDirection.front);
     } catch (e) {
       return null;
     }
   }
 
-  Offset _getMouthCenterPoint(List<Face> faces) {
+  Offset _getMouthCenterPoint(List<Face> faces, Size widgetSize) {
     final double mouthOpenThreshold = 15;
 
     if (faces == null) return null;
@@ -303,7 +451,7 @@ class _FaceCameraState extends State<RollviCamera> {
       if (offsetMouse > mouthOpenThreshold) {
         return _scalePoint(
             offset: (upperLipBottom + lowerLipTop) / 2 ,
-            widgetSize: Size(411.4, 685.7),
+            widgetSize: widgetSize,
             cameraLensDirection: CameraLensDirection.front);
       }
     } catch (e) {
@@ -325,5 +473,26 @@ class _FaceCameraState extends State<RollviCamera> {
           widgetSize.width - (offset.dx * scaleX), offset.dy * scaleY);
     }
     return Offset(offset.dx * scaleX, offset.dy * scaleY);
+  }
+}
+
+
+class Audio {
+  final AudioCache cache = AudioCache();
+  AudioPlayer player;
+
+  Audio() {
+    player = AudioPlayer(mode: PlayerMode.LOW_LATENCY);
+  }
+
+  void play(String assetName, {double playbackRate = 0.9}) async {
+    if (player.state != AudioPlayerState.PLAYING) {
+      player = await cache.play(assetName);
+      player.setPlaybackRate(playbackRate: playbackRate);
+    }
+  }
+
+  void stop() {
+    player.stop();
   }
 }

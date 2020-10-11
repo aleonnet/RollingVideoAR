@@ -183,18 +183,17 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
         child: AppBar(
           title: Text('ROLLVI'),
           centerTitle: true,
-          actions: [
-            new IconButton(
-              icon: Icon(
-                Icons.home,
-                color: Colors.white,
-              ),
-              onPressed: () {
-
-                Navigator.of(context).pop();
-              },
-            )
-          ],
+//          actions: [
+//            new IconButton(
+//              icon: Icon(
+//                Icons.home,
+//                color: Colors.white,
+//              ),
+//              onPressed: () {
+//                Navigator.of(context).pop();
+//              },
+//            )
+//          ],
         ),
       ),
       body: Column(
@@ -204,7 +203,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
             child: RepaintBoundary(
               key: previewContainer,
               child: ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
+                borderRadius: BorderRadius.all(Radius.circular(20)),
                 child:  (_camera != null) ? Align(
                   alignment: Alignment.center,
                   widthFactor: 1,
@@ -237,7 +236,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                   ? Container()
                   : GridView.builder(
                       padding: EdgeInsets.all(10),
-                      itemCount: 5,
+                      itemCount: 8,
                       gridDelegate:
                           new SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 5),
@@ -247,7 +246,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                           color: AppColor.grey_10,
                           child: InkResponse(
                             child: Image.asset(
-                              'assets/say_m0${index + 1}.webp',
+                              'assets/say_0${index + 1}.webp',
                               color: Colors.redAccent,
                             ),
                             onTap: () {

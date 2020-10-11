@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             width: MediaQuery.of(context).size.width,
             margin: EdgeInsets.all(10),
             decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
+                borderRadius: BorderRadius.all(Radius.circular(20)),
                 image: DecorationImage(
                     image: AssetImage("assets/onBoarding.gif"),
                     fit: BoxFit.cover)),
