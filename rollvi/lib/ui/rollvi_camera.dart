@@ -84,7 +84,7 @@ class _FaceCameraState extends State<RollviCamera> {
     }
 
     try {
-      double ratio = (faces[0].boundingBox).height / 180;
+      double ratio = (faces[0].boundingBox).height / 300;
       final ARFilter arFilter = _getMouseARFilter(filterIndex, ratio, widgetSize);
 
       if (arFilter == null) {
@@ -137,7 +137,6 @@ class _FaceCameraState extends State<RollviCamera> {
       return Container();
     }
   }
-
 
   Widget _getBottomStickerWidget(List<Face> faces, int filterIndex) {
     final ARFilter arFilter = _getBottomARFilter(filterIndex);
@@ -279,7 +278,7 @@ class _FaceCameraState extends State<RollviCamera> {
     }
     else {
       left = mouthCenterPoint.dx;
-      top = mouthCenterPoint.dy - (arFilter.height / 2) - 40;
+      top = mouthCenterPoint.dy - (arFilter.height / 2) - 60;
     }
 
     arFilter.offset = Offset(left, top);

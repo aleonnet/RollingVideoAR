@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:rollvi/concat_video_page.dart';
 import 'package:rollvi/home.dart';
+import 'package:rollvi/preview/sequence_preview_page.dart';
+import 'package:rollvi/result_page.dart';
 
 import 'camera_page.dart';
 import 'home.dart';
@@ -14,12 +16,18 @@ class App extends StatelessWidget{
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'ROLLVI',
+        home: HomePage(),
         theme: ThemeData(
           primarySwatch: Colors.red,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: new HomePage()
+        routes: <String, WidgetBuilder> {
+          '/home': (BuildContext context) => new HomePage(),
+          '/camera': (BuildContext context) => new CameraPage(),
+          '/preview': (BuildContext context) => new SequencePreviewPage(),
+          '/concat': (BuildContext context) => new ConcatVideoPage(),
+          '/result': (BuildContext context) => new ResultPage(),
+        },
     );
   }
 }

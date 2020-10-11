@@ -50,9 +50,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 backgroundColor: Colors.redAccent,
                 child: Icon(Icons.add),
                 onPressed: () {
-                  Navigator.of(context)
-                      .push(MaterialPageRoute(builder: (context) => CameraPage())
-                  );
+                  Navigator.of(context).pushReplacementNamed('/camera');
                 },
               ),
             ),

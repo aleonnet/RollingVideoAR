@@ -16,18 +16,17 @@ import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/home.dart';
 import 'package:rollvi/insta_downloader.dart';
 import 'package:rollvi/ui/instalink_dialog.dart';
-import 'package:rollvi/utils.dart';
 import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
 
-class SequencePreviewPage extends StatefulWidget {
-  SequencePreviewPage({Key key}) : super(key: key);
+class ResultPage extends StatefulWidget {
+  ResultPage({Key key}) : super(key: key);
 
   @override
-  State createState() => new SequencePreviewPageState();
+  State createState() => new ResultPageState();
 }
 
-class SequencePreviewPageState extends State<SequencePreviewPage> {
+class ResultPageState extends State<ResultPage> {
   VideoPlayerController _controller;
   Future<void> _initializeVideoPlayerFuture;
 
@@ -45,7 +44,7 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
     _rollviDir = await getRollviTempDir();
     await _checkVideoPath();
 
-    _outputPath = '$_rollviDir/rollvi_${getCurrentTime()}.mp4';
+    _outputPath = '$_rollviDir/output.mp4';
 
     bool fileExist = await File(_outputPath).exists();
     print("fileExist : $fileExist");
@@ -132,16 +131,8 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
               onPressed: () {
                 Navigator.of(context).pushReplacementNamed('/home');
               },
-            ),
+            )
           ],
-          leading: new IconButton(
-              icon: Icon(
-                Icons.keyboard_backspace,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                Navigator.of(context).pushReplacementNamed('/camera');
-              }),
         ),
       ),
       body: Column(
@@ -150,8 +141,7 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
             padding: EdgeInsets.all(10),
             child: ClipRRect(
               borderRadius: BorderRadius.all(Radius.circular(10)),
-              child: (_size == null) ? Container() :
-              Align(
+              child: Align(
                 alignment: Alignment.center,
                 widthFactor: 1,
                 heightFactor: _size.width / _size.height,
@@ -203,7 +193,7 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
                           FlutterInsta flutterInsta = new FlutterInsta();
                           await flutterInsta.downloadReels(inputText).then((String instaLink) {
                             print(instaLink);
-                            Navigator.of(context).push(MaterialPageRoute(
+                            Navigator.of(context).pushReplacement(MaterialPageRoute(
                                 builder: (BuildContext context) => ConcatVideoPage(currentFile: File(_outputPath), instaLink: instaLink,)));
                           });
                         }
@@ -215,7 +205,7 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
                       onPressed: () {
                         FilePicker.getFile(type: FileType.video).then((File file) async {
                           print(file);
-                          Navigator.of(context).push(MaterialPageRoute(
+                          Navigator.of(context).pushReplacement(MaterialPageRoute(
                               builder: (BuildContext context) => ConcatVideoPage(currentFile: File(_outputPath), galleryFile: file,)));
                         });
                       },
@@ -241,7 +231,6 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
                       child: Icon(Icons.share),
                       onPressed: () async {
                         print("Recorded Video Path $_outputPath");
-                        Clipboard.setData(new ClipboardData(text: "#rollvi"));
                         Share.shareFiles([_outputPath],
                             text: 'Rollvi Video');
                       },

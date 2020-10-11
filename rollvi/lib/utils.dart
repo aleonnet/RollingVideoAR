@@ -3,11 +3,19 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
 
 import 'package:image/image.dart' as imglib;
 
+
+String getCurrentTime() {
+  final now = DateTime.now().toLocal();
+  final String curDate = DateFormat('MM-dd').format(now);
+  final String curTime = DateFormat('MM-dd hh:mm:ss').format(now);
+  return curTime;
+}
 
 ImageRotation rotationIntToImageRotation(int rotation) {
   switch (rotation) {

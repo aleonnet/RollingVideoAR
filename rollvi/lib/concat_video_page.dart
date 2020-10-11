@@ -142,11 +142,18 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                 color: Colors.white,
               ),
               onPressed: () {
-                Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => HomePage()));
+                Navigator.of(context).pushReplacementNamed('/home');
               },
             )
           ],
+          leading: new IconButton(
+              icon: Icon(
+                Icons.keyboard_backspace,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              }),
         ),
       ),
       body: Column(
@@ -254,7 +261,7 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                       children: [
                         FloatingActionButton(
                           heroTag: null,
-                          child: Icon(Icons.undo),
+                          child: Icon(Icons.repeat),
                           onPressed: () {
                             setState(() {
                               reverse = !reverse;
@@ -263,13 +270,10 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                         ),
                         FloatingActionButton(
                           heroTag: null,
-                          child: Icon(Icons.repeat),
-                          onPressed: () {},
-                        ),
-                        FloatingActionButton(
-                          heroTag: null,
                           child: Icon(Icons.check),
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.of(context).pushNamed('/result');
+                          },
                         ),
                       ],
                     ),

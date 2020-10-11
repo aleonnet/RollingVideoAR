@@ -15,10 +15,10 @@ import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
-import 'file:///D:/01-workspace/01-hispace/RollingVideoAR/rollvi/lib/preview/image_preview_page.dart';
+import 'package:rollvi/preview/image_preview_page.dart';
 import 'package:rollvi/preview/sequence_preview_page.dart';
 import 'package:rollvi/ui/progress_painter.dart';
-import 'file:///D:/01-workspace/01-hispace/RollingVideoAR/rollvi/lib/preview/video_preview_page.dart';
+import 'package:rollvi/preview/video_preview_page.dart';
 import 'package:sprintf/sprintf.dart';
 
 import 'ui/rollvi_camera.dart';
@@ -80,14 +80,15 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   void dispose() async {
     super.dispose();
     _stopRecording();
-//    Directory(_rollviDir).deleteSync(recursive: true);
+    _imageSequence.clear();
     await _camera.stopImageStream();
     await _camera.dispose();
   }
 
   void _initializePath() async {
     _rollviDir = await getRollviTempDir();
-    Directory(_rollviDir).createSync(recursive: true);
+//    clearRollviTempDir();
+    createRollviTempDir();
   }
 
   void _initialize() async {
@@ -183,17 +184,17 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
         child: AppBar(
           title: Text('ROLLVI'),
           centerTitle: true,
-//          actions: [
-//            new IconButton(
-//              icon: Icon(
-//                Icons.home,
-//                color: Colors.white,
-//              ),
-//              onPressed: () {
-//                Navigator.of(context).pop();
-//              },
-//            )
-//          ],
+          actions: [
+            new IconButton(
+              icon: Icon(
+                Icons.home,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.of(context).pushReplacementNamed('/home');
+              },
+            )
+          ],
         ),
       ),
       body: Column(
@@ -239,7 +240,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                       itemCount: 8,
                       gridDelegate:
                           new SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 5),
+                              crossAxisCount: 4),
                       itemBuilder: (BuildContext context, int index) {
                         return Card(
                           margin: EdgeInsets.all(10),
@@ -388,12 +389,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
 
                     _saveImageToFile().then((value) => {
                       _initialize(),
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => SequencePreviewPage(
-                                rollviDir: _rollviDir,
-                              )))
+                      Navigator.pushReplacementNamed(context, '/preview'),
                     });
                   }
                   _timer.cancel();
