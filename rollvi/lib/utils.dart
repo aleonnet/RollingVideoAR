@@ -14,10 +14,14 @@ String getRollviTag() {
   return "#rollvi #롤비";
 }
 
+String getTimestamp() {
+ return DateTime.now().millisecondsSinceEpoch.toString();
+}
+
 String getCurrentTime() {
   final now = DateTime.now().toLocal();
   final String curDate = DateFormat('MM-dd').format(now);
-  final String curTime = DateFormat('MM-dd hh:mm:ss').format(now);
+  final String curTime = DateFormat('MM-dd-hh:mm:ss').format(now);
   return curTime;
 }
 

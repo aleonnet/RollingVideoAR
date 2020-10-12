@@ -26,8 +26,8 @@ class ConcatVideoPage extends StatefulWidget {
 }
 
 class _ConcatVideoPageState extends State<ConcatVideoPage> {
-  VideoPlayerController _controller;
-  Future<void> _initializeVideoPlayerFuture;
+  Future<void> _initializeVideoPlayerFuture1;
+  Future<void> _initializeVideoPlayerFuture2;
 
   VideoPlayerController _capturedVideoController;
   VideoPlayerController _gottenVideoController;
@@ -47,58 +47,71 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
     reverse = false;
 
     _initializePath();
+    _initializeVideo();
 
-    _capturedVideoController = VideoPlayerController.file(widget.currentFile);
-    _capturedVideoController.initialize();
-    _capturedVideoController.setLooping(true);
-    _capturedVideoController.play();
+    super.initState();
+  }
+
+  void _initializeVideo() async {
+    _cropVideo(widget.currentFile.path).then((outputPath) {
+      setState(() {
+        _capturedVideoController = VideoPlayerController.file(File(outputPath));
+        _initializeVideoPlayerFuture1 = _capturedVideoController.initialize();
+        _capturedVideoController.setLooping(true);
+        _capturedVideoController.play();
+        _capturedVideoPath = outputPath;
+        print("_capturedVideoPath: $_capturedVideoPath");
+      });
+
+    });
 
     if (widget.galleryFile != null) {
       isGalleryFile = true;
-      _gottenVideoController = VideoPlayerController.file(widget.galleryFile);
+
+      _cropVideo(widget.galleryFile.path).then((outputPath) {
+        setState(() {
+          _gottenVideoController = VideoPlayerController.file(File(outputPath));
+          _initializeVideoPlayerFuture2 = _gottenVideoController.initialize();
+          _gottenVideoController.setLooping(true);
+          _gottenVideoController.play();
+          _gottenVideoPath = outputPath;
+          print("_gottenVideoPath: $_gottenVideoPath");
+        });
+
+      });
     } else if (widget.instaLink != null) {
       isGalleryFile = false;
+
       _gottenVideoController = VideoPlayerController.network(widget.instaLink);
       print("@@@@@@@@@@@@${widget.instaLink}");
     }
 
-    _gottenVideoController.initialize();
-    _gottenVideoController.setLooping(true);
-    _gottenVideoController.play();
-
-    super.initState();
+    print("_capturedVideoPath: $_capturedVideoPath");
+    print("_gottenVideoPath: $_gottenVideoPath");
   }
 
   void _initializePath() async {
     String rollviDir = await getRollviTempDir();
     Directory(rollviDir).createSync(recursive: true);
-
-    _capturedVideoPath = widget.currentFile.path;
-    if (isGalleryFile) {
-      _gottenVideoPath = widget.galleryFile.path;
-    }
   }
 
   Future<String> _cropVideo(String filePath) async {
     final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
 
-    final String resultPath = 'mod_$filePath';
+    final rawDir = await getRollviTempDir();
+    final String resultPath = '$rawDir/video_${getTimestamp()}.mp4';
 
     String cmd = '-y -i $filePath -filter:v "crop=640:640" $resultPath';
     await _flutterFFmpeg.execute(cmd).then((rc) {
       print("FFmpeg process exited with rc $rc");
     });
-
     return resultPath;
   }
 
-
   @override
   void dispose() {
-    _controller.dispose();
     _capturedVideoController.dispose();
     _gottenVideoController.dispose();
-    clearRollviTempDir();
     super.dispose();
   }
 
@@ -166,30 +179,46 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                           Container(
                             padding: EdgeInsets.all(10),
                             child: Transform(
-                              alignment: Alignment.center,
-                              transform: Matrix4.rotationY(pi),
-                              child: (_capturedVideoController != null)
-                                  ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child:
-                                          VideoPlayer(_capturedVideoController),
-                                    )
-                                  : Container(),
-                            ),
+                                alignment: Alignment.center,
+                                transform: Matrix4.rotationY(pi),
+                                child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: FutureBuilder(
+                                      future: _initializeVideoPlayerFuture1,
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState ==
+                                            ConnectionState.done) {
+                                          return VideoPlayer(
+                                              _capturedVideoController);
+                                        } else {
+                                          return Center(
+                                              child:
+                                                  CircularProgressIndicator());
+                                        }
+                                      },
+                                    ))),
                           ),
                           Container(
                             padding: EdgeInsets.all(10),
                             child: Transform(
-                              alignment: Alignment.center,
-                              transform: Matrix4.rotationY(pi),
-                              child: (_gottenVideoController != null)
-                                  ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child:
-                                          VideoPlayer(_gottenVideoController),
-                                    )
-                                  : Container(),
-                            ),
+                                alignment: Alignment.center,
+                                transform: Matrix4.rotationY(pi),
+                                child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: FutureBuilder(
+                                      future: _initializeVideoPlayerFuture2,
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState ==
+                                            ConnectionState.done) {
+                                          return VideoPlayer(
+                                              _gottenVideoController);
+                                        } else {
+                                          return Center(
+                                              child:
+                                                  CircularProgressIndicator());
+                                        }
+                                      },
+                                    ))),
                           ),
                         ]),
                   ],
@@ -249,12 +278,21 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                           heroTag: null,
                           child: Icon(Icons.check),
                           onPressed: () {
-                            String firstPath = (!reverse) ? _capturedVideoPath : _gottenVideoPath;
-                            String secondPath = (!reverse) ? _gottenVideoPath : _capturedVideoPath;
+                            String firstPath = (!reverse)
+                                ? _capturedVideoPath
+                                : _gottenVideoPath;
+                            String secondPath = (!reverse)
+                                ? _gottenVideoPath
+                                : _capturedVideoPath;
+
+                            _capturedVideoController.pause();
+                            _gottenVideoController.pause();
 
                             Navigator.of(context).push(MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    ResultPage(firstPath: firstPath, secondPath: secondPath,)));
+                                builder: (BuildContext context) => ResultPage(
+                                      firstPath: firstPath,
+                                      secondPath: secondPath,
+                                    )));
                           },
                         ),
                       ],

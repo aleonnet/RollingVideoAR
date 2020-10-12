@@ -42,15 +42,14 @@ class ResultPageState extends State<ResultPage> {
 
   void _initialize() async {
     _concatVideo(widget.firstPath, widget.secondPath).then((resultPath) {
-
       setState(() {
+        print("@@@@@@@@@@@@@End Video");
         _resultVideoPath = resultPath;
+        _controller = VideoPlayerController.file(File(resultPath));
+        _initializeVideoPlayerFuture = _controller.initialize();
+        _controller.setLooping(true);
+        _controller.play();
       });
-
-      _controller = VideoPlayerController.file(File(resultPath));
-      _initializeVideoPlayerFuture = _controller.initialize();
-      _controller.setLooping(true);
-      _controller.play();
     });
   }
 
@@ -62,16 +61,14 @@ class ResultPageState extends State<ResultPage> {
 
   Future<String> _concatVideo(String firstPath, String secondPath) async {
     String rawDocumentPath = await getRollviTempDir();
-    String resultVideoPath = "$rawDocumentPath/rollvi_${getCurrentTime()}.mp4";
+    String resultVideoPath = "$rawDocumentPath/rollvi_${getTimestamp()}.mp4";
 
     final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
 
-    String firstPath, secondPath;
+    print("@ firstPath: $firstPath");
+    print("@ secondPath: $secondPath");
 
-    print("firstPath: $firstPath");
-    print("secondPath: $secondPath");
-
-    String cmd =
+    final String cmd =
         '-y -i $firstPath -i $secondPath -filter_complex \'[0:0][1:0]concat=n=2:v=1:a=0[out]\' -map \'[out]\' $resultVideoPath';
 
     await _flutterFFmpeg.execute(cmd).then((rc) {
