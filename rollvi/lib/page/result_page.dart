@@ -8,19 +8,21 @@ import 'package:image/image.dart' as imglib;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:rollvi/concat_video_page.dart';
+import 'package:rollvi/page/concat_video_page.dart';
 import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
-import 'package:rollvi/home.dart';
 import 'package:rollvi/insta_downloader.dart';
 import 'package:rollvi/ui/instalink_dialog.dart';
+import 'package:rollvi/utils.dart';
 import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
 
 class ResultPage extends StatefulWidget {
-  ResultPage({Key key}) : super(key: key);
+  final String firstPath;
+  final String secondPath;
+
+  ResultPage({Key key, this.firstPath, this.secondPath}) : super(key: key);
 
   @override
   State createState() => new ResultPageState();
@@ -30,9 +32,7 @@ class ResultPageState extends State<ResultPage> {
   VideoPlayerController _controller;
   Future<void> _initializeVideoPlayerFuture;
 
-  String _outputPath;
-
-  String _rollviDir;
+  String _resultVideoPath;
 
   @override
   void initState() {
@@ -41,28 +41,17 @@ class ResultPageState extends State<ResultPage> {
   }
 
   void _initialize() async {
-    _rollviDir = await getRollviTempDir();
-    await _checkVideoPath();
+    _concatVideo(widget.firstPath, widget.secondPath).then((resultPath) {
 
-    _outputPath = '$_rollviDir/output.mp4';
+      setState(() {
+        _resultVideoPath = resultPath;
+      });
 
-    bool fileExist = await File(_outputPath).exists();
-    print("fileExist : $fileExist");
-
-    await _makeVideoAndPlay();
-  }
-
-  void _checkVideoPath() async {
-    _outputPath = '$_rollviDir/output.mp4';
-    File outputFile = File(_outputPath);
-    bool fileExist = await outputFile.exists();
-
-    print("$_outputPath : $fileExist");
-
-    if (fileExist) {
-      await outputFile.delete(recursive: true);
-      print("Removed $_outputPath");
-    }
+      _controller = VideoPlayerController.file(File(resultPath));
+      _initializeVideoPlayerFuture = _controller.initialize();
+      _controller.setLooping(true);
+      _controller.play();
+    });
   }
 
   @override
@@ -71,32 +60,25 @@ class ResultPageState extends State<ResultPage> {
     super.dispose();
   }
 
-  void _makeVideoAndPlay() async {
-    await _executeCmd().then((outputPath) {
-      setState(() {
-        print("@@@ Make Video File from images - $outputPath");
-      });
-    });
-
-    _controller = await VideoPlayerController.file(File(_outputPath));
-    _initializeVideoPlayerFuture = _controller.initialize();
-    _controller.setLooping(true);
-    _controller.play();
-  }
-
-  Future<String> _executeCmd() async {
-    String rawDocumentPath = _rollviDir;
+  Future<String> _concatVideo(String firstPath, String secondPath) async {
+    String rawDocumentPath = await getRollviTempDir();
+    String resultVideoPath = "$rawDocumentPath/rollvi_${getCurrentTime()}.mp4";
 
     final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
 
+    String firstPath, secondPath;
+
+    print("firstPath: $firstPath");
+    print("secondPath: $secondPath");
+
     String cmd =
-        "-y -framerate 10 -i $rawDocumentPath/frame_%d.jpg -c:v mpeg4 $_outputPath";
+        '-y -i $firstPath -i $secondPath -filter_complex \'[0:0][1:0]concat=n=2:v=1:a=0[out]\' -map \'[out]\' $resultVideoPath';
 
-    await _flutterFFmpeg
-        .execute(cmd)
-        .then((rc) => print("FFmpeg process exited with rc $rc"));
+    await _flutterFFmpeg.execute(cmd).then((rc) {
+      print("FFmpeg process exited with rc $rc");
+    });
 
-    return _outputPath;
+    return resultVideoPath;
   }
 
   @override
@@ -120,7 +102,7 @@ class ResultPageState extends State<ResultPage> {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(AppSize.AppBarHeight),
         child: AppBar(
-          title: Text('ROLLVI'),
+          title: Text('Result Video'),
           centerTitle: true,
           actions: [
             new IconButton(
@@ -140,7 +122,7 @@ class ResultPageState extends State<ResultPage> {
           Container(
             padding: EdgeInsets.all(10),
             child: ClipRRect(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
+              borderRadius: BorderRadius.all(Radius.circular(20)),
               child: Align(
                 alignment: Alignment.center,
                 widthFactor: 1,
@@ -177,45 +159,10 @@ class ResultPageState extends State<ResultPage> {
                   children: [
                     FloatingActionButton(
                       heroTag: null,
-                      child: ImageIcon(
-                        AssetImage("assets/insta_logo.png"),
-                      ),
-                      onPressed: () async {
-                        String _clipData =
-                            (await Clipboard.getData('text/plain')).text;
-                        final inputText = await showDialog(
-                            context: context,
-                            builder: (BuildContext context) => InstaLinkDialog(
-                              clipData: _clipData,
-                            ));
-
-                        if (inputText != null) {
-                          FlutterInsta flutterInsta = new FlutterInsta();
-                          await flutterInsta.downloadReels(inputText).then((String instaLink) {
-                            print(instaLink);
-                            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                                builder: (BuildContext context) => ConcatVideoPage(currentFile: File(_outputPath), instaLink: instaLink,)));
-                          });
-                        }
-                      },
-                    ),
-                    FloatingActionButton(
-                      heroTag: null,
-                      child: Icon(Icons.photo),
-                      onPressed: () {
-                        FilePicker.getFile(type: FileType.video).then((File file) async {
-                          print(file);
-                          Navigator.of(context).pushReplacement(MaterialPageRoute(
-                              builder: (BuildContext context) => ConcatVideoPage(currentFile: File(_outputPath), galleryFile: file,)));
-                        });
-                      },
-                    ),
-                    FloatingActionButton(
-                      heroTag: null,
                       child: Icon(Icons.file_download),
                       onPressed: () async {
-                        print("Recorded Video Path $_outputPath");
-                        GallerySaver.saveVideo(_outputPath,
+                        print("Recorded Video Path $_resultVideoPath");
+                        GallerySaver.saveVideo(_resultVideoPath,
                             albumName: 'Media')
                             .then((bool success) {
                           if (success) {
@@ -230,9 +177,10 @@ class ResultPageState extends State<ResultPage> {
                       heroTag: null,
                       child: Icon(Icons.share),
                       onPressed: () async {
-                        print("Recorded Video Path $_outputPath");
-                        Share.shareFiles([_outputPath],
-                            text: 'Rollvi Video');
+                        print("Recorded Video Path $_resultVideoPath");
+                        Clipboard.setData(new ClipboardData(text: getRollviTag()));
+                        Share.shareFiles([_resultVideoPath],
+                            text: "Rollvi");
                       },
                     ),
                   ],

@@ -10,6 +10,10 @@ import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'package:image/image.dart' as imglib;
 
 
+String getRollviTag() {
+  return "#rollvi #롤비";
+}
+
 String getCurrentTime() {
   final now = DateTime.now().toLocal();
   final String curDate = DateFormat('MM-dd').format(now);

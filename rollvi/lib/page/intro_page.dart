@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rollvi/const/app_size.dart';
-import 'package:rollvi/main.dart';
-import 'package:rollvi/camera_page.dart';
-
+import 'package:rollvi/page/main.dart';
 
 class HomePage extends StatefulWidget {
   @override

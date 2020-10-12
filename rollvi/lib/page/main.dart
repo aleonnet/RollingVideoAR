@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:rollvi/concat_video_page.dart';
-import 'package:rollvi/home.dart';
-import 'package:rollvi/preview/sequence_preview_page.dart';
-import 'package:rollvi/result_page.dart';
-
-import 'camera_page.dart';
-import 'home.dart';
+import 'package:rollvi/page/concat_video_page.dart';
+import 'package:rollvi/page/intro_page.dart';
+import 'package:rollvi/page/sequence_preview_page.dart';
+import 'package:rollvi/page/result_page.dart';
+import 'package:rollvi/page/camera_page.dart';
 
 void main() {
   runApp(App());

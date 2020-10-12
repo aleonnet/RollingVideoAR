@@ -15,14 +15,13 @@ import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
-import 'package:rollvi/preview/image_preview_page.dart';
-import 'package:rollvi/preview/sequence_preview_page.dart';
+import 'package:rollvi/page/image_preview_page.dart';
 import 'package:rollvi/ui/progress_painter.dart';
-import 'package:rollvi/preview/video_preview_page.dart';
+import 'package:rollvi/page/video_preview_page.dart';
 import 'package:sprintf/sprintf.dart';
 
-import 'ui/rollvi_camera.dart';
-import 'utils.dart';
+import 'package:rollvi/ui/rollvi_camera.dart';
+import 'package:rollvi/utils.dart';
 
 enum CaptureType {
   Image,
@@ -74,6 +73,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
 
     _initializePath();
     _initialize();
+    _initializeCamera();
   }
 
   @override
@@ -97,10 +97,6 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
 
     if (_timer != null) _timer.cancel();
     if (_imageSequence.isNotEmpty) _imageSequence.clear();
-
-    _initializeCamera();
-
-    await getExternalStorageDirectory();
   }
 
   void _initializeCamera() async {
@@ -155,12 +151,13 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     new File(filePath)..writeAsBytes(imglib.encodeJpg(img));
   }
 
-  Future _saveImageToFile() async {
+  Future<String> _saveImageToFile() async {
     for (int i = 0; i < _frameNum; i++) {
       String filePath = sprintf("$_rollviDir/frame_%d.jpg", [i]);
       new File(filePath)..writeAsBytes(imglib.encodeJpg(_imageSequence[i]));
       print("Saved File: $filePath / $_frameNum");
     }
+    return _rollviDir;
   }
 
   _detectFaces(CameraImage cameraImage, ImageRotation rotation) async {

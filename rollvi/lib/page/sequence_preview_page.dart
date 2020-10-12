@@ -9,11 +9,11 @@ import 'package:image/image.dart' as imglib;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:rollvi/concat_video_page.dart';
+import 'file:///D:/01-workspace/01-hispace/RollingVideoAR/rollvi/lib/page/concat_video_page.dart';
 import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
-import 'package:rollvi/home.dart';
+import 'package:rollvi/page/intro_page.dart';
 import 'package:rollvi/insta_downloader.dart';
 import 'package:rollvi/ui/instalink_dialog.dart';
 import 'package:rollvi/utils.dart';
@@ -44,20 +44,14 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
   void _initialize() async {
     _rollviDir = await getRollviTempDir();
     await _checkVideoPath();
-
-    _outputPath = '$_rollviDir/rollvi_${getCurrentTime()}.mp4';
-
-    bool fileExist = await File(_outputPath).exists();
-    print("fileExist : $fileExist");
-
     await _makeVideoAndPlay();
   }
 
   void _checkVideoPath() async {
     _outputPath = '$_rollviDir/output.mp4';
     File outputFile = File(_outputPath);
-    bool fileExist = await outputFile.exists();
 
+    bool fileExist = await outputFile.exists();
     print("$_outputPath : $fileExist");
 
     if (fileExist) {
@@ -149,7 +143,7 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
           Container(
             padding: EdgeInsets.all(10),
             child: ClipRRect(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
+              borderRadius: BorderRadius.all(Radius.circular(20)),
               child: (_size == null) ? Container() :
               Align(
                 alignment: Alignment.center,
@@ -241,9 +235,9 @@ class SequencePreviewPageState extends State<SequencePreviewPage> {
                       child: Icon(Icons.share),
                       onPressed: () async {
                         print("Recorded Video Path $_outputPath");
-                        Clipboard.setData(new ClipboardData(text: "#rollvi"));
+                        Clipboard.setData(new ClipboardData(text: getRollviTag()));
                         Share.shareFiles([_outputPath],
-                            text: 'Rollvi Video');
+                            text: 'Rollvi', subject: 'rollvi_first');
                       },
                     ),
                   ],

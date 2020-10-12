@@ -8,7 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
-import 'package:rollvi/home.dart';
+import 'package:rollvi/page/result_page.dart';
+import 'package:rollvi/utils.dart';
 import 'package:video_player/video_player.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
@@ -17,7 +18,8 @@ class ConcatVideoPage extends StatefulWidget {
   final File galleryFile;
   final String instaLink;
 
-  ConcatVideoPage({Key key, this.currentFile, this.galleryFile, this.instaLink}) : super(key: key);
+  ConcatVideoPage({Key key, this.currentFile, this.galleryFile, this.instaLink})
+      : super(key: key);
 
   @override
   State createState() => new _ConcatVideoPageState();
@@ -30,14 +32,11 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
   VideoPlayerController _capturedVideoController;
   VideoPlayerController _gottenVideoController;
 
-  VideoPlayerController _curVideoController;
-
-  String _rollviPath;
-
   String _capturedVideoPath;
   String _gottenVideoPath;
 
   bool isComplete;
+  bool isGalleryFile;
 
   bool reverse;
   int _current = 0;
@@ -55,17 +54,17 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
     _capturedVideoController.play();
 
     if (widget.galleryFile != null) {
+      isGalleryFile = true;
       _gottenVideoController = VideoPlayerController.file(widget.galleryFile);
     } else if (widget.instaLink != null) {
+      isGalleryFile = false;
       _gottenVideoController = VideoPlayerController.network(widget.instaLink);
+      print("@@@@@@@@@@@@${widget.instaLink}");
     }
 
     _gottenVideoController.initialize();
     _gottenVideoController.setLooping(true);
     _gottenVideoController.play();
-
-
-//    _makeVideoAndPlay();
 
     super.initState();
   }
@@ -73,56 +72,34 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
   void _initializePath() async {
     String rollviDir = await getRollviTempDir();
     Directory(rollviDir).createSync(recursive: true);
+
+    _capturedVideoPath = widget.currentFile.path;
+    if (isGalleryFile) {
+      _gottenVideoPath = widget.galleryFile.path;
+    }
   }
+
+  Future<String> _cropVideo(String filePath) async {
+    final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
+
+    final String resultPath = 'mod_$filePath';
+
+    String cmd = '-y -i $filePath -filter:v "crop=640:640" $resultPath';
+    await _flutterFFmpeg.execute(cmd).then((rc) {
+      print("FFmpeg process exited with rc $rc");
+    });
+
+    return resultPath;
+  }
+
 
   @override
   void dispose() {
     _controller.dispose();
     _capturedVideoController.dispose();
     _gottenVideoController.dispose();
+    clearRollviTempDir();
     super.dispose();
-  }
-
-  void _makeVideoAndPlay() async {
-    await _concatVideo().then((outputPath) {
-      setState(() async {
-        print("@@@ Make Rolling Video File - $outputPath");
-
-        _controller = await VideoPlayerController.file(File(_rollviPath));
-        _initializeVideoPlayerFuture = _controller.initialize();
-        _controller.setLooping(true);
-        _controller.play();
-      });
-    });
-  }
-
-  Future<String> _concatVideo([bool reverse = false]) async {
-    String rawDocumentPath = await getRollviTempDir();
-    _rollviPath = "$rawDocumentPath/rollvi.mp4";
-
-    final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
-
-    String firstVideoPath = _gottenVideoPath;
-    String secondVideoPath = _capturedVideoPath;
-
-    if (reverse) {
-      firstVideoPath = _capturedVideoPath;
-      secondVideoPath = _gottenVideoPath;
-    }
-
-    String cmd =
-        '-y -i $firstVideoPath -i $secondVideoPath -filter_complex \'[0:0][1:0]concat=n=2:v=1:a=0[out]\' -map \'[out]\' $_rollviPath';
-
-    await _flutterFFmpeg.execute(cmd).then((rc) {
-      print("FFmpeg process exited with rc $rc");
-      if (rc == 0) {
-        setState(() {
-          isComplete = true;
-        });
-      }
-    });
-
-    return _rollviPath;
   }
 
   @override
@@ -133,7 +110,7 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(AppSize.AppBarHeight),
         child: AppBar(
-          title: Text('ROLLVI'),
+          title: Text('Edit Video'),
           centerTitle: true,
           actions: [
             new IconButton(
@@ -272,7 +249,12 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                           heroTag: null,
                           child: Icon(Icons.check),
                           onPressed: () {
-                            Navigator.of(context).pushNamed('/result');
+                            String firstPath = (!reverse) ? _capturedVideoPath : _gottenVideoPath;
+                            String secondPath = (!reverse) ? _gottenVideoPath : _capturedVideoPath;
+
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    ResultPage(firstPath: firstPath, secondPath: secondPath,)));
                           },
                         ),
                       ],
