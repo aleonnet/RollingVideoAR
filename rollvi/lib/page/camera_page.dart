@@ -54,7 +54,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   CameraController _camera;
   bool _isDetecting = false;
 
-  final int _maxTime = 5;
+  final int _maxTime = 6;
   bool isRecording = false;
   int _frameNum = 0;
   Timer _timer;
@@ -81,7 +81,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     _hiddenImageBytes = new List<Uint8List>();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 5),
+      duration: Duration(seconds: _maxTime),
     );
 
     _initializePath();
@@ -438,13 +438,12 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                       Navigator.pushReplacementNamed(context, '/preview'),
                     });
                   } else if (_captureType == CaptureType.TEST) {
-                    print("@@@@@@@@@@@@@@@Caputre Over!!!!!!");
+                    clearRollviTempDir();
                     _camera.stopImageStream();
 
                     print("_hiddenCameraImgs: ${_hiddenCameraImgs.length}");
                     print("_hiddenImageBytes: ${_hiddenImageBytes.length}");
                     imageCache.clear();
-
                     Navigator.push(
                         context,
                         MaterialPageRoute(

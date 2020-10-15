@@ -54,6 +54,8 @@ class ImageSequencePageState extends State<ImageSequencePage>
 
   void init() async {
     _rollviDir = await getRollviTempDir();
+//    clearRollviTempDir();
+    createRollviTempDir();
   }
 
   @override
@@ -103,11 +105,9 @@ class ImageSequencePageState extends State<ImageSequencePage>
   }
 
   void startTimer(int maxTime) {
-    clearRollviTempDir();
-    createRollviTempDir();
     _time = 0;
-    _timer = new Timer.periodic(Duration(milliseconds: 800), (timer) {
-      if (_time > maxTime) {
+    _timer = new Timer.periodic(Duration(milliseconds: 1000), (timer) {
+      if (_time >= maxTime+1) {
         _timer.cancel();
         Navigator.pushReplacementNamed(context, '/preview');
       } else {
@@ -115,18 +115,18 @@ class ImageSequencePageState extends State<ImageSequencePage>
         if (mounted) {
           _imageCapture(_time).then((value) {
             print("saveImage: $value");
-//            GallerySaver.saveImage(value, albumName: 'Media');
+            setState(() {
+              _time += 1;
+            });
           });
-          setState(() {
-            _time += 1;
-          });
+
         }
       }
     });
   }
 
   Future<String> _imageCapture(int index) async {
-    String filePath = sprintf("$_rollviDir/frame_%d.jpg", [index]);
+    String filePath = sprintf("$_rollviDir/rollvi_%d.png", [index]);
 
     var renderObject = captureContainer.currentContext.findRenderObject();
     if (renderObject is RenderRepaintBoundary) {
@@ -138,8 +138,6 @@ class ImageSequencePageState extends State<ImageSequencePage>
 
       File imgFile = new File(filePath);
       imgFile.writeAsBytes(pngBytes);
-
-      print("CAPTURE ${imgFile.path}");
 
       return imgFile.path;
     }

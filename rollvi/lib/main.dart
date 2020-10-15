@@ -14,7 +14,7 @@ class App extends StatelessWidget{
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: HomePage(),
+        home: CameraPage(),
         theme: ThemeData(
           primarySwatch: Colors.red,
           visualDensity: VisualDensity.adaptivePlatformDensity,
