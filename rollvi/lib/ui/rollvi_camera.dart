@@ -68,7 +68,6 @@ class _FaceCameraState extends State<RollviCamera> {
         Container(
           child: CameraPreview(widget.camera),
         ),
-        
         widget.showFaceContour ? _getFaceContourPaint(widget.faces, widget.camera) : Container(),
         _getBottomStickerWidget(widget.faces, widget.filterIndex),
         _getTopStickerWidget(widget.faces, widget.filterIndex),
@@ -92,7 +91,7 @@ class _FaceCameraState extends State<RollviCamera> {
         return Container();
       }
 
-      if (filterIndex == 6 || filterIndex == 7 || filterIndex == 8) {
+      if (filterIndex == 1 || filterIndex == 2 || filterIndex == 3) {
         mouthAudio.play('say_0$filterIndex.wav', playbackRate: 1.1);
       }
 
@@ -144,7 +143,7 @@ class _FaceCameraState extends State<RollviCamera> {
     try {
       final face = faces[0].boundingBox;
 
-      if (filterIndex == 7 || filterIndex == 8) {
+      if (filterIndex == 2 || filterIndex == 3) {
         bottomAudio.play('bottom_0$filterIndex.wav');
       }
 
@@ -153,7 +152,7 @@ class _FaceCameraState extends State<RollviCamera> {
             children: <Widget>[
               for (var assetName in arFilter.assetNames)
                 _getStickerWidget(assetName, arFilter.width, arFilter.height,
-                    boxfit: BoxFit.fill),
+                    boxfit: BoxFit.fitWidth),
             ],
           ));
 
@@ -191,13 +190,13 @@ class _FaceCameraState extends State<RollviCamera> {
     ARFilter arFilter = new ARFilter();
 
     switch (filterIndex) {
-      case 7:
-        arFilter.assetNames.add("assets/bottom_07.webp");
+      case 2:
+        arFilter.assetNames.add("assets/bottom_02.webp");
         arFilter.width = 400;
         arFilter.height = 600;
         break;
-      case 8:
-        arFilter.assetNames.add("assets/bottom_08.webp");
+      case 3:
+        arFilter.assetNames.add("assets/bottom_03.webp");
         arFilter.width = 800;
         arFilter.height = 1200;
         break;
@@ -220,43 +219,43 @@ class _FaceCameraState extends State<RollviCamera> {
     switch(filterIndex) {
       case 1:
         arFilter.assetNames.add("assets/say_01.webp");
-        arFilter.width = 200;
-        arFilter.height = 100;
+        arFilter.width = 250;
+        arFilter.height = 500;
         break;
       case 2:
         arFilter.assetNames.add("assets/say_02.webp");
-        arFilter.width = 300;
-        arFilter.height = 250;
+        arFilter.width = 250;
+        arFilter.height = 500;
         break;
       case 3:
         arFilter.assetNames.add("assets/say_03.webp");
-        arFilter.width = 450;
-        arFilter.height = 400;
+        arFilter.width = 250;
+        arFilter.height = 500;
         break;
       case 4:
         arFilter.assetNames.add("assets/say_04.webp");
-        arFilter.width = 450;
-        arFilter.height = 400;
+        arFilter.width = 200;
+        arFilter.height = 100;
         break;
       case 5:
         arFilter.assetNames.add("assets/say_05.webp");
-        arFilter.width = 450;
-        arFilter.height = 600;
+        arFilter.width = 300;
+        arFilter.height = 250;
         break;
       case 6:
         arFilter.assetNames.add("assets/say_06.webp");
-        arFilter.width = 250;
-        arFilter.height = 500;
+        arFilter.width = 450;
+        arFilter.height = 400;
         break;
       case 7:
         arFilter.assetNames.add("assets/say_07.webp");
-        arFilter.width = 250;
-        arFilter.height = 500;
+        arFilter.width = 450;
+        arFilter.height = 400;
         break;
       case 8:
         arFilter.assetNames.add("assets/say_08.webp");
-        arFilter.width = 250;
-        arFilter.height = 500;
+        arFilter.width = 450;
+        arFilter.height = 600;
         break;
       default:
         return null;
@@ -265,11 +264,11 @@ class _FaceCameraState extends State<RollviCamera> {
     double left = 0;
     double top = 0;
 
-    if (filterIndex == 5) {
+    if (filterIndex == 8) {
       left = mouthCenterPoint.dx - (arFilter.width / 2);
       top = mouthCenterPoint.dy - (arFilter.height / 2);
     }
-    else if (filterIndex == 6 || filterIndex == 7 || filterIndex == 8) {
+    else if (filterIndex == 1 || filterIndex == 2 || filterIndex == 3) {
       arFilter.width *= ratio;
       arFilter.height *= ratio;
 
@@ -301,23 +300,23 @@ class _FaceCameraState extends State<RollviCamera> {
     }
 
     switch(filterIndex) {
-      case 2:
-        arFilter.assetNames.add("assets/hear_02.webp");
+      case 5:
+        arFilter.assetNames.add("assets/hear_05.webp");
         arFilter.width = 200;
         arFilter.height = 100;
         break;
-      case 3:
-        arFilter.assetNames.add("assets/hear_03.webp");
+      case 6:
+        arFilter.assetNames.add("assets/hear_06.webp");
         arFilter.width = 220;
         arFilter.height = 150;
         break;
-      case 4:
-        arFilter.assetNames.add("assets/hear_04.webp");
+      case 7:
+        arFilter.assetNames.add("assets/hear_07.webp");
         arFilter.width = 220;
         arFilter.height = 150;
         break;
-      case 5:
-        arFilter.assetNames.add("assets/hear_05.webp");
+      case 8:
+        arFilter.assetNames.add("assets/hear_08.webp");
         arFilter.width = 300;
         arFilter.height = 250;
         break;
