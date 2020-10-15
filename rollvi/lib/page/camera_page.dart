@@ -17,7 +17,7 @@ import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'package:rollvi/page/image_preview_page.dart';
-import 'package:rollvi/page/image_sequence_page.dart';
+import 'package:rollvi/page/making_video_page.dart';
 import 'package:rollvi/ui/progress_painter.dart';
 import 'package:rollvi/page/video_preview_page.dart';
 import 'package:sprintf/sprintf.dart';
@@ -29,8 +29,8 @@ import 'package:rollvi/utils.dart';
 enum CaptureType {
   Image,
   Video,
+  CameraSequence,
   ImageSequence,
-  TEST,
 }
 
 class CameraPage extends StatefulWidget {
@@ -54,21 +54,19 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   CameraController _camera;
   bool _isDetecting = false;
 
-  final int _maxTime = 6;
+  final int _maxTime = 3;
   bool isRecording = false;
   int _frameNum = 0;
   Timer _timer;
   CameraImage _lastImage;
-  List<imglib.Image> _imageSequence;
+  List<imglib.Image> _cameraSequence;
 
-  CaptureType _captureType = CaptureType.TEST;
+  CaptureType _captureType = CaptureType.ImageSequence;
   int _selectedFilter = 1;
   bool _showFaceContour = false;
 
   String _rollviDir;
 
-  imglib.Image hiddenCameraImg;
-  Uint8List hiddenImageByte;
   List<imglib.Image> _hiddenCameraImgs;
   List<Uint8List> _hiddenImageBytes;
   int _hiddenFrame = 0;
@@ -76,7 +74,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _imageSequence = new List<imglib.Image>();
+    _cameraSequence = new List<imglib.Image>();
     _hiddenCameraImgs = new List<imglib.Image>();
     _hiddenImageBytes = new List<Uint8List>();
     _animationController = AnimationController(
@@ -93,7 +91,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   void dispose() async {
     super.dispose();
     _stopRecording();
-    _imageSequence.clear();
+    _cameraSequence.clear();
     _hiddenCameraImgs.clear();
     _hiddenImageBytes.clear();
     await _camera.stopImageStream();
@@ -102,7 +100,6 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
 
   void _initializePath() async {
     _rollviDir = await getRollviTempDir();
-//    clearRollviTempDir();
     createRollviTempDir();
   }
 
@@ -112,7 +109,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     _hiddenFrame = 0;
 
     if (_timer != null) _timer.cancel();
-    if (_imageSequence.isNotEmpty) _imageSequence.clear();
+    if (_cameraSequence.isNotEmpty) _cameraSequence.clear();
     if (_hiddenCameraImgs.isNotEmpty) _hiddenCameraImgs.clear();
     if (_hiddenImageBytes.isNotEmpty) _hiddenImageBytes.clear();
   }
@@ -142,18 +139,15 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
           setState(() {
             _faces = result;
 
-            if (_captureType == CaptureType.ImageSequence &&
+            if (_captureType == CaptureType.CameraSequence &&
                 isRecording == true) {
-              _imageSequence.add(convertCameraImage(image));
+              _cameraSequence.add(convertCameraImage(image));
 
               print("Frame Num: $_frameNum");
               _frameNum += 1;
             }
-            else if (_captureType == CaptureType.TEST && isRecording == true) {
-//              hiddenCameraImg = convertCameraImage(_lastImage);
+            else if (_captureType == CaptureType.ImageSequence && isRecording == true) {
               _hiddenCameraImgs.add(convertCameraImage(_lastImage));
-
-//              print("cap");
               _captureFilter().then((value) {
                 _hiddenImageBytes.add(value);
               });
@@ -177,7 +171,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   Future<String> _saveImageToFile() async {
     for (int i = 0; i < _frameNum; i++) {
       String filePath = sprintf("$_rollviDir/frame_%d.jpg", [i]);
-      new File(filePath)..writeAsBytes(imglib.encodeJpg(_imageSequence[i]));
+      new File(filePath)..writeAsBytes(imglib.encodeJpg(_cameraSequence[i]));
       print("Saved File: $filePath / $_frameNum");
     }
     return _rollviDir;
@@ -222,26 +216,6 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
         children: [
           Stack(
             children: [
-              Container(
-                color: AppColor.dismissibleBackground,
-                child: RepaintBoundary(
-                  key: hiddenContainer,
-                  child: Stack(
-                    children: [
-                      Transform(
-                        alignment: Alignment.center,
-                        transform: Matrix4.rotationY(pi),
-                        child: (hiddenCameraImg != null)
-                            ? Image.memory(imglib.encodeJpg(hiddenCameraImg))
-                            : new Container(),
-                      ),
-//                      (hiddenImageByte != null)
-//                          ? Image.memory(hiddenImageByte)
-//                          : new Container(),
-                    ],
-                  ),
-                ),
-              ),
               Container(
                 padding: EdgeInsets.all(10),
                 child: RepaintBoundary(
@@ -429,15 +403,12 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                                   VideoPreviewPage(videoPath: videoPath)))
                         ..then((value) => _initialize());
                     });
-                  } else if (_captureType == CaptureType.ImageSequence) {
-                    print("Caputre Over!!!!!!");
-
-//                    Navigator.pushReplacementNamed(context, '/preview');
+                  } else if (_captureType == CaptureType.CameraSequence) {
                     _saveImageToFile().then((value) => {
                       _initialize(),
                       Navigator.pushReplacementNamed(context, '/preview'),
                     });
-                  } else if (_captureType == CaptureType.TEST) {
+                  } else if (_captureType == CaptureType.ImageSequence) {
                     clearRollviTempDir();
                     _camera.stopImageStream();
 
@@ -448,8 +419,12 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                ImageSequencePage(filterImgList: _hiddenImageBytes, cameraImgList: _hiddenCameraImgs, aspectRatio: _camera.value.aspectRatio,)))
-                      ..then((value) => _initialize());
+                                MakingVideoPage(filterImgList: _hiddenImageBytes, cameraImgList: _hiddenCameraImgs, aspectRatio: _camera.value.aspectRatio,)))
+                      ..then((value) {
+                        setState(() {
+                          _initialize();
+                        });
+                      });
                   }
                   _timer.cancel();
                 } else {
@@ -539,36 +514,20 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     return null;
   }
 
-  /**
-   *
-   *
-   *
-   *
-   *
-   */
-
   Future<Uint8List> _captureFilter() async {
     var renderObject = previewContainer.currentContext.findRenderObject();
     if (renderObject is RenderRepaintBoundary) {
       ui.Image image = await renderObject.toImage();
 
-//      hiddenImageByte = image;
-//      return image;
-
       ByteData byteData =
       await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData.buffer.asUint8List();
-
-      hiddenImageByte = pngBytes;
       return pngBytes;
     }
   }
 
   Future<String> captureHiddenView() async {
-    final path = join(
-      (await getTemporaryDirectory()).path,
-      'frame_$_hiddenFrame.png',
-    );
+    String filePath = sprintf("$_rollviDir/rollvi_%d.png", [_hiddenFrame]);
 
     var renderObject = hiddenContainer.currentContext.findRenderObject();
     if (renderObject is RenderRepaintBoundary) {
@@ -578,7 +537,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
       await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData.buffer.asUint8List();
 
-      File imgFile = new File(path);
+      File imgFile = new File(filePath);
       imgFile.writeAsBytes(pngBytes);
 
       print("FINISH CAPTURE ${imgFile.path}");
