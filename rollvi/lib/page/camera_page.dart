@@ -1,18 +1,15 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as imglib;
 
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/rendering.dart';
-import 'package:native_screenshot/native_screenshot.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rollvi/const/app_colors.dart';
@@ -27,11 +24,6 @@ import 'package:sprintf/sprintf.dart';
 
 import 'package:rollvi/ui/rollvi_camera.dart';
 import 'package:rollvi/utils.dart';
-import 'dart:isolate';
-
-
-typedef convert_func = Pointer<Uint32> Function(Pointer<Uint8>, Pointer<Uint8>, Pointer<Uint8>, Int32, Int32, Int32, Int32);
-typedef Convert = Pointer<Uint32> Function(Pointer<Uint8>, Pointer<Uint8>, Pointer<Uint8>, int, int, int, int);
 
 
 enum CaptureType {
@@ -457,7 +449,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                FacePreview(cameraImg: _hiddenImageBytes, cameraSequence: _hiddenCameraImgs,)))
+                                ImageSequencePage(filterImgList: _hiddenImageBytes, cameraImgList: _hiddenCameraImgs, aspectRatio: _camera.value.aspectRatio,)))
                       ..then((value) => _initialize());
                   }
                   _timer.cancel();
