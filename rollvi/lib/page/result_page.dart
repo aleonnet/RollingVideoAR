@@ -1,19 +1,13 @@
 import 'dart:io';
 import 'dart:math';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:gallery_saver/gallery_saver.dart';
-import 'package:image/image.dart' as imglib;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:rollvi/page/concat_video_page.dart';
 import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
-import 'package:rollvi/insta_downloader.dart';
-import 'package:rollvi/ui/instalink_dialog.dart';
 import 'package:rollvi/utils.dart';
 import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
@@ -43,7 +37,6 @@ class ResultPageState extends State<ResultPage> {
   void _initialize() async {
     _concatVideo(widget.firstPath, widget.secondPath).then((resultPath) {
       setState(() {
-        print("@@@@@@@@@@@@@End Video");
         _resultVideoPath = resultPath;
         _controller = VideoPlayerController.file(File(resultPath));
         _initializeVideoPlayerFuture = _controller.initialize();

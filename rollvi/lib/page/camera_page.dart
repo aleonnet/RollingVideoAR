@@ -1,14 +1,18 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as imglib;
 
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/rendering.dart';
+import 'package:native_screenshot/native_screenshot.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rollvi/const/app_colors.dart';
@@ -16,17 +20,25 @@ import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'package:rollvi/page/image_preview_page.dart';
+import 'package:rollvi/page/image_sequence_page.dart';
 import 'package:rollvi/ui/progress_painter.dart';
 import 'package:rollvi/page/video_preview_page.dart';
 import 'package:sprintf/sprintf.dart';
 
 import 'package:rollvi/ui/rollvi_camera.dart';
 import 'package:rollvi/utils.dart';
+import 'dart:isolate';
+
+
+typedef convert_func = Pointer<Uint32> Function(Pointer<Uint8>, Pointer<Uint8>, Pointer<Uint8>, Int32, Int32, Int32, Int32);
+typedef Convert = Pointer<Uint32> Function(Pointer<Uint8>, Pointer<Uint8>, Pointer<Uint8>, int, int, int, int);
+
 
 enum CaptureType {
   Image,
   Video,
   ImageSequence,
+  TEST,
 }
 
 class CameraPage extends StatefulWidget {
@@ -36,6 +48,7 @@ class CameraPage extends StatefulWidget {
 
 class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   final GlobalKey previewContainer = new GlobalKey();
+  final GlobalKey hiddenContainer = new GlobalKey();
   AnimationController _animationController;
 
   final FaceDetector faceDetector = FirebaseVision.instance.faceDetector(
@@ -56,16 +69,24 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   CameraImage _lastImage;
   List<imglib.Image> _imageSequence;
 
-  CaptureType _captureType = CaptureType.ImageSequence;
+  CaptureType _captureType = CaptureType.TEST;
   int _selectedFilter = 1;
   bool _showFaceContour = false;
 
   String _rollviDir;
 
+  imglib.Image hiddenCameraImg;
+  Uint8List hiddenImageByte;
+  List<imglib.Image> _hiddenCameraImgs;
+  List<Uint8List> _hiddenImageBytes;
+  int _hiddenFrame = 0;
+
   @override
   void initState() {
     super.initState();
     _imageSequence = new List<imglib.Image>();
+    _hiddenCameraImgs = new List<imglib.Image>();
+    _hiddenImageBytes = new List<Uint8List>();
     _animationController = AnimationController(
       vsync: this,
       duration: Duration(seconds: 5),
@@ -81,6 +102,8 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     super.dispose();
     _stopRecording();
     _imageSequence.clear();
+    _hiddenCameraImgs.clear();
+    _hiddenImageBytes.clear();
     await _camera.stopImageStream();
     await _camera.dispose();
   }
@@ -94,9 +117,12 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   void _initialize() async {
     isRecording = false;
     _frameNum = 0;
+    _hiddenFrame = 0;
 
     if (_timer != null) _timer.cancel();
     if (_imageSequence.isNotEmpty) _imageSequence.clear();
+    if (_hiddenCameraImgs.isNotEmpty) _hiddenCameraImgs.clear();
+    if (_hiddenImageBytes.isNotEmpty) _hiddenImageBytes.clear();
   }
 
   void _initializeCamera() async {
@@ -130,10 +156,15 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
 
               print("Frame Num: $_frameNum");
               _frameNum += 1;
+            }
+            else if (_captureType == CaptureType.TEST && isRecording == true) {
+//              hiddenCameraImg = convertCameraImage(_lastImage);
+              _hiddenCameraImgs.add(convertCameraImage(_lastImage));
 
-//              _saveCameraImage(image).then((filePath) {
-////                print("File is writed : $filePath");
-//              });
+//              print("cap");
+              _captureFilter().then((value) {
+                _hiddenImageBytes.add(value);
+              });
             }
           });
 
@@ -145,7 +176,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     });
   }
 
-  Future<void> _saveCameraImage(CameraImage image) async {
+  void _saveCameraImage(CameraImage image) {
     imglib.Image img = convertCameraImage(image);
     String filePath = sprintf("$_rollviDir/frame_%d.jpg", [_frameNum++]);
     new File(filePath)..writeAsBytes(imglib.encodeJpg(img));
@@ -176,6 +207,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     final _deviceRatio = _size.width / _size.height;
 
     return Scaffold(
+      backgroundColor: AppColor.dismissibleBackground,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(AppSize.AppBarHeight),
         child: AppBar(
@@ -196,39 +228,63 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
       ),
       body: Column(
         children: [
-          Container(
-            padding: EdgeInsets.all(10),
-            child: RepaintBoundary(
-              key: previewContainer,
-              child: ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(20)),
-                child:  (_camera != null) ? Align(
-                  alignment: Alignment.center,
-                  widthFactor: 1,
-                  heightFactor: _camera.value.aspectRatio, // 0.8, 0.56
-                  child: _camera == null
-                      ? Container(
-                    color: Colors.black,
-                  )
-                      : AspectRatio(
-                    aspectRatio: _camera.value.aspectRatio, // 9 / 15
-                    child: RollviCamera(
-                        faces: _faces,
-                        camera: _camera,
-                        showFaceContour: _showFaceContour,
-                        filterIndex: _selectedFilter),
+          Stack(
+            children: [
+              Container(
+                color: AppColor.dismissibleBackground,
+                child: RepaintBoundary(
+                  key: hiddenContainer,
+                  child: Stack(
+                    children: [
+                      Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.rotationY(pi),
+                        child: (hiddenCameraImg != null)
+                            ? Image.memory(imglib.encodeJpg(hiddenCameraImg))
+                            : new Container(),
+                      ),
+//                      (hiddenImageByte != null)
+//                          ? Image.memory(hiddenImageByte)
+//                          : new Container(),
+                    ],
                   ),
-                ) : Container(),
+                ),
               ),
-            ),
+              Container(
+                padding: EdgeInsets.all(10),
+                child: RepaintBoundary(
+                  key: previewContainer,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                    child:  (_camera != null) ? Align(
+                      alignment: Alignment.center,
+                      widthFactor: 1,
+                      heightFactor: _camera.value.aspectRatio, // 0.8, 0.56
+                      child: _camera == null
+                          ? Container(
+                        color: Colors.black,
+                      )
+                          : AspectRatio(
+                        aspectRatio: _camera.value.aspectRatio, // 9 / 15
+                        child: RollviCamera(
+                            faces: _faces,
+                            camera: _camera,
+                            showFaceContour: _showFaceContour,
+                            filterIndex: _selectedFilter),
+                      ),
+                    ) : Container(),
+                  ),
+                ),
+              ),
+            ],
           ),
           Expanded(
             child: Container(
-              padding: EdgeInsets.only(top: 30),
-              alignment: Alignment.bottomCenter,
+              padding: EdgeInsets.only(top: 50),
+              alignment: Alignment.center,
               decoration: BoxDecoration(
 //                borderRadius: BorderRadius.all(Radius.circular(10)),
-                color: AppColor.nearlyWhite,
+                color: AppColor.dismissibleBackground,
               ),
               child: (_animationController.isAnimating)
                   ? Container()
@@ -244,8 +300,8 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                           color: AppColor.grey_10,
                           child: InkResponse(
                             child: Image.asset(
-                              'assets/say_0${index + 1}.webp',
-                              color: Colors.redAccent,
+                              'assets/thumbnail_0${index + 1}.png',
+
                             ),
                             onTap: () {
                               _selectedFilter = index + 1;
@@ -384,10 +440,25 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                   } else if (_captureType == CaptureType.ImageSequence) {
                     print("Caputre Over!!!!!!");
 
+//                    Navigator.pushReplacementNamed(context, '/preview');
                     _saveImageToFile().then((value) => {
                       _initialize(),
                       Navigator.pushReplacementNamed(context, '/preview'),
                     });
+                  } else if (_captureType == CaptureType.TEST) {
+                    print("@@@@@@@@@@@@@@@Caputre Over!!!!!!");
+                    _camera.stopImageStream();
+
+                    print("_hiddenCameraImgs: ${_hiddenCameraImgs.length}");
+                    print("_hiddenImageBytes: ${_hiddenImageBytes.length}");
+                    imageCache.clear();
+
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                FacePreview(cameraImg: _hiddenImageBytes, cameraSequence: _hiddenCameraImgs,)))
+                      ..then((value) => _initialize());
                   }
                   _timer.cancel();
                 } else {
@@ -467,7 +538,57 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
       Uint8List pngBytes = byteData.buffer.asUint8List();
 
       File imgFile = new File(path);
-      imgFile.writeAsBytesSync(pngBytes);
+      imgFile.writeAsBytes(pngBytes);
+
+      print("FINISH CAPTURE ${imgFile.path}");
+
+      return imgFile.path;
+    }
+
+    return null;
+  }
+
+  /**
+   *
+   *
+   *
+   *
+   *
+   */
+
+  Future<Uint8List> _captureFilter() async {
+    var renderObject = previewContainer.currentContext.findRenderObject();
+    if (renderObject is RenderRepaintBoundary) {
+      ui.Image image = await renderObject.toImage();
+
+//      hiddenImageByte = image;
+//      return image;
+
+      ByteData byteData =
+      await image.toByteData(format: ui.ImageByteFormat.png);
+      Uint8List pngBytes = byteData.buffer.asUint8List();
+
+      hiddenImageByte = pngBytes;
+      return pngBytes;
+    }
+  }
+
+  Future<String> captureHiddenView() async {
+    final path = join(
+      (await getTemporaryDirectory()).path,
+      'frame_$_hiddenFrame.png',
+    );
+
+    var renderObject = hiddenContainer.currentContext.findRenderObject();
+    if (renderObject is RenderRepaintBoundary) {
+      ui.Image image = await renderObject.toImage();
+
+      ByteData byteData =
+      await image.toByteData(format: ui.ImageByteFormat.png);
+      Uint8List pngBytes = byteData.buffer.asUint8List();
+
+      File imgFile = new File(path);
+      imgFile.writeAsBytes(pngBytes);
 
       print("FINISH CAPTURE ${imgFile.path}");
 

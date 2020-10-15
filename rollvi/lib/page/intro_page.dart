@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_size.dart';
-import 'package:rollvi/page/main.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           centerTitle: true,
         ),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: AppColor.dismissibleBackground,
       body: Column(
         children: <Widget>[
           Container(
@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(20)),
                 image: DecorationImage(
-                    image: AssetImage("assets/onBoarding.gif"),
+                    image: AssetImage("assets/intro_family.gif"),
                     fit: BoxFit.cover)),
           ),
           Expanded(

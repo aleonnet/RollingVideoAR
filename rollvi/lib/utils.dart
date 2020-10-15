@@ -97,6 +97,8 @@ imglib.Image convertCameraImage(CameraImage image) {
 
   var img1 = imglib.copyRotate(img, -90);
   return img1;
+//  var img2 = imglib.copyResize(img1, width: 640);
+//  return imglib.copyCrop(img2, (img2.width~/2).toInt(), (img2.height~/2).toInt(), 640, 640);
 
 //    List<int> png = new imglib.PngEncoder(level: 0, filter: 0).encodeImage(img1);
 //    List<int> jpg = imglib.encodeJpg(img1);
