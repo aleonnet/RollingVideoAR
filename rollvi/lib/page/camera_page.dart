@@ -15,9 +15,8 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_path.dart';
-import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/page/image_preview_page.dart';
-import 'package:rollvi/page/making_video_page.dart';
+import 'package:rollvi/page/waiting_page.dart';
 import 'package:rollvi/ui/progress_painter.dart';
 import 'package:rollvi/page/video_preview_page.dart';
 import 'package:rollvi/ui/rollvi_appbar.dart';
@@ -471,7 +470,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => MakingVideoPage(
+                    builder: (context) => WaitingPage(
                       filterImgList: _hiddenImageBytes,
                       cameraImgList: _hiddenCameraImgs,
                       aspectRatio: _camera.value.aspectRatio,

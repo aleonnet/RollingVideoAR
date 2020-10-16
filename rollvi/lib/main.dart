@@ -6,10 +6,10 @@ import 'package:rollvi/page/result_page.dart';
 import 'package:rollvi/page/camera_page.dart';
 
 void main() {
-  runApp(App());
+  runApp(RollviApp());
 }
 
-class App extends StatelessWidget {
+class RollviApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

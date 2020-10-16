@@ -14,20 +14,20 @@ import 'package:rollvi/const/app_path.dart';
 import 'package:sprintf/sprintf.dart';
 import 'package:video_player/video_player.dart';
 
-class MakingVideoPage extends StatefulWidget {
+class WaitingPage extends StatefulWidget {
   final List<Uint8List> filterImgList;
   final List<imglib.Image> cameraImgList;
   final double aspectRatio;
 
-  MakingVideoPage(
+  WaitingPage(
       {Key key, this.filterImgList, this.cameraImgList, this.aspectRatio})
       : super(key: key);
 
   @override
-  State createState() => new MakingVideoPageState();
+  State createState() => new WaitingPageState();
 }
 
-class MakingVideoPageState extends State<MakingVideoPage>
+class WaitingPageState extends State<WaitingPage>
     with SingleTickerProviderStateMixin {
   final GlobalKey captureContainer = new GlobalKey();
 
