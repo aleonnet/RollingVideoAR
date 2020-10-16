@@ -69,6 +69,10 @@ class MakingVideoPageState extends State<MakingVideoPage>
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
+      onWillPop: () async {
+        Navigator.of(context).popAndPushNamed('camera');
+        return await Future.value(true);
+      },
       child: Scaffold(
         body: Stack(
           children: [

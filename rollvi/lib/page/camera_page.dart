@@ -71,6 +71,8 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   List<Uint8List> _hiddenImageBytes;
   int _hiddenFrame = 0;
 
+  String guideText = '';
+
   @override
   void initState() {
     super.initState();
@@ -107,6 +109,8 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     isRecording = false;
     _frameNum = 0;
     _hiddenFrame = 0;
+
+    updateGuideText();
 
     if (_timer != null) _timer.cancel();
     if (_cameraSequence.isNotEmpty) _cameraSequence.clear();
@@ -187,6 +191,26 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     return faces;
   }
 
+  void updateGuideText() {
+    switch(_selectedFilter) {
+      case 1:
+      case 2:
+      case 3:
+        guideText = '입을 아~ 하고 벌려보세요';
+        break;
+      case 4:
+      case 5:
+      case 6:
+      case 7:
+      case 8:
+        guideText = "귀를 보여주거나 입을 벌려보세요";
+        break;
+      default:
+        guideText = '';
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final _size = MediaQuery.of(context).size;
@@ -245,7 +269,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
               borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
             child: Text(
-              '입을 아~ 하고 벌려보세요',
+              guideText,
               style: TextStyle(color: Colors.white),
             ),
           ),
@@ -275,6 +299,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                             ),
                             onTap: () {
                               _selectedFilter = index + 1;
+                              updateGuideText();
                             },
                           ),
                         );
