@@ -1,14 +1,30 @@
-import 'dart:io';
 import 'dart:typed_data';
+import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
+import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:rollvi/darwin_camera/darwin_camera.dart';
-
+import 'package:rollvi/const/app_path.dart';
+//import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'package:image/image.dart' as imglib;
 
+
+Future<String> makeRollviBorder(final String sourceFilePath) async {
+  final String rollviDir = await getRollviTempDir();
+  final String outputPath = '$rollviDir/rollvi_${getCurrentTime()}.mp4';
+
+  final FlutterFFmpeg flutterFFmpeg = new FlutterFFmpeg();
+  final int border = 50;
+
+  String cmd = '-y -i $sourceFilePath -vf "pad=iw+$border:ih+$border:-$border:-$border:#ED1A3D@1" $outputPath';
+
+  await flutterFFmpeg
+      .execute(cmd)
+      .then((rc) => print("FFmpeg process exited with rc $rc"));
+
+  return outputPath;
+}
 
 String getRollviTag() {
   return "#rollvi #롤비";

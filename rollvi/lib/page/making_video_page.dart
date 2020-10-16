@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_path.dart';
 import 'package:sprintf/sprintf.dart';
+import 'package:video_player/video_player.dart';
 
 class MakingVideoPage extends StatefulWidget {
   final List<Uint8List> filterImgList;
@@ -40,7 +41,6 @@ class MakingVideoPageState extends State<MakingVideoPage>
 
   @override
   void initState() {
-
     if (_timer != null) _timer.cancel();
 
     imageCache.clear();
@@ -68,18 +68,16 @@ class MakingVideoPageState extends State<MakingVideoPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            padding: EdgeInsets.all(10),
-            child: RepaintBoundary(
-                key: captureContainer,
-                child: Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                      child: Align(
+    return WillPopScope(
+      child: Scaffold(
+        body: Stack(
+          children: [
+            Container(
+              child: RepaintBoundary(
+                  key: captureContainer,
+                  child: Stack(
+                    children: [
+                      Align(
                         alignment: Alignment.center,
                         widthFactor: 1,
                         heightFactor: widget.aspectRatio,
@@ -96,23 +94,21 @@ class MakingVideoPageState extends State<MakingVideoPage>
                           ],
                         ),
                       ),
-                    ),
-                    (_time < _maxFilter)
-                        ? Image.memory(widget.filterImgList[_time])
-                        : Container(),
-                  ],
-                )),
-          ),
-          SizedBox(
-            child: Container(
-                color: AppColor.dismissibleBackground,
+                      (_time < _maxFilter)
+                          ? Image.memory(widget.filterImgList[_time])
+                          : Container(),
+                    ],
+                  )
+              ),
+            ),
+            Container(
+                color: AppColor.rollviBackground,
                 alignment: Alignment.center,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-//                    CircularProgressIndicator(),
                     Container(
-                      height: MediaQuery.of(context).size.width /2 ,
+                      height: MediaQuery.of(context).size.width / 2,
                       width: MediaQuery.of(context).size.width / 2,
                       margin: EdgeInsets.all(10),
                       decoration: BoxDecoration(
@@ -121,21 +117,27 @@ class MakingVideoPageState extends State<MakingVideoPage>
                               image: AssetImage("assets/intro_couple.gif"),
                               fit: BoxFit.cover)),
                     ),
-                    SizedBox(height: 30,),
+                    SizedBox(
+                      height: 30,
+                    ),
                     Text(
-                        '조금만 기다려주세요',
-                      style: TextStyle(
-                        color: Colors.white
+                      '조금만 기다려주세요',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    SizedBox(
+                      height: 30,
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(left: 30, right: 30),
+                      child: LinearProgressIndicator(
+                        value: _time / _maxCamera,
                       ),
-                    ),
-                    SizedBox(height: 30,),
-                    LinearProgressIndicator(
-                      value: _time / _maxCamera,
-                    ),
+                    )
                   ],
-                )),
-          ),
-        ],
+                )
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -147,7 +149,6 @@ class MakingVideoPageState extends State<MakingVideoPage>
         _timer.cancel();
         Navigator.pushReplacementNamed(context, '/preview');
       } else {
-        print("@ time : $_time");
         if (mounted) {
           _imageCapture(_time).then((value) {
             print("saveImage: $value");

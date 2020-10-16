@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_size.dart';
+import 'package:rollvi/ui/rollvi_appbar.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -21,14 +22,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     mediaQuery.size.width;
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(AppSize.AppBarHeight),
-        child: AppBar(
-          title: Text('ROLLVI'),
-          centerTitle: true,
-        ),
-      ),
-      backgroundColor: AppColor.dismissibleBackground,
+      appBar: RollviAppBar(context, homeIcon: false),
+      backgroundColor: AppColor.rollviBackground,
       body: Column(
         children: <Widget>[
           Container(

@@ -3,6 +3,10 @@ import 'dart:ui';
 class AppColor {
   AppColor._();
 
+  static const Color rollviBackground = AppColor.dismissibleBackground;
+  static const Color rollviBackgroundPoint = AppColor.lightText;
+  static const Color rollviAccent = Color(0xEEED1A3D);
+
   static const Color nearlyWhite = Color(0xFFFAFAFA);
   static const Color white = Color(0xFFFFFFFF);
   static const Color white_layout = Color(0xFFF6F7FA);

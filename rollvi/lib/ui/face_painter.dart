@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:rollvi/darwin_camera/darwin_camera.dart';
+//import 'package:rollvi/darwin_camera/darwin_camera.dart';
 
 
 class FaceContourPainter extends CustomPainter {

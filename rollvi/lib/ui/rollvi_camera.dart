@@ -1,10 +1,11 @@
 import 'package:audioplayers/audio_cache.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/rendering.dart';
-import 'package:rollvi/darwin_camera/darwin_camera.dart';
+//import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'package:rollvi/ui/face_painter.dart';
 import 'dart:math' as math;
 

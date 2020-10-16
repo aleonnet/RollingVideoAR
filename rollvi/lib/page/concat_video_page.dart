@@ -9,6 +9,7 @@ import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/page/result_page.dart';
+import 'package:rollvi/ui/rollvi_appbar.dart';
 import 'package:rollvi/utils.dart';
 import 'package:video_player/video_player.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -62,7 +63,6 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
         _capturedVideoPath = outputPath;
         print("_capturedVideoPath: $_capturedVideoPath");
       });
-
     });
 
     if (widget.galleryFile != null) {
@@ -77,7 +77,6 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
           _gottenVideoPath = outputPath;
           print("_gottenVideoPath: $_gottenVideoPath");
         });
-
       });
     } else if (widget.instaLink != null) {
       isGalleryFile = false;
@@ -101,7 +100,7 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
     final rawDir = await getRollviTempDir();
     final String resultPath = '$rawDir/video_${getTimestamp()}.mp4';
 
-    String cmd = '-y -i $filePath -filter:v "crop=640:640" $resultPath';
+    String cmd = '-y -i $filePath -filter:v "crop=392:392" $resultPath';
     await _flutterFFmpeg.execute(cmd).then((rc) {
       print("FFmpeg process exited with rc $rc");
     });
@@ -120,32 +119,8 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
     final _size = MediaQuery.of(context).size;
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(AppSize.AppBarHeight),
-        child: AppBar(
-          title: Text('Edit Video'),
-          centerTitle: true,
-          actions: [
-            new IconButton(
-              icon: Icon(
-                Icons.home,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                Navigator.of(context).pushReplacementNamed('/home');
-              },
-            )
-          ],
-          leading: new IconButton(
-              icon: Icon(
-                Icons.keyboard_backspace,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              }),
-        ),
-      ),
+      backgroundColor: AppColor.rollviBackground,
+      appBar: RollviAppBar(context, backIcon: true),
       body: Column(
         children: [
           ClipRect(
@@ -177,49 +152,46 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                             }),
                         items: [
                           Container(
-                            padding: EdgeInsets.all(10),
-                            child: Transform(
-                                alignment: Alignment.center,
-                                transform: Matrix4.rotationY(pi),
-                                child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: FutureBuilder(
-                                      future: _initializeVideoPlayerFuture1,
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState ==
-                                            ConnectionState.done) {
-                                          return VideoPlayer(
-                                              _capturedVideoController);
-                                        } else {
-                                          return Center(
-                                              child:
-                                                  CircularProgressIndicator());
-                                        }
-                                      },
-                                    ))),
-                          ),
+                              color: AppColor.rollviBackground,
+                              padding: EdgeInsets.all(10),
+                              child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: FutureBuilder(
+                                    future: _initializeVideoPlayerFuture1,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.done) {
+                                        return ClipRRect(
+                                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                                          child: VideoPlayer(
+                                              _capturedVideoController),
+                                        );
+                                      } else {
+                                        return Center(
+                                            child: CircularProgressIndicator());
+                                      }
+                                    },
+                                  ))),
                           Container(
-                            padding: EdgeInsets.all(10),
-                            child: Transform(
-                                alignment: Alignment.center,
-                                transform: Matrix4.rotationY(pi),
-                                child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: FutureBuilder(
-                                      future: _initializeVideoPlayerFuture2,
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState ==
-                                            ConnectionState.done) {
-                                          return VideoPlayer(
-                                              _gottenVideoController);
-                                        } else {
-                                          return Center(
-                                              child:
-                                                  CircularProgressIndicator());
-                                        }
-                                      },
-                                    ))),
-                          ),
+                              color: AppColor.rollviBackground,
+                              padding: EdgeInsets.all(10),
+                              child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: FutureBuilder(
+                                    future: _initializeVideoPlayerFuture2,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.done) {
+                                        return ClipRRect(
+                                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                                          child: VideoPlayer(_gottenVideoController),
+                                        );
+                                      } else {
+                                        return Center(
+                                            child: CircularProgressIndicator());
+                                      }
+                                    },
+                                  ))),
                         ]),
                   ],
                 ),
@@ -228,38 +200,46 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
           ),
           Expanded(
             child: Container(
-              color: AppColor.nearlyWhite,
+              color: AppColor.rollviBackground,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      FlatButton(
-                        child: (!reverse)
-                            ? Icon(Icons.videocam,
-                                color: (_current == 0)
-                                    ? Colors.black
-                                    : Colors.grey)
-                            : Icon(Icons.panorama,
-                                color: (_current == 1)
-                                    ? Colors.black
-                                    : Colors.grey),
-                      ),
-                      FlatButton(
-                        child: (!reverse)
-                            ? Icon(Icons.panorama,
-                                color: (_current == 1)
-                                    ? Colors.black
-                                    : Colors.grey)
-                            : Icon(Icons.videocam,
-                                color: (_current == 0)
-                                    ? Colors.black
-                                    : Colors.grey),
-                      ),
-                    ],
+                  Container(
+                    margin: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColor.rollviBackgroundPoint,
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        FlatButton(
+                          child: (!reverse)
+                              ? Icon(Icons.videocam,
+                              color: (_current == 0)
+                                  ? Colors.white
+                                  : Colors.white10)
+                              : Icon(Icons.panorama,
+                              color: (_current == 1)
+                                  ? Colors.white
+                                  : Colors.white10),
+                        ),
+                        FlatButton(
+                          child: (!reverse)
+                              ? Icon(Icons.panorama,
+                              color: (_current == 1)
+                                  ? Colors.white
+                                  : Colors.white10)
+                              : Icon(Icons.videocam,
+                              color: (_current == 0)
+                                  ? Colors.white
+                                  : Colors.white10),
+                        ),
+                      ],
+                    ),
                   ),
+
                   Expanded(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,

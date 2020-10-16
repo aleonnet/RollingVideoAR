@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as imglib;
@@ -15,16 +16,15 @@ import 'package:path_provider/path_provider.dart';
 import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
-import 'package:rollvi/darwin_camera/darwin_camera.dart';
 import 'package:rollvi/page/image_preview_page.dart';
 import 'package:rollvi/page/making_video_page.dart';
 import 'package:rollvi/ui/progress_painter.dart';
 import 'package:rollvi/page/video_preview_page.dart';
+import 'package:rollvi/ui/rollvi_appbar.dart';
 import 'package:sprintf/sprintf.dart';
 
 import 'package:rollvi/ui/rollvi_camera.dart';
 import 'package:rollvi/utils.dart';
-
 
 enum CaptureType {
   Image,
@@ -145,8 +145,8 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
 
               print("Frame Num: $_frameNum");
               _frameNum += 1;
-            }
-            else if (_captureType == CaptureType.ImageSequence && isRecording == true) {
+            } else if (_captureType == CaptureType.ImageSequence &&
+                isRecording == true) {
               _hiddenCameraImgs.add(convertCameraImage(_lastImage));
               _captureFilter().then((value) {
                 _hiddenImageBytes.add(value);
@@ -193,24 +193,10 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
     final _deviceRatio = _size.width / _size.height;
 
     return Scaffold(
-      backgroundColor: AppColor.dismissibleBackground,
+      backgroundColor: AppColor.rollviBackground,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(AppSize.AppBarHeight),
-        child: AppBar(
-          title: Text('ROLLVI'),
-          centerTitle: true,
-          actions: [
-            new IconButton(
-              icon: Icon(
-                Icons.home,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                Navigator.of(context).pushReplacementNamed('/home');
-              },
-            )
-          ],
-        ),
+        child: RollviAppBar(context),
       ),
       body: Column(
         children: [
@@ -222,35 +208,54 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                   key: previewContainer,
                   child: ClipRRect(
                     borderRadius: BorderRadius.all(Radius.circular(20)),
-                    child:  (_camera != null) ? Align(
-                      alignment: Alignment.center,
-                      widthFactor: 1,
-                      heightFactor: _camera.value.aspectRatio, // 0.8, 0.56
-                      child: _camera == null
-                          ? Container(
-                        color: Colors.black,
-                      )
-                          : AspectRatio(
-                        aspectRatio: _camera.value.aspectRatio, // 9 / 15
-                        child: RollviCamera(
-                            faces: _faces,
-                            camera: _camera,
-                            showFaceContour: _showFaceContour,
-                            filterIndex: _selectedFilter),
-                      ),
-                    ) : Container(),
+                    child: (_camera != null)
+                        ? Align(
+                            alignment: Alignment.center,
+                            widthFactor: 1,
+                            heightFactor:
+                                _camera.value.aspectRatio, // 0.8, 0.56
+                            child: AspectRatio(
+                              aspectRatio: _camera.value.aspectRatio, // 9 / 15
+                              child: RollviCamera(
+                                  faces: _faces,
+                                  camera: _camera,
+                                  showFaceContour: _showFaceContour,
+                                  filterIndex: _selectedFilter),
+                            ),
+                          )
+                        : Container(
+                            padding: EdgeInsets.all(10),
+                            width: _size.width - 20,
+                            height: _size.width - 20,
+                            alignment: Alignment.center,
+                            child: CircularProgressIndicator(),
+                          ),
                   ),
                 ),
               ),
             ],
           ),
+          Container(
+            alignment: Alignment.center,
+            width: double.infinity,
+            height: 40,
+            margin: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColor.rollviBackgroundPoint,
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+            child: Text(
+              '입을 아~ 하고 벌려보세요',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
           Expanded(
             child: Container(
-              padding: EdgeInsets.only(top: 50),
+              margin: EdgeInsets.only(top: 10, left: 10, right: 10),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-//                borderRadius: BorderRadius.all(Radius.circular(10)),
-                color: AppColor.dismissibleBackground,
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+                color: AppColor.rollviBackgroundPoint,
               ),
               child: (_animationController.isAnimating)
                   ? Container()
@@ -267,7 +272,6 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                           child: InkResponse(
                             child: Image.asset(
                               'assets/thumbnail_0${index + 1}.png',
-
                             ),
                             onTap: () {
                               _selectedFilter = index + 1;
@@ -280,162 +284,171 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
           ),
         ],
       ),
-      floatingActionButton: (_camera != null) ? Container(
-        padding: EdgeInsets.only(
-            top:
-                _size.width * _camera.value.aspectRatio),
-        alignment: Alignment.center,
-        child: FloatingActionButton(
-          backgroundColor: Colors.white,
-          child: AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) {
-                return Stack(
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.all(5),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      floatingActionButton: (_camera != null)
+          ? Container(
+//              padding:
+//                  EdgeInsets.only(top: _size.width * _camera.value.aspectRatio),
+              alignment: Alignment.bottomCenter,
+              child: FloatingActionButton(
+                backgroundColor: Colors.white,
+                child: AnimatedBuilder(
+                    animation: _animationController,
+                    builder: (context, child) {
+                      return Stack(
                         children: <Widget>[
-                          Expanded(
-                            child: Align(
-                              alignment: FractionalOffset.center,
-                              child: AspectRatio(
-                                aspectRatio: 1.0,
-                                child: Stack(
-                                  children: <Widget>[
-                                    Positioned.fill(
-                                      child: CustomPaint(
-                                          painter: ProgressTimerPainter(
-                                        animation: _animationController,
-                                        backgroundColor: Colors.white,
-                                        color: Colors.redAccent,
-                                      )),
-                                    ),
-                                    Align(
-                                      alignment: FractionalOffset.center,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
+                          Padding(
+                            padding: EdgeInsets.all(5),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Expanded(
+                                  child: Align(
+                                    alignment: FractionalOffset.center,
+                                    child: AspectRatio(
+                                      aspectRatio: 1.0,
+                                      child: Stack(
                                         children: <Widget>[
-                                          _animationController.value == 0.0
-                                              ? Icon(
-                                                  Icons.camera,
-                                                  color: Colors.redAccent,
-                                                )
-                                              : Text(
-                                                  timerString,
-                                                  style: TextStyle(
-                                                      fontSize: 15.0,
-                                                      color: Colors.redAccent),
-                                                ),
+                                          Positioned.fill(
+                                            child: CustomPaint(
+                                                painter: ProgressTimerPainter(
+                                              animation: _animationController,
+                                              backgroundColor: Colors.white,
+                                              color: Colors.redAccent,
+                                            )),
+                                          ),
+                                          Align(
+                                            alignment: FractionalOffset.center,
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: <Widget>[
+                                                _animationController.value ==
+                                                        0.0
+                                                    ? Icon(
+                                                        Icons.camera,
+                                                        color: Colors.redAccent,
+                                                      )
+                                                    : Text(
+                                                        timerString,
+                                                        style: TextStyle(
+                                                            fontSize: 15.0,
+                                                            color: Colors
+                                                                .redAccent),
+                                                      ),
+                                              ],
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ),
-                                  ],
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                           ),
                         ],
-                      ),
-                    ),
-                  ],
-                );
-              }),
-          onPressed: () async {
-            if (_animationController.isAnimating)
-              _animationController.stop();
-            else {
-              _animationController.reverse(
-                  from: _animationController.value == 0.0
-                      ? 1.0
-                      : _animationController.value);
-            }
-
-            isRecording = true;
-
-            // for recording video
-            String videoPath = '';
-            if (_captureType == CaptureType.Video) {
-              await _camera.stopImageStream();
-              _startVideoRecording().then((String filePath) {
-                if (filePath != null) {
-                  print("Recording Start");
-                  setState(() {
-                    videoPath = filePath;
-                  });
-                }
-              });
-            }
-
-            if (_captureType == CaptureType.Image) {
-              imglib.Image capturedImage = convertCameraImage(_lastImage);
-              _imageCapture().then((path) => {
-                imageCache.clear(),
-                print("Capture Complete : $path"),
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ImagePreviewPage(
-                          cameraImg: capturedImage,
-                          imagePath: path,
-                        )))
-                  ..then((value) => _initialize())
-              });
-            } else {
-              int _time = _maxTime;
-              _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
-                print('[timer] : $_time');
-
-                if (_time < 1) {
-                  if (_captureType == CaptureType.Video) {
-                    _stopVideoRecording().then((_) {
-                      print("Stop Video Recording");
-
-                      _stopRecording();
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  VideoPreviewPage(videoPath: videoPath)))
-                        ..then((value) => _initialize());
-                    });
-                  } else if (_captureType == CaptureType.CameraSequence) {
-                    _saveImageToFile().then((value) => {
-                      _initialize(),
-                      Navigator.pushReplacementNamed(context, '/preview'),
-                    });
-                  } else if (_captureType == CaptureType.ImageSequence) {
-                    clearRollviTempDir();
-                    _camera.stopImageStream();
-
-                    print("_hiddenCameraImgs: ${_hiddenCameraImgs.length}");
-                    print("_hiddenImageBytes: ${_hiddenImageBytes.length}");
-                    imageCache.clear();
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                MakingVideoPage(filterImgList: _hiddenImageBytes, cameraImgList: _hiddenCameraImgs, aspectRatio: _camera.value.aspectRatio,)))
-                      ..then((value) {
-                        setState(() {
-                          _initialize();
-                        });
-                      });
+                      );
+                    }),
+                onPressed: () async {
+                  if (_animationController.isAnimating)
+                    _animationController.stop();
+                  else {
+                    _animationController.reverse(
+                        from: _animationController.value == 0.0
+                            ? 1.0
+                            : _animationController.value);
                   }
-                  _timer.cancel();
-                } else {
-                  _time -= 1;
-                }
-              });
-            }
-          },
-        ),
-      ) : Container(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+                  isRecording = true;
+
+                  // for recording video
+                  String videoPath = '';
+                  if (_captureType == CaptureType.Video) {
+                    await _camera.stopImageStream();
+                    _startVideoRecording().then((String filePath) {
+                      if (filePath != null) {
+                        print("Recording Start");
+                        setState(() {
+                          videoPath = filePath;
+                        });
+                      }
+                    });
+                  }
+
+                  if (_captureType == CaptureType.Image) {
+                    imglib.Image capturedImage = convertCameraImage(_lastImage);
+                    _imageCapture().then((path) => {
+                          imageCache.clear(),
+                          print("Capture Complete : $path"),
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ImagePreviewPage(
+                                        cameraImg: capturedImage,
+                                        imagePath: path,
+                                      )))
+                            ..then((value) => _initialize())
+                        });
+                  } else {
+                    int _time = _maxTime;
+                    _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
+                      print('[timer] : $_time');
+
+                      if (_time < 1) {
+                        if (_captureType == CaptureType.Video) {
+                          _stopVideoRecording().then((_) {
+                            print("Stop Video Recording");
+
+                            _stopRecording();
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        VideoPreviewPage(videoPath: videoPath)))
+                              ..then((value) => _initialize());
+                          });
+                        } else if (_captureType == CaptureType.CameraSequence) {
+                          _saveImageToFile().then((value) => {
+                                _initialize(),
+                                Navigator.pushReplacementNamed(
+                                    context, '/preview'),
+                              });
+                        } else if (_captureType == CaptureType.ImageSequence) {
+                          clearRollviTempDir();
+                          _camera.stopImageStream();
+
+                          print(
+                              "_hiddenCameraImgs: ${_hiddenCameraImgs.length}");
+                          print(
+                              "_hiddenImageBytes: ${_hiddenImageBytes.length}");
+                          imageCache.clear();
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MakingVideoPage(
+                                        filterImgList: _hiddenImageBytes,
+                                        cameraImgList: _hiddenCameraImgs,
+                                        aspectRatio: _camera.value.aspectRatio,
+                                      )))
+                            ..then((value) {
+                              setState(() {
+                                _initialize();
+                              });
+                            });
+                        }
+                        _timer.cancel();
+                      } else {
+                        _time -= 1;
+                      }
+                    });
+                  }
+                },
+              ),
+            )
+          : Container(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
@@ -480,7 +493,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
 
   void _stopRecording() {
     isRecording = false;
-    _timer.cancel();
+    if (_timer != null) _timer.cancel();
   }
 
   void _showCameraException(CameraException e) {
@@ -520,7 +533,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
       ui.Image image = await renderObject.toImage();
 
       ByteData byteData =
-      await image.toByteData(format: ui.ImageByteFormat.png);
+          await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData.buffer.asUint8List();
       return pngBytes;
     }
@@ -534,7 +547,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
       ui.Image image = await renderObject.toImage();
 
       ByteData byteData =
-      await image.toByteData(format: ui.ImageByteFormat.png);
+          await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData.buffer.asUint8List();
 
       File imgFile = new File(filePath);

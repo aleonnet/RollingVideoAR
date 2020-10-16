@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
+import 'package:rollvi/ui/rollvi_appbar.dart';
 import 'package:rollvi/utils.dart';
 import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
@@ -88,61 +89,39 @@ class ResultPageState extends State<ResultPage> {
     }
 
     return Scaffold(
+      backgroundColor: AppColor.rollviBackground,
       key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(AppSize.AppBarHeight),
-        child: AppBar(
-          title: Text('Result Video'),
-          centerTitle: true,
-          actions: [
-            new IconButton(
-              icon: Icon(
-                Icons.home,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                Navigator.of(context).pushReplacementNamed('/home');
-              },
-            )
-          ],
-        ),
-      ),
+      appBar: RollviAppBar(context, backIcon: true),
       body: Column(
         children: [
           Container(
+            color: AppColor.rollviBackground,
             padding: EdgeInsets.all(10),
-            child: ClipRRect(
-              borderRadius: BorderRadius.all(Radius.circular(20)),
-              child: Align(
-                alignment: Alignment.center,
-                widthFactor: 1,
-                heightFactor: _size.width / _size.height,
-                child: AspectRatio(
-                  aspectRatio: _size.width / _size.height,
-                  child: Transform(
-                    alignment: Alignment.center,
-                    transform: Matrix4.rotationY(pi),
-                    child: FutureBuilder(
-                      future: _initializeVideoPlayerFuture,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.done) {
-                          return AspectRatio(
-                            aspectRatio: _controller.value.aspectRatio,
-                            child: VideoPlayer(_controller),
-                          );
-                        } else {
-                          return Center(child: CircularProgressIndicator());
-                        }
-                      },
+            child: FutureBuilder(
+              future: _initializeVideoPlayerFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                    child: AspectRatio(
+                      aspectRatio: _controller.value.aspectRatio,
+                      child: VideoPlayer(_controller),
                     ),
-                  ),
-                ),
-              ),
+                  );
+                } else {
+                  return Container(
+                    width: _size.width - 20,
+                    height: _size.width - 20,
+                    alignment: Alignment.center,
+                    child: CircularProgressIndicator(),
+                  );
+                }
+              },
             ),
           ),
           Expanded(
               child: Container(
-                color: AppColor.nearlyWhite,
+                color: AppColor.rollviBackground,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -168,9 +147,10 @@ class ResultPageState extends State<ResultPage> {
                       child: Icon(Icons.share),
                       onPressed: () async {
                         print("Recorded Video Path $_resultVideoPath");
-                        Clipboard.setData(new ClipboardData(text: getRollviTag()));
-                        Share.shareFiles([_resultVideoPath],
-                            text: "Rollvi");
+                        makeRollviBorder(_resultVideoPath).then((value) {
+                          Clipboard.setData(new ClipboardData(text: getRollviTag()));
+                          Share.shareFiles([value], subject: 'Rollvi');
+                        });
                       },
                     ),
                   ],
