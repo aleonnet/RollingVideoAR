@@ -53,7 +53,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   CameraController _camera;
   bool _isDetecting = false;
 
-  final int _maxTime = 3;
+  final int _maxTime = 1;
   bool isRecording = false;
   int _frameNum = 0;
   Timer _timer;

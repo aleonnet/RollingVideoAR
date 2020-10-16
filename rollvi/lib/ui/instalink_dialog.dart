@@ -12,11 +12,14 @@ class InstaLinkDialog extends StatefulWidget {
 
 class _InstaLinkDialogState extends State<InstaLinkDialog> {
   String inputStr;
+  TextEditingController textController;
 
   @override
   void initState() {
-    inputStr = widget.clipData;
     super.initState();
+    textController = TextEditingController();
+    inputStr = widget.clipData;
+    textController.text = inputStr;
   }
 
   @override
@@ -66,7 +69,8 @@ class _InstaLinkDialogState extends State<InstaLinkDialog> {
               ),
               SizedBox(height: 16.0),
               TextField(
-                autofocus: true,
+                autofocus: false,
+                controller: textController,
                 decoration: new InputDecoration(
                     labelText: 'Instagram Link', hintText: inputStr),
                 onChanged: (value) {

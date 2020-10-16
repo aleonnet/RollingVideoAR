@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
-import 'package:flutter_insta/flutter_insta.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:image/image.dart' as imglib;
 
@@ -12,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
+import 'package:rollvi/insta_downloader.dart';
 import 'package:rollvi/page/concat_video_page.dart';
 import 'package:rollvi/page/intro_page.dart';
 import 'package:rollvi/ui/instalink_dialog.dart';
@@ -193,14 +193,14 @@ class PreviewPageState extends State<PreviewPage> {
                                                   clipData: _clipData,
                                                 ));
 
+                                        print('inputText: $inputText');
+
                                         if (inputText != null) {
-                                          FlutterInsta flutterInsta =
-                                              new FlutterInsta();
-                                          await flutterInsta
+                                          await new FlutterInsta()
                                               .downloadReels(inputText)
-                                              .then((String instaLink) {
-                                            print(instaLink);
-                                            Navigator.of(context).push(
+                                              .then((String instaLink) async {
+                                            print('instaLink: $instaLink');
+                                            await Navigator.of(context).push(
                                                 MaterialPageRoute(
                                                     builder: (BuildContext
                                                             context) =>
@@ -209,6 +209,7 @@ class PreviewPageState extends State<PreviewPage> {
                                                               File(_outputPath),
                                                           instaLink: instaLink,
                                                         )));
+                                            _controller.play();
                                           });
                                         }
                                       },
@@ -220,7 +221,7 @@ class PreviewPageState extends State<PreviewPage> {
                                         FilePicker.getFile(type: FileType.video)
                                             .then((File file) async {
                                           print(file);
-                                          final result = await Navigator.of(
+                                          await Navigator.of(
                                                   context)
                                               .push(MaterialPageRoute(
                                                   builder:
@@ -300,11 +301,12 @@ class PreviewPageState extends State<PreviewPage> {
                                           print(
                                               "Recorded Video Path $_outputPath");
                                           makeRollviBorder(_outputPath)
-                                              .then((value) {
+                                              .then((value) async {
                                             Clipboard.setData(new ClipboardData(
                                                 text: getRollviTag()));
-                                            Share.shareFiles([value],
+                                            await Share.shareFiles([value],
                                                 subject: 'Rollvi');
+                                            _controller.play();
                                           });
                                         },
                                       ),
