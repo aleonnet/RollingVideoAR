@@ -71,7 +71,7 @@ class _FaceCameraState extends State<RollviCamera> {
         ),
         widget.showFaceContour ? _getFaceContourPaint(widget.faces, widget.camera) : Container(),
         _getBottomStickerWidget(widget.faces, widget.filterIndex),
-        _getTopStickerWidget(widget.faces, widget.filterIndex),
+//        _getTopStickerWidget(widget.faces, widget.filterIndex),
         _getLeftEarStickerWidget(widget.faces, widget.filterIndex, _size),
         _getMouthStickerWidget(widget.faces, widget.filterIndex, _size),
       ],
@@ -193,8 +193,8 @@ class _FaceCameraState extends State<RollviCamera> {
     switch (filterIndex) {
       case 2:
         arFilter.assetNames.add("assets/bottom_02.webp");
-        arFilter.width = 400;
-        arFilter.height = 600;
+        arFilter.width = 800;
+        arFilter.height = 1200;
         break;
       case 3:
         arFilter.assetNames.add("assets/bottom_03.webp");

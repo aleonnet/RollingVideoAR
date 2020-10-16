@@ -208,7 +208,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
         guideText = "귀를 보여주거나 입을 벌려보세요";
         break;
       default:
-        guideText = '';
+        guideText = '준비 중입니다';
         break;
     }
   }
@@ -219,7 +219,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: AppColor.rollviBackground,
-      appBar: RollviAppBar(context),
+      appBar: RollviAppBar(context, backIcon: true),
       body: Column(
         children: [
           Stack(
