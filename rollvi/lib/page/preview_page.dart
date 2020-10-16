@@ -220,8 +220,9 @@ class PreviewPageState extends State<PreviewPage> {
                                         FilePicker.getFile(type: FileType.video)
                                             .then((File file) async {
                                           print(file);
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
+                                          final result = await Navigator.of(
+                                                  context)
+                                              .push(MaterialPageRoute(
                                                   builder:
                                                       (BuildContext context) =>
                                                           ConcatVideoPage(
@@ -229,6 +230,7 @@ class PreviewPageState extends State<PreviewPage> {
                                                                 _outputPath),
                                                             galleryFile: file,
                                                           )));
+                                          _controller.play();
                                         });
                                       },
                                     ),
@@ -276,15 +278,18 @@ class PreviewPageState extends State<PreviewPage> {
                                         onPressed: () async {
                                           print(
                                               "Recorded Video Path $_outputPath");
-                                          GallerySaver.saveVideo(_outputPath,
-                                                  albumName: 'Rollvi')
-                                              .then((bool success) {
-                                            if (success) {
-                                              showInSnackBar("Video Saved!");
-                                            } else {
-                                              showInSnackBar(
-                                                  "Failed to save the video");
-                                            }
+                                          makeRollviBorder(_outputPath)
+                                              .then((value) {
+                                            GallerySaver.saveVideo(value,
+                                                    albumName: 'Rollvi')
+                                                .then((bool success) {
+                                              if (success) {
+                                                showInSnackBar("Video Saved!");
+                                              } else {
+                                                showInSnackBar(
+                                                    "Failed to save the video");
+                                              }
+                                            });
                                           });
                                         },
                                       ),
@@ -310,114 +315,7 @@ class PreviewPageState extends State<PreviewPage> {
                             )),
                       ),
                     ],
-                  )
-
-//            Row(
-//              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//              crossAxisAlignment: CrossAxisAlignment.center,
-//              children: [
-//                Container(
-//                  padding: EdgeInsets.all(10),
-//                  decoration: BoxDecoration(
-//                    color: AppColor.rollviBackgroundPoint,
-//                    borderRadius: BorderRadius.circular(10),
-//                  ),
-//                  child: Row(
-//                    crossAxisAlignment: CrossAxisAlignment.stretch,
-//                    children: [
-//                      FloatingActionButton(
-//                        heroTag: null,
-//                        child: ImageIcon(
-//                          AssetImage("assets/insta_logo.png"),
-//                        ),
-//                        onPressed: () async {
-//                          String _clipData =
-//                              (await Clipboard.getData('text/plain')).text;
-//                          final inputText = await showDialog(
-//                              context: context,
-//                              builder: (BuildContext context) =>
-//                                  InstaLinkDialog(
-//                                    clipData: _clipData,
-//                                  ));
-//
-//                          if (inputText != null) {
-//                            FlutterInsta flutterInsta = new FlutterInsta();
-//                            await flutterInsta
-//                                .downloadReels(inputText)
-//                                .then((String instaLink) {
-//                              print(instaLink);
-//                              Navigator.of(context).push(MaterialPageRoute(
-//                                  builder: (BuildContext context) =>
-//                                      ConcatVideoPage(
-//                                        currentFile: File(_outputPath),
-//                                        instaLink: instaLink,
-//                                      )));
-//                            });
-//                          }
-//                        },
-//                      ),
-//                      SizedBox(width: 10,),
-//                      FloatingActionButton(
-//                        heroTag: null,
-//                        child: Icon(Icons.photo),
-//                        onPressed: () {
-//                          FilePicker.getFile(type: FileType.video)
-//                              .then((File file) async {
-//                            print(file);
-//                            Navigator.of(context).push(MaterialPageRoute(
-//                                builder: (BuildContext context) =>
-//                                    ConcatVideoPage(
-//                                      currentFile: File(_outputPath),
-//                                      galleryFile: file,
-//                                    )));
-//                          });
-//                        },
-//                      ),
-//                    ],
-//                  ),
-//                ),
-//                Container(
-//                  padding: EdgeInsets.all(10),
-//                  decoration: BoxDecoration(
-//                    color: AppColor.rollviBackgroundPoint,
-//                    borderRadius: BorderRadius.circular(10),
-//                  ),
-//                  child: Row(
-//                    children: [
-//                      FloatingActionButton(
-//                        heroTag: null,
-//                        child: Icon(Icons.file_download),
-//                        onPressed: () async {
-//                          print("Recorded Video Path $_outputPath");
-//                          GallerySaver.saveVideo(_outputPath,
-//                                  albumName: 'Rollvi')
-//                              .then((bool success) {
-//                            if (success) {
-//                              showInSnackBar("Video Saved!");
-//                            } else {
-//                              showInSnackBar("Failed to save the video");
-//                            }
-//                          });
-//                        },
-//                      ),
-//                      FloatingActionButton(
-//                        heroTag: null,
-//                        child: Icon(Icons.share),
-//                        onPressed: () async {
-//                          print("Recorded Video Path $_outputPath");
-//                          makeRollviBorder(_outputPath).then((value) {
-//                            Clipboard.setData(
-//                                new ClipboardData(text: getRollviTag()));
-//                            Share.shareFiles([value], subject: 'Rollvi');
-//                          });
-//                        },
-//                      ),
-//                    ],
-//                  ),
-//                ),
-//              ],
-//            ),
-                  ))
+                  )))
         ],
       ),
     );

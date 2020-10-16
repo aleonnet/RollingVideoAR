@@ -73,7 +73,6 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
           _gottenVideoController = VideoPlayerController.file(File(outputPath));
           _initializeVideoPlayerFuture2 = _gottenVideoController.initialize();
           _gottenVideoController.setLooping(true);
-          _gottenVideoController.play();
           _gottenVideoPath = outputPath;
           print("_gottenVideoPath: $_gottenVideoPath");
         });
@@ -257,7 +256,7 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                         FloatingActionButton(
                           heroTag: null,
                           child: Icon(Icons.check),
-                          onPressed: () {
+                          onPressed: () async {
                             String firstPath = (!reverse)
                                 ? _capturedVideoPath
                                 : _gottenVideoPath;
@@ -268,11 +267,18 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                             _capturedVideoController.pause();
                             _gottenVideoController.pause();
 
-                            Navigator.of(context).push(MaterialPageRoute(
+                            final result = await Navigator.of(context).push(
+                                MaterialPageRoute(
                                 builder: (BuildContext context) => ResultPage(
                                       firstPath: firstPath,
                                       secondPath: secondPath,
                                     )));
+
+                            if (_current == 0) {
+                              _capturedVideoController.play();
+                            } else if (_current == 1) {
+                              _gottenVideoController.play();
+                            }
                           },
                         ),
                       ],

@@ -63,10 +63,10 @@ class RollviAppBar extends AppBar {
       ),
       onPressed: () {
         if (backPage != '') {
-          Navigator.of(context).popAndPushNamed(backPage);
+          Navigator.of(context).pushNamedAndRemoveUntil(backPage, (route) => false);
         }
         else {
-          Navigator.of(context).pop();
+          Navigator.of(context).pop(true);
         }
       }) : Container();
 }

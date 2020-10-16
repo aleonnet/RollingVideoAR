@@ -478,9 +478,12 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                       aspectRatio: _camera.value.aspectRatio,
                     )))
               ..then((value) {
-                setState(() {
-                  _initialize();
-                });
+                if (mounted) {
+                  setState(() {
+                    _initialize();
+                    _initializeCamera();
+                  });
+                }
               });
           }
           _timer.cancel();
