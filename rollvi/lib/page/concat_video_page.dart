@@ -79,11 +79,13 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
       });
     } else if (widget.instaLink != null) {
       isGalleryFile = false;
-      print("@@@@@@@@@@@@${widget.instaLink}");
-
-      _gottenVideoController = await VideoPlayerController.network(widget.instaLink);
-      _initializeVideoPlayerFuture2 = _gottenVideoController.initialize();
-      _gottenVideoController.setLooping(true);
+      downloadFile(widget.instaLink).then((outputPath) {
+        _gottenVideoController = VideoPlayerController.file(File(outputPath));
+        _initializeVideoPlayerFuture2 = _gottenVideoController.initialize();
+        _gottenVideoController.setLooping(true);
+        _gottenVideoPath = outputPath;
+        print("_gottenVideoPath: $_gottenVideoPath");
+      });
     }
   }
 
