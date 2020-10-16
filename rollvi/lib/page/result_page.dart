@@ -29,11 +29,12 @@ class ResultPageState extends State<ResultPage> {
 
   @override
   void initState() {
-    _initialize();
     super.initState();
+    _initialize();
   }
 
   void _initialize() async {
+    print("@@@@@@@@@@@@initState");
     _concatVideo(widget.firstPath, widget.secondPath).then((resultPath) {
       setState(() {
         _resultVideoPath = resultPath;
@@ -55,15 +56,13 @@ class ResultPageState extends State<ResultPage> {
     String rawDocumentPath = await getRollviTempDir();
     String resultVideoPath = "$rawDocumentPath/rollvi_${getTimestamp()}.mp4";
 
-    final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
-
     print("@ firstPath: $firstPath");
     print("@ secondPath: $secondPath");
 
     final String cmd =
         '-y -i $firstPath -i $secondPath -filter_complex \'[0:0][1:0]concat=n=2:v=1:a=0[out]\' -map \'[out]\' $resultVideoPath';
 
-    await _flutterFFmpeg.execute(cmd).then((rc) {
+    await new FlutterFFmpeg().execute(cmd).then((rc) {
       print("FFmpeg process exited with rc $rc");
     });
 

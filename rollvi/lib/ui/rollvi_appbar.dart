@@ -1,5 +1,7 @@
 import "package:flutter/material.dart";
+import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
+import 'package:rollvi/ui/confirm_dialog.dart';
 
 class RollviAppBar extends AppBar {
   final BuildContext context;
@@ -47,8 +49,8 @@ class RollviAppBar extends AppBar {
                   Icons.home,
                   color: Colors.white,
                 ),
-                onPressed: () {
-                  Navigator.of(context).pushReplacementNamed('/home');
+                onPressed: () async {
+                  await showDialog(context: context, builder: (BuildContext context) => ConfirmDialog());
                 },
               )
             : Container(),

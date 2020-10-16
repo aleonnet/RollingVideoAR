@@ -5,6 +5,7 @@ import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
@@ -79,12 +80,23 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
       });
     } else if (widget.instaLink != null) {
       isGalleryFile = false;
-      downloadFile(widget.instaLink).then((outputPath) {
-        _gottenVideoController = VideoPlayerController.file(File(outputPath));
-        _initializeVideoPlayerFuture2 = _gottenVideoController.initialize();
-        _gottenVideoController.setLooping(true);
-        _gottenVideoPath = outputPath;
-        print("_gottenVideoPath: $_gottenVideoPath");
+      downloadFile(widget.instaLink).then((videoPath) {
+        if (videoPath == '') {
+          print("Cannot download video from instagram");
+        }
+        else {
+          _cropVideo(videoPath).then((outputPath) {
+            setState(() {
+              _gottenVideoController = VideoPlayerController.file(File(outputPath));
+              _initializeVideoPlayerFuture2 = _gottenVideoController.initialize();
+              _gottenVideoController.setLooping(true);
+              _gottenVideoPath = outputPath;
+              print("_gottenVideoPath: $_gottenVideoPath");
+
+              GallerySaver.saveVideo(outputPath);
+            });
+          });
+        }
       });
     }
   }
@@ -109,9 +121,16 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
 
   @override
   void dispose() {
-    _capturedVideoController.dispose();
-    _gottenVideoController.dispose();
+    if (_capturedVideoController != null) _capturedVideoController.dispose();
+    if (_gottenVideoController != null) _gottenVideoController.dispose();
     super.dispose();
+  }
+
+  bool isVideoReady() {
+    if (_capturedVideoController == null || _gottenVideoController  == null) {
+      return false;
+    }
+    return true;
   }
 
   @override
@@ -143,9 +162,9 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                               setState(() {
                                 _current = index;
 
-                                if (_current == 0) {
+                                if (_current == 0 && _capturedVideoController != null) {
                                   _capturedVideoController.play();
-                                } else if (_current == 1) {
+                                } else if (_current == 1 && _gottenVideoController != null) {
                                   _gottenVideoController.play();
                                 }
                               });
@@ -254,6 +273,7 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                             });
                           },
                         ),
+                        (isVideoReady()) ?
                         FloatingActionButton(
                           heroTag: null,
                           child: Icon(Icons.check),
@@ -268,20 +288,20 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                             _capturedVideoController.pause();
                             _gottenVideoController.pause();
 
-                            final result = await Navigator.of(context).push(
+                            await Navigator.of(context).push(
                                 MaterialPageRoute(
                                 builder: (BuildContext context) => ResultPage(
                                       firstPath: firstPath,
                                       secondPath: secondPath,
                                     )));
 
-                            if (_current == 0) {
+                            if (_current == 0 && _capturedVideoController != null) {
                               _capturedVideoController.play();
-                            } else if (_current == 1) {
+                            } else if (_current == 1 && _gottenVideoController != null) {
                               _gottenVideoController.play();
                             }
                           },
-                        ),
+                        ) : Container(),
                       ],
                     ),
                   )
@@ -291,20 +311,6 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
           )
         ],
       ),
-
-//      body: FutureBuilder(
-//        future: _initializeVideoPlayerFuture,
-//        builder: (context, snapshot) {
-//          if (snapshot.connectionState == ConnectionState.done) {
-//            return AspectRatio(
-//              aspectRatio: _gottenVideoController.value.aspectRatio,
-//              child: VideoPlayer(_gottenVideoController),
-//            );
-//          } else {
-//            return Center(child: CircularProgressIndicator());
-//          }
-//        },
-//      ),
     );
   }
 }

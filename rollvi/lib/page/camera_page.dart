@@ -90,13 +90,13 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
 
   @override
   void dispose() async {
-    super.dispose();
     _stopRecording();
-    _cameraSequence.clear();
-    _hiddenCameraImgs.clear();
-    _hiddenImageBytes.clear();
+//    _cameraSequence.clear();
+//    _hiddenCameraImgs.clear();
+//    _hiddenImageBytes.clear();
     await _camera.stopImageStream();
     await _camera.dispose();
+    super.dispose();
   }
 
   void _initializePath() async {
@@ -436,7 +436,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
       });
     } else {
       int _time = _maxTime;
-      _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
+      _timer = new Timer.periodic(Duration(seconds: 1), (timer) async {
         print('[timer] : $_time');
 
         if (_time < 1) {
@@ -460,13 +460,17 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
             });
           } else if (_captureType == CaptureType.ImageSequence) {
             clearRollviTempDir();
-            _camera.stopImageStream();
+//            await _camera.stopImageStream();
+//            await _camera.dispose();
+
+            dispose();
 
             print(
                 "_hiddenCameraImgs: ${_hiddenCameraImgs.length}");
             print(
                 "_hiddenImageBytes: ${_hiddenImageBytes.length}");
             imageCache.clear();
+
             Navigator.push(
                 context,
                 MaterialPageRoute(
