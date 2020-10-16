@@ -77,8 +77,11 @@ class MakingVideoPageState extends State<MakingVideoPage>
         body: Stack(
           children: [
             Container(
+              padding: EdgeInsets.all(10),
               child: RepaintBoundary(
-                  key: captureContainer,
+                key: captureContainer,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.all(Radius.circular(20)),
                   child: Stack(
                     children: [
                       Align(
@@ -102,44 +105,45 @@ class MakingVideoPageState extends State<MakingVideoPage>
                           ? Image.memory(widget.filterImgList[_time])
                           : Container(),
                     ],
-                  )
+                  ),
+                ),
               ),
             ),
-            Container(
-                color: AppColor.rollviBackground,
-                alignment: Alignment.center,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      height: MediaQuery.of(context).size.width / 2,
-                      width: MediaQuery.of(context).size.width / 2,
-                      margin: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(20)),
-                          image: DecorationImage(
-                              image: AssetImage("assets/intro_couple.gif"),
-                              fit: BoxFit.cover)),
-                    ),
-                    SizedBox(
-                      height: 30,
-                    ),
-                    Text(
-                      '조금만 기다려주세요',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    SizedBox(
-                      height: 30,
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(left: 30, right: 30),
-                      child: LinearProgressIndicator(
-                        value: _time / _maxCamera,
-                      ),
-                    )
-                  ],
-                )
-            ),
+//            Container(
+//                color: AppColor.rollviBackground,
+//                alignment: Alignment.center,
+//                child: Column(
+//                  mainAxisAlignment: MainAxisAlignment.center,
+//                  children: [
+//                    Container(
+//                      height: MediaQuery.of(context).size.width / 2,
+//                      width: MediaQuery.of(context).size.width / 2,
+//                      margin: EdgeInsets.all(10),
+//                      decoration: BoxDecoration(
+//                          borderRadius: BorderRadius.all(Radius.circular(20)),
+//                          image: DecorationImage(
+//                              image: AssetImage("assets/intro_couple.gif"),
+//                              fit: BoxFit.cover)),
+//                    ),
+//                    SizedBox(
+//                      height: 30,
+//                    ),
+//                    Text(
+//                      '조금만 기다려주세요',
+//                      style: TextStyle(color: Colors.white),
+//                    ),
+//                    SizedBox(
+//                      height: 30,
+//                    ),
+//                    Container(
+//                      margin: EdgeInsets.only(left: 30, right: 30),
+//                      child: LinearProgressIndicator(
+//                        value: _time / _maxCamera,
+//                      ),
+//                    )
+//                  ],
+//                )
+//            ),
           ],
         ),
       ),

@@ -192,13 +192,15 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   }
 
   void updateGuideText() {
-    switch(_selectedFilter) {
+    switch (_selectedFilter) {
       case 1:
       case 2:
       case 3:
-        guideText = '입을 아~ 하고 벌려보세요';
+        guideText = '가까이 와서 입을 벌려보세요';
         break;
       case 4:
+        guideText = "입을 벌려보세요";
+        break;
       case 5:
       case 6:
       case 7:
@@ -218,10 +220,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: AppColor.rollviBackground,
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(AppSize.AppBarHeight),
-        child: RollviAppBar(context),
-      ),
+      appBar: RollviAppBar(context),
       body: Column(
         children: [
           Stack(
@@ -266,7 +265,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
             margin: EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: AppColor.rollviBackgroundPoint,
-              borderRadius: BorderRadius.all(Radius.circular(10)),
+              borderRadius: BorderRadius.all(Radius.circular(10))
             ),
             child: Text(
               guideText,
@@ -278,17 +277,24 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
               margin: EdgeInsets.only(top: 10, left: 10, right: 10),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20)),
                 color: AppColor.rollviBackgroundPoint,
               ),
               child: (_animationController.isAnimating)
-                  ? Container()
+                  ? Container(
+                      child: Text(
+                        "촬영 중이에요",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    )
                   : GridView.builder(
                       padding: EdgeInsets.all(10),
                       itemCount: 8,
                       gridDelegate:
                           new SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 4),
+                              crossAxisCount: 5),
                       itemBuilder: (BuildContext context, int index) {
                         return Card(
                           margin: EdgeInsets.all(10),
@@ -311,8 +317,6 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
       ),
       floatingActionButton: (_camera != null)
           ? Container(
-//              padding:
-//                  EdgeInsets.only(top: _size.width * _camera.value.aspectRatio),
               alignment: Alignment.bottomCenter,
               child: FloatingActionButton(
                 backgroundColor: Colors.white,
@@ -377,8 +381,9 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                       );
                     }),
                 onPressed: () async {
-                  if (_animationController.isAnimating)
-                    _animationController.stop();
+                  if (_animationController.isAnimating || isRecording == true) {
+                    return;
+                  }
                   else {
                     _animationController.reverse(
                         from: _animationController.value == 0.0
@@ -386,95 +391,100 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                             : _animationController.value);
                   }
 
-                  isRecording = true;
+                  startRecording(context);
 
-                  // for recording video
-                  String videoPath = '';
-                  if (_captureType == CaptureType.Video) {
-                    await _camera.stopImageStream();
-                    _startVideoRecording().then((String filePath) {
-                      if (filePath != null) {
-                        print("Recording Start");
-                        setState(() {
-                          videoPath = filePath;
-                        });
-                      }
-                    });
-                  }
-
-                  if (_captureType == CaptureType.Image) {
-                    imglib.Image capturedImage = convertCameraImage(_lastImage);
-                    _imageCapture().then((path) => {
-                          imageCache.clear(),
-                          print("Capture Complete : $path"),
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ImagePreviewPage(
-                                        cameraImg: capturedImage,
-                                        imagePath: path,
-                                      )))
-                            ..then((value) => _initialize())
-                        });
-                  } else {
-                    int _time = _maxTime;
-                    _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
-                      print('[timer] : $_time');
-
-                      if (_time < 1) {
-                        if (_captureType == CaptureType.Video) {
-                          _stopVideoRecording().then((_) {
-                            print("Stop Video Recording");
-
-                            _stopRecording();
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        VideoPreviewPage(videoPath: videoPath)))
-                              ..then((value) => _initialize());
-                          });
-                        } else if (_captureType == CaptureType.CameraSequence) {
-                          _saveImageToFile().then((value) => {
-                                _initialize(),
-                                Navigator.pushReplacementNamed(
-                                    context, '/preview'),
-                              });
-                        } else if (_captureType == CaptureType.ImageSequence) {
-                          clearRollviTempDir();
-                          _camera.stopImageStream();
-
-                          print(
-                              "_hiddenCameraImgs: ${_hiddenCameraImgs.length}");
-                          print(
-                              "_hiddenImageBytes: ${_hiddenImageBytes.length}");
-                          imageCache.clear();
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => MakingVideoPage(
-                                        filterImgList: _hiddenImageBytes,
-                                        cameraImgList: _hiddenCameraImgs,
-                                        aspectRatio: _camera.value.aspectRatio,
-                                      )))
-                            ..then((value) {
-                              setState(() {
-                                _initialize();
-                              });
-                            });
-                        }
-                        _timer.cancel();
-                      } else {
-                        _time -= 1;
-                      }
-                    });
-                  }
                 },
               ),
             )
           : Container(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
+  }
+
+  void startRecording(BuildContext context) async {
+    isRecording = true;
+
+    // for recording video
+    String videoPath = '';
+    if (_captureType == CaptureType.Video) {
+      await _camera.stopImageStream();
+      _startVideoRecording().then((String filePath) {
+        if (filePath != null) {
+          print("Recording Start");
+          setState(() {
+            videoPath = filePath;
+          });
+        }
+      });
+    }
+
+    if (_captureType == CaptureType.Image) {
+      imglib.Image capturedImage = convertCameraImage(_lastImage);
+      _imageCapture().then((path) => {
+        imageCache.clear(),
+        print("Capture Complete : $path"),
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ImagePreviewPage(
+                  cameraImg: capturedImage,
+                  imagePath: path,
+                )))
+          ..then((value) => _initialize())
+      });
+    } else {
+      int _time = _maxTime;
+      _timer = new Timer.periodic(Duration(seconds: 1), (timer) {
+        print('[timer] : $_time');
+
+        if (_time < 1) {
+          if (_captureType == CaptureType.Video) {
+            _stopVideoRecording().then((_) {
+              print("Stop Video Recording");
+
+              _stopRecording();
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          VideoPreviewPage(videoPath: videoPath)))
+                ..then((value) => _initialize());
+            });
+          } else if (_captureType == CaptureType.CameraSequence) {
+            _saveImageToFile().then((value) => {
+              _initialize(),
+              Navigator.pushReplacementNamed(
+                  context, '/preview'),
+            });
+          } else if (_captureType == CaptureType.ImageSequence) {
+            clearRollviTempDir();
+            _camera.stopImageStream();
+
+            print(
+                "_hiddenCameraImgs: ${_hiddenCameraImgs.length}");
+            print(
+                "_hiddenImageBytes: ${_hiddenImageBytes.length}");
+            imageCache.clear();
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => MakingVideoPage(
+                      filterImgList: _hiddenImageBytes,
+                      cameraImgList: _hiddenCameraImgs,
+                      aspectRatio: _camera.value.aspectRatio,
+                    )))
+              ..then((value) {
+                setState(() {
+                  _initialize();
+                });
+              });
+          }
+          _timer.cancel();
+        } else {
+          _time -= 1;
+        }
+      });
+    }
   }
 
   Future<String> _startVideoRecording() async {

@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:rollvi/const/app_size.dart';
 
 class RollviAppBar extends AppBar {
   final BuildContext context;
@@ -6,18 +7,24 @@ class RollviAppBar extends AppBar {
   final bool backIcon;
   final String backPage;
 
-  final double barHeight = 50.0;
-
   RollviAppBar(this.context,
       {Key key, this.homeIcon = true, this.backIcon = false, this.backPage = ''});
 
   @override
   Widget get title =>
-      Image.asset('assets/logo_text_wh.png', height: barHeight * 0.45);
+      Image.asset('assets/logo_text_wh.png', height: AppSize.AppBarHeight * 0.45);
 
   @override
   // TODO: implement centerTitle
   bool get centerTitle => true;
+
+  @override
+  // TODO: implement preferredSize
+  Size get preferredSize => Size.fromHeight(AppSize.AppBarHeight);
+
+//  @override
+//  // TODO: implement elevation
+//  double get elevation => 0.0;
 
   @override
   // TODO: implement flexibleSpace

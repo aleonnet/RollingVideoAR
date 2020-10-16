@@ -1,15 +1,32 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:rollvi/const/app_colors.dart';
-import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/ui/rollvi_appbar.dart';
+import 'package:video_player/video_player.dart';
 
 class HomePage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _HomePageState();
-
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+class _HomePageState extends State<HomePage> {
+  VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    initVideo();
+  }
+
+  void initVideo() async {
+    _controller = VideoPlayerController.asset('assets/intro_family.mp4')
+      ..initialize().then((_) {
+        setState(() {});
+      });
+      _controller.setLooping(true);
+      _controller.play();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +43,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       backgroundColor: AppColor.rollviBackground,
       body: Column(
         children: <Widget>[
+
           Container(
-            height: MediaQuery.of(context).size.width,
             width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.width,
             margin: EdgeInsets.all(10),
-            decoration: BoxDecoration(
+            child: ClipRRect(
                 borderRadius: BorderRadius.all(Radius.circular(20)),
-                image: DecorationImage(
-                    image: AssetImage("assets/intro_family.gif"),
-                    fit: BoxFit.cover)),
+                child: VideoPlayer(_controller),
+            ),
           ),
           Expanded(
             child: Container(
