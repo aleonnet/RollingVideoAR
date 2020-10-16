@@ -24,8 +24,15 @@ class _HomePageState extends State<HomePage> {
       ..initialize().then((_) {
         setState(() {});
       });
-      _controller.setLooping(true);
-      _controller.play();
+    _controller.setLooping(true);
+    _controller.play();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _controller.dispose();
   }
 
   @override
@@ -43,26 +50,23 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: AppColor.rollviBackground,
       body: Column(
         children: <Widget>[
-
           Container(
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.width,
             margin: EdgeInsets.all(10),
             child: ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(20)),
-                child: VideoPlayer(_controller),
+              borderRadius: BorderRadius.all(Radius.circular(20)),
+              child: VideoPlayer(_controller),
             ),
           ),
           Expanded(
-            child: Container(
-              child: FloatingActionButton(
-                heroTag: null,
-                backgroundColor: Colors.redAccent,
-                child: Icon(Icons.add),
-                onPressed: () {
-                  Navigator.of(context).pushReplacementNamed('/camera');
-                },
-              ),
+            child: FloatingActionButton(
+              heroTag: null,
+              backgroundColor: Colors.redAccent,
+              child: Icon(Icons.add),
+              onPressed: () {
+                Navigator.of(context).pushReplacementNamed('/camera');
+              },
             ),
           ),
         ],

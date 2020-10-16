@@ -117,7 +117,7 @@ class PreviewPageState extends State<PreviewPage> {
                       future: _initializeVideoPlayerFuture,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.done) {
-                          return  ClipRRect(
+                          return ClipRRect(
                             borderRadius: BorderRadius.all(Radius.circular(20)),
                             child: AspectRatio(
                               aspectRatio: _controller.value.aspectRatio,
@@ -139,85 +139,285 @@ class PreviewPageState extends State<PreviewPage> {
           ),
           Expanded(
               child: Container(
-            color: AppColor.rollviBackground,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                FloatingActionButton(
-                  heroTag: null,
-                  child: ImageIcon(
-                    AssetImage("assets/insta_logo.png"),
-                  ),
-                  onPressed: () async {
-                    String _clipData =
-                        (await Clipboard.getData('text/plain')).text;
-                    final inputText = await showDialog(
-                        context: context,
-                        builder: (BuildContext context) => InstaLinkDialog(
-                              clipData: _clipData,
-                            ));
+                  color: AppColor.rollviBackground,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          alignment: Alignment.center,
+                          margin: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                              color: AppColor.rollviBackgroundPoint,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10))),
+                          child: Column(
+                            children: [
+                              Container(
+                                alignment: Alignment.center,
+                                height: 40,
+                                margin: EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                    color: AppColor.rollviBackground
+                                        .withOpacity(0.7),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(10))),
+                                child: Text(
+                                  '영상 이어붙이기',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    FloatingActionButton(
+                                      heroTag: null,
+                                      mini: false,
+                                      child: ImageIcon(
+                                        AssetImage("assets/insta_logo.png"),
+                                      ),
+                                      onPressed: () async {
+                                        String _clipData =
+                                            (await Clipboard.getData(
+                                                    'text/plain'))
+                                                .text;
+                                        final inputText = await showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) =>
+                                                InstaLinkDialog(
+                                                  clipData: _clipData,
+                                                ));
 
-                    if (inputText != null) {
-                      FlutterInsta flutterInsta = new FlutterInsta();
-                      await flutterInsta
-                          .downloadReels(inputText)
-                          .then((String instaLink) {
-                        print(instaLink);
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (BuildContext context) => ConcatVideoPage(
-                                  currentFile: File(_outputPath),
-                                  instaLink: instaLink,
-                                )));
-                      });
-                    }
-                  },
-                ),
-                FloatingActionButton(
-                  heroTag: null,
-                  child: Icon(Icons.photo),
-                  onPressed: () {
-                    FilePicker.getFile(type: FileType.video)
-                        .then((File file) async {
-                      print(file);
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (BuildContext context) => ConcatVideoPage(
-                                currentFile: File(_outputPath),
-                                galleryFile: file,
-                              )));
-                    });
-                  },
-                ),
-                FloatingActionButton(
-                  heroTag: null,
-                  child: Icon(Icons.file_download),
-                  onPressed: () async {
-                    print("Recorded Video Path $_outputPath");
-                    GallerySaver.saveVideo(_outputPath, albumName: 'Rollvi')
-                        .then((bool success) {
-                      if (success) {
-                        showInSnackBar("Video Saved!");
-                      } else {
-                        showInSnackBar("Failed to save the video");
-                      }
-                    });
-                  },
-                ),
-                FloatingActionButton(
-                  heroTag: null,
-                  child: Icon(Icons.share),
-                  onPressed: () async {
-                    print("Recorded Video Path $_outputPath");
-                    makeRollviBorder(_outputPath).then((value) {
-                      Clipboard.setData(
-                          new ClipboardData(text: getRollviTag()));
-                      Share.shareFiles([value], subject: 'Rollvi');
-                    });
-                  },
-                ),
-              ],
-            ),
-          ))
+                                        if (inputText != null) {
+                                          FlutterInsta flutterInsta =
+                                              new FlutterInsta();
+                                          await flutterInsta
+                                              .downloadReels(inputText)
+                                              .then((String instaLink) {
+                                            print(instaLink);
+                                            Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                    builder: (BuildContext
+                                                            context) =>
+                                                        ConcatVideoPage(
+                                                          currentFile:
+                                                              File(_outputPath),
+                                                          instaLink: instaLink,
+                                                        )));
+                                          });
+                                        }
+                                      },
+                                    ),
+                                    FloatingActionButton(
+                                      heroTag: null,
+                                      child: Icon(Icons.photo),
+                                      onPressed: () {
+                                        FilePicker.getFile(type: FileType.video)
+                                            .then((File file) async {
+                                          print(file);
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder:
+                                                      (BuildContext context) =>
+                                                          ConcatVideoPage(
+                                                            currentFile: File(
+                                                                _outputPath),
+                                                            galleryFile: file,
+                                                          )));
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                            alignment: Alignment.center,
+                            margin: EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                                color: AppColor.rollviBackgroundPoint,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10))),
+                            child: Column(
+                              children: [
+                                Container(
+                                  alignment: Alignment.center,
+                                  height: 40,
+                                  margin: EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                      color: AppColor.rollviBackground
+                                          .withOpacity(0.7),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(10))),
+                                  child: Text(
+                                    '첫 영상 저장 / 공유',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      FloatingActionButton(
+                                        heroTag: null,
+                                        child: Icon(Icons.file_download),
+                                        onPressed: () async {
+                                          print(
+                                              "Recorded Video Path $_outputPath");
+                                          GallerySaver.saveVideo(_outputPath,
+                                                  albumName: 'Rollvi')
+                                              .then((bool success) {
+                                            if (success) {
+                                              showInSnackBar("Video Saved!");
+                                            } else {
+                                              showInSnackBar(
+                                                  "Failed to save the video");
+                                            }
+                                          });
+                                        },
+                                      ),
+                                      FloatingActionButton(
+                                        heroTag: null,
+                                        child: Icon(Icons.share),
+                                        onPressed: () async {
+                                          print(
+                                              "Recorded Video Path $_outputPath");
+                                          makeRollviBorder(_outputPath)
+                                              .then((value) {
+                                            Clipboard.setData(new ClipboardData(
+                                                text: getRollviTag()));
+                                            Share.shareFiles([value],
+                                                subject: 'Rollvi');
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            )),
+                      ),
+                    ],
+                  )
+
+//            Row(
+//              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//              crossAxisAlignment: CrossAxisAlignment.center,
+//              children: [
+//                Container(
+//                  padding: EdgeInsets.all(10),
+//                  decoration: BoxDecoration(
+//                    color: AppColor.rollviBackgroundPoint,
+//                    borderRadius: BorderRadius.circular(10),
+//                  ),
+//                  child: Row(
+//                    crossAxisAlignment: CrossAxisAlignment.stretch,
+//                    children: [
+//                      FloatingActionButton(
+//                        heroTag: null,
+//                        child: ImageIcon(
+//                          AssetImage("assets/insta_logo.png"),
+//                        ),
+//                        onPressed: () async {
+//                          String _clipData =
+//                              (await Clipboard.getData('text/plain')).text;
+//                          final inputText = await showDialog(
+//                              context: context,
+//                              builder: (BuildContext context) =>
+//                                  InstaLinkDialog(
+//                                    clipData: _clipData,
+//                                  ));
+//
+//                          if (inputText != null) {
+//                            FlutterInsta flutterInsta = new FlutterInsta();
+//                            await flutterInsta
+//                                .downloadReels(inputText)
+//                                .then((String instaLink) {
+//                              print(instaLink);
+//                              Navigator.of(context).push(MaterialPageRoute(
+//                                  builder: (BuildContext context) =>
+//                                      ConcatVideoPage(
+//                                        currentFile: File(_outputPath),
+//                                        instaLink: instaLink,
+//                                      )));
+//                            });
+//                          }
+//                        },
+//                      ),
+//                      SizedBox(width: 10,),
+//                      FloatingActionButton(
+//                        heroTag: null,
+//                        child: Icon(Icons.photo),
+//                        onPressed: () {
+//                          FilePicker.getFile(type: FileType.video)
+//                              .then((File file) async {
+//                            print(file);
+//                            Navigator.of(context).push(MaterialPageRoute(
+//                                builder: (BuildContext context) =>
+//                                    ConcatVideoPage(
+//                                      currentFile: File(_outputPath),
+//                                      galleryFile: file,
+//                                    )));
+//                          });
+//                        },
+//                      ),
+//                    ],
+//                  ),
+//                ),
+//                Container(
+//                  padding: EdgeInsets.all(10),
+//                  decoration: BoxDecoration(
+//                    color: AppColor.rollviBackgroundPoint,
+//                    borderRadius: BorderRadius.circular(10),
+//                  ),
+//                  child: Row(
+//                    children: [
+//                      FloatingActionButton(
+//                        heroTag: null,
+//                        child: Icon(Icons.file_download),
+//                        onPressed: () async {
+//                          print("Recorded Video Path $_outputPath");
+//                          GallerySaver.saveVideo(_outputPath,
+//                                  albumName: 'Rollvi')
+//                              .then((bool success) {
+//                            if (success) {
+//                              showInSnackBar("Video Saved!");
+//                            } else {
+//                              showInSnackBar("Failed to save the video");
+//                            }
+//                          });
+//                        },
+//                      ),
+//                      FloatingActionButton(
+//                        heroTag: null,
+//                        child: Icon(Icons.share),
+//                        onPressed: () async {
+//                          print("Recorded Video Path $_outputPath");
+//                          makeRollviBorder(_outputPath).then((value) {
+//                            Clipboard.setData(
+//                                new ClipboardData(text: getRollviTag()));
+//                            Share.shareFiles([value], subject: 'Rollvi');
+//                          });
+//                        },
+//                      ),
+//                    ],
+//                  ),
+//                ),
+//              ],
+//            ),
+                  ))
         ],
       ),
     );
