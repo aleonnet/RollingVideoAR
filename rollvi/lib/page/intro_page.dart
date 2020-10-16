@@ -37,9 +37,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final _size = MediaQuery.of(context).size;
-    final _deviceRatio = _size.width / _size.height;
-
     MediaQueryData mediaQuery = MediaQuery.of(context);
     mediaQuery.devicePixelRatio;
     mediaQuery.size.height;

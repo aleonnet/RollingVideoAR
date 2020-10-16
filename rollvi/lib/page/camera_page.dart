@@ -216,7 +216,6 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final _size = MediaQuery.of(context).size;
-    final _deviceRatio = _size.width / _size.height;
 
     return Scaffold(
       backgroundColor: AppColor.rollviBackground,
@@ -231,7 +230,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                   key: previewContainer,
                   child: ClipRRect(
                     borderRadius: BorderRadius.all(Radius.circular(20)),
-                    child: (_camera != null)
+                    child: (_camera != null && _camera.value.isInitialized)
                         ? Align(
                             alignment: Alignment.center,
                             widthFactor: 1,
@@ -319,7 +318,7 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
           ),
         ],
       ),
-      floatingActionButton: (_camera != null)
+      floatingActionButton: (_camera != null &&  _camera.value.isInitialized)
           ? Container(
               alignment: Alignment.bottomCenter,
               child: FloatingActionButton(

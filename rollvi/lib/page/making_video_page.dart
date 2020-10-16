@@ -64,6 +64,7 @@ class MakingVideoPageState extends State<MakingVideoPage>
   @override
   void dispose() {
     super.dispose();
+    if (_timer != null) _timer.cancel();
   }
 
   @override
@@ -80,36 +81,7 @@ class MakingVideoPageState extends State<MakingVideoPage>
               padding: EdgeInsets.all(10),
               child: RepaintBoundary(
                 key: captureContainer,
-                child:
-
-//                Stack(
-//                  children: [
-//                    Align(
-//                      alignment: Alignment.center,
-//                      widthFactor: 1,
-//                      heightFactor: widget.aspectRatio,
-//                      child: Stack(
-//                        children: <Widget>[
-//                          (_time < _maxCamera)
-//                              ? Transform(
-//                            alignment: Alignment.center,
-//                            transform: Matrix4.rotationY(pi),
-//                            child: Image.memory(imglib.encodeJpg(
-//                                widget.cameraImgList[_time])),
-//                          )
-//                              : Container(),
-//                        ],
-//                      ),
-//                    ),
-//                    (_time < _maxFilter)
-//                        ? Image.memory(widget.filterImgList[_time])
-//                        : Container(),
-//                  ],
-//                ) ,
-//              ),),
-
-                ClipRRect(
-//                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                child: ClipRRect(
                   child: Stack(
                     children: [
                       Align(
@@ -137,8 +109,6 @@ class MakingVideoPageState extends State<MakingVideoPage>
                 ),
               ),
             ),
-
-
             Container(
                 color: AppColor.rollviBackground,
                 alignment: Alignment.center,
@@ -172,8 +142,7 @@ class MakingVideoPageState extends State<MakingVideoPage>
                       ),
                     )
                   ],
-                )
-            ),
+                )),
           ],
         ),
       ),
@@ -187,14 +156,14 @@ class MakingVideoPageState extends State<MakingVideoPage>
         _timer.cancel();
         Navigator.pushReplacementNamed(context, '/preview');
       } else {
-        if (mounted) {
-          _imageCapture(_time).then((value) {
-            print("saveImage: $value");
+        _imageCapture(_time).then((value) {
+          print("saveImage: $value");
+          if (mounted) {
             setState(() {
               _time += 1;
             });
-          });
-        }
+          }
+        });
       }
     });
   }
