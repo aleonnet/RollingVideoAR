@@ -291,17 +291,21 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
                     )
                   : GridView.builder(
                       padding: EdgeInsets.all(10),
-                      itemCount: 8,
+                      itemCount: 10,
                       gridDelegate:
                           new SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 5),
                       itemBuilder: (BuildContext context, int index) {
                         return Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)
+                          ),
                           margin: EdgeInsets.all(10),
                           color: AppColor.grey_10,
-                          child: InkResponse(
+                          child:
+                          InkResponse(
                             child: Image.asset(
-                              'assets/thumbnail_0${index + 1}.png',
+                              (index < 8) ? 'assets/thumbnail_0${index + 1}.png' : 'assets/thumbnail_ready.png',
                             ),
                             onTap: () {
                               _selectedFilter = index + 1;
