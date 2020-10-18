@@ -463,7 +463,8 @@ class _CameraPageState extends State<CameraPage> with TickerProviderStateMixin {
 //            await _camera.stopImageStream();
 //            await _camera.dispose();
 
-            dispose();
+            await _camera.stopImageStream();
+            await _camera.dispose();
 
             print(
                 "_hiddenCameraImgs: ${_hiddenCameraImgs.length}");

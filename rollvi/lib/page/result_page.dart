@@ -34,7 +34,6 @@ class ResultPageState extends State<ResultPage> {
   }
 
   void _initialize() async {
-    print("@@@@@@@@@@@@initState");
     _concatVideo(widget.firstPath, widget.secondPath).then((resultPath) {
       setState(() {
         _resultVideoPath = resultPath;
