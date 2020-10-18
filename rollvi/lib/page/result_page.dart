@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:gallery_saver/gallery_saver.dart';
@@ -7,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_path.dart';
-import 'package:rollvi/const/app_size.dart';
 import 'package:rollvi/ui/rollvi_appbar.dart';
 import 'package:rollvi/utils.dart';
 import 'package:share/share.dart';
@@ -31,8 +29,8 @@ class ResultPageState extends State<ResultPage> {
 
   @override
   void initState() {
-    _initialize();
     super.initState();
+    _initialize();
   }
 
   void _initialize() async {
@@ -57,15 +55,13 @@ class ResultPageState extends State<ResultPage> {
     String rawDocumentPath = await getRollviTempDir();
     String resultVideoPath = "$rawDocumentPath/rollvi_${getTimestamp()}.mp4";
 
-    final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
-
     print("@ firstPath: $firstPath");
     print("@ secondPath: $secondPath");
 
     final String cmd =
         '-y -i $firstPath -i $secondPath -filter_complex \'[0:0][1:0]concat=n=2:v=1:a=0[out]\' -map \'[out]\' $resultVideoPath';
 
-    await _flutterFFmpeg.execute(cmd).then((rc) {
+    await new FlutterFFmpeg().execute(cmd).then((rc) {
       print("FFmpeg process exited with rc $rc");
     });
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rollvi/const/app_colors.dart';
 
 
 class InstaLinkDialog extends StatefulWidget {
@@ -12,11 +13,14 @@ class InstaLinkDialog extends StatefulWidget {
 
 class _InstaLinkDialogState extends State<InstaLinkDialog> {
   String inputStr;
+  TextEditingController textController;
 
   @override
   void initState() {
-    inputStr = widget.clipData;
     super.initState();
+    textController = TextEditingController();
+    inputStr = widget.clipData;
+    textController.text = inputStr;
   }
 
   @override
@@ -36,8 +40,8 @@ class _InstaLinkDialogState extends State<InstaLinkDialog> {
       children: <Widget>[
         Container(
           padding: EdgeInsets.only(
-            top: Consts.avatarRadius + Consts.padding,
-            bottom: Consts.padding,
+            top: Consts.avatarRadius,
+            bottom: Consts.padding / 2,
             left: Consts.padding,
             right: Consts.padding,
           ),
@@ -58,17 +62,19 @@ class _InstaLinkDialogState extends State<InstaLinkDialog> {
             mainAxisSize: MainAxisSize.min, // To make the card compact
             children: <Widget>[
               Text(
-                'Instagram Video Link',
+                '인스타그램에서 비디오 링크를 복사해주세요',
                 style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 16.0,
+                  color: AppColor.darkText,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               SizedBox(height: 16.0),
               TextField(
-                autofocus: true,
-                decoration: new InputDecoration(
-                    labelText: 'Instagram Link', hintText: inputStr),
+                autofocus: false,
+                controller: textController,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColor.lightText),
                 onChanged: (value) {
                   inputStr = value;
                 },
@@ -80,12 +86,12 @@ class _InstaLinkDialogState extends State<InstaLinkDialog> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       FlatButton(
-                          child: Text('Cancel'),
+                          child: Text('Cancel', style: TextStyle(color: AppColor.rollviBackgroundPoint),),
                           onPressed: () {
                             Navigator.pop(context);
                           }),
                       FlatButton(
-                        child: Text('Ok'),
+                        child: Text('Ok', style: TextStyle(color: AppColor.rollviAccent),),
                         onPressed: () {
                           Navigator.of(context).pop(inputStr);
                         },
@@ -101,8 +107,8 @@ class _InstaLinkDialogState extends State<InstaLinkDialog> {
           right: Consts.padding,
           child: Image(
             image: AssetImage('assets/instagram_icon.png'),
-            width: 100,
-            height: 100,
+            width: 80,
+            height: 80,
           ),
         ),
       ],
@@ -113,6 +119,6 @@ class _InstaLinkDialogState extends State<InstaLinkDialog> {
 class Consts {
   Consts._();
 
-  static const double padding = 16.0;
-  static const double avatarRadius = 66.0;
+  static const double padding = 30.0;
+  static const double avatarRadius = 65.0;
 }

@@ -5,6 +5,7 @@ import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:rollvi/const/app_colors.dart';
 import 'package:rollvi/const/app_path.dart';
 import 'package:rollvi/const/app_size.dart';
@@ -42,6 +43,8 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
   bool reverse;
   int _current = 0;
 
+  int _cropWidth = 0;
+
   @override
   void initState() {
     isComplete = false;
@@ -54,39 +57,53 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
   }
 
   void _initializeVideo() async {
-    _cropVideo(widget.currentFile.path).then((outputPath) {
-      setState(() {
-        _capturedVideoController = VideoPlayerController.file(File(outputPath));
-        _initializeVideoPlayerFuture1 = _capturedVideoController.initialize();
-        _capturedVideoController.setLooping(true);
-        _capturedVideoController.play();
-        _capturedVideoPath = outputPath;
-        print("_capturedVideoPath: $_capturedVideoPath");
-      });
-    });
+    new FlutterFFprobe().getMediaInformation("${widget.currentFile.path}").then((info) {
+      print("Width, Height: ${info['streams'][0]['width']} / ${info['streams'][0]['height']}");
+      _cropWidth = info['streams'][0]['width'];
 
-    if (widget.galleryFile != null) {
-      isGalleryFile = true;
+      _capturedVideoController = VideoPlayerController.file(File(widget.currentFile.path));
+      _initializeVideoPlayerFuture1 = _capturedVideoController.initialize();
+      _capturedVideoController.setLooping(true);
+      _capturedVideoController.play();
+      _capturedVideoPath = widget.currentFile.path;
+      print("_capturedVideoPath: $_capturedVideoPath");
 
-      _cropVideo(widget.galleryFile.path).then((outputPath) {
-        setState(() {
-          _gottenVideoController = VideoPlayerController.file(File(outputPath));
-          _initializeVideoPlayerFuture2 = _gottenVideoController.initialize();
-          _gottenVideoController.setLooping(true);
-          _gottenVideoController.play();
-          _gottenVideoPath = outputPath;
-          print("_gottenVideoPath: $_gottenVideoPath");
+      if (widget.galleryFile != null) {
+        print("@ galleryFile: ${widget.galleryFile.path}");
+        isGalleryFile = true;
+
+        _cropVideo(widget.galleryFile.path, _cropWidth).then((outputPath) {
+          setState(() {
+            _gottenVideoController = VideoPlayerController.file(File(outputPath));
+            _initializeVideoPlayerFuture2 = _gottenVideoController.initialize();
+            _gottenVideoController.setLooping(true);
+            _gottenVideoPath = outputPath;
+            print("_gottenVideoPath: $_gottenVideoPath");
+          });
         });
-      });
-    } else if (widget.instaLink != null) {
-      isGalleryFile = false;
+      } else if (widget.instaLink != null) {
+        print("@ instaLink: ${widget.instaLink}");
+        isGalleryFile = false;
+        downloadFile(widget.instaLink).then((videoPath) {
+          if (videoPath == '') {
+            print("Cannot download video from instagram");
+          }
+          else {
+            _cropVideo(videoPath, _cropWidth).then((outputPath) {
+              setState(() {
+                _gottenVideoController = VideoPlayerController.file(File(outputPath));
+                _initializeVideoPlayerFuture2 = _gottenVideoController.initialize();
+                _gottenVideoController.setLooping(true);
+                _gottenVideoPath = outputPath;
+                print("_gottenVideoPath: $_gottenVideoPath");
 
-      _gottenVideoController = VideoPlayerController.network(widget.instaLink);
-      print("@@@@@@@@@@@@${widget.instaLink}");
-    }
-
-    print("_capturedVideoPath: $_capturedVideoPath");
-    print("_gottenVideoPath: $_gottenVideoPath");
+                GallerySaver.saveVideo(outputPath);
+              });
+            });
+          }
+        });
+      }
+    });
   }
 
   void _initializePath() async {
@@ -94,14 +111,14 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
     Directory(rollviDir).createSync(recursive: true);
   }
 
-  Future<String> _cropVideo(String filePath) async {
-    final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
+  Future<String> _cropVideo(String filePath, int width) async {
+    print("[cropVideo] $filePath");
 
     final rawDir = await getRollviTempDir();
     final String resultPath = '$rawDir/video_${getTimestamp()}.mp4';
 
-    String cmd = '-y -i $filePath -filter:v "crop=392:392" $resultPath';
-    await _flutterFFmpeg.execute(cmd).then((rc) {
+    String cmd = '-y -i $filePath -filter:v "crop=$width:$width" $resultPath';
+    await new FlutterFFmpeg().execute(cmd).then((rc) {
       print("FFmpeg process exited with rc $rc");
     });
     return resultPath;
@@ -109,9 +126,16 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
 
   @override
   void dispose() {
-    _capturedVideoController.dispose();
-    _gottenVideoController.dispose();
+    if (_capturedVideoController != null) _capturedVideoController.dispose();
+    if (_gottenVideoController != null) _gottenVideoController.dispose();
     super.dispose();
+  }
+
+  bool isVideoReady() {
+    if (_capturedVideoController == null || _gottenVideoController  == null) {
+      return false;
+    }
+    return true;
   }
 
   @override
@@ -143,9 +167,9 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                               setState(() {
                                 _current = index;
 
-                                if (_current == 0) {
+                                if (_current == 0 && _capturedVideoController != null) {
                                   _capturedVideoController.play();
-                                } else if (_current == 1) {
+                                } else if (_current == 1 && _gottenVideoController != null) {
                                   _gottenVideoController.play();
                                 }
                               });
@@ -254,10 +278,11 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                             });
                           },
                         ),
+                        (isVideoReady()) ?
                         FloatingActionButton(
                           heroTag: null,
                           child: Icon(Icons.check),
-                          onPressed: () {
+                          onPressed: () async {
                             String firstPath = (!reverse)
                                 ? _capturedVideoPath
                                 : _gottenVideoPath;
@@ -268,13 +293,20 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
                             _capturedVideoController.pause();
                             _gottenVideoController.pause();
 
-                            Navigator.of(context).push(MaterialPageRoute(
+                            await Navigator.of(context).push(
+                                MaterialPageRoute(
                                 builder: (BuildContext context) => ResultPage(
                                       firstPath: firstPath,
                                       secondPath: secondPath,
                                     )));
+
+                            if (_current == 0 && _capturedVideoController != null) {
+                              _capturedVideoController.play();
+                            } else if (_current == 1 && _gottenVideoController != null) {
+                              _gottenVideoController.play();
+                            }
                           },
-                        ),
+                        ) : Container(),
                       ],
                     ),
                   )
@@ -284,20 +316,6 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
           )
         ],
       ),
-
-//      body: FutureBuilder(
-//        future: _initializeVideoPlayerFuture,
-//        builder: (context, snapshot) {
-//          if (snapshot.connectionState == ConnectionState.done) {
-//            return AspectRatio(
-//              aspectRatio: _gottenVideoController.value.aspectRatio,
-//              child: VideoPlayer(_gottenVideoController),
-//            );
-//          } else {
-//            return Center(child: CircularProgressIndicator());
-//          }
-//        },
-//      ),
     );
   }
 }

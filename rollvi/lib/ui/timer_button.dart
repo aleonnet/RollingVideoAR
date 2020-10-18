@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rollvi/ui/progress_painter.dart';
 
-
 class TimerButton extends FloatingActionButton {
-
   AnimationController controller;
   TickerProviderStateMixin context;
 
@@ -24,21 +22,16 @@ class TimerButton extends FloatingActionButton {
   @override
   Color get backgroundColor => Colors.white;
 
-  @override
-  get onPressed {
-    print("OnPressed");
-
-    super.onPressed;
-    if (controller.isAnimating)
-      controller.stop();
-    else {
-      controller.reverse(
-          from: controller.value == 0.0
-              ? 1.0
-              : controller.value);
-    }
-  }
-
+//  @override
+//  get onPressed {
+//    print("OnPressed");
+//    if (controller.isAnimating)
+//      controller.stop();
+//    else {
+//      controller.reverse(
+//          from: controller.value == 0.0 ? 1.0 : controller.value);
+//    }
+//  }
 
   @override
   Widget get child => AnimatedBuilder(
@@ -47,7 +40,7 @@ class TimerButton extends FloatingActionButton {
         return Stack(
           children: <Widget>[
             Padding(
-              padding: EdgeInsets.all(0),
+              padding: EdgeInsets.all(5),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
@@ -61,25 +54,29 @@ class TimerButton extends FloatingActionButton {
                             Positioned.fill(
                               child: CustomPaint(
                                   painter: ProgressTimerPainter(
-                                    animation: controller,
-                                    backgroundColor: Colors.white,
-                                    color: Colors.redAccent,
-                                  )),
+                                animation: controller,
+                                backgroundColor: Colors.white,
+                                color: Colors.redAccent,
+                              )),
                             ),
                             Align(
                               alignment: FractionalOffset.center,
                               child: Column(
                                 mainAxisAlignment:
-                                MainAxisAlignment.spaceEvenly,
-                                crossAxisAlignment:
-                                CrossAxisAlignment.center,
+                                    MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: <Widget>[
-                                  Text(
-                                    timerString,
-                                    style: TextStyle(
-                                        fontSize: 15.0,
-                                        color: Colors.redAccent),
-                                  ),
+                                  controller.value == 0.0
+                                      ? Icon(
+                                          Icons.camera,
+                                          color: Colors.redAccent,
+                                        )
+                                      : Text(
+                                          timerString,
+                                          style: TextStyle(
+                                              fontSize: 15.0,
+                                              color: Colors.redAccent),
+                                        ),
                                 ],
                               ),
                             ),
@@ -93,7 +90,5 @@ class TimerButton extends FloatingActionButton {
             ),
           ],
         );
-      }
-  );
-
+      });
 }

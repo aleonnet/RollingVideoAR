@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
@@ -39,6 +40,33 @@ String getCurrentTime() {
   final String curDate = DateFormat('MM-dd').format(now);
   final String curTime = DateFormat('MM-dd-hh:mm:ss').format(now);
   return curTime;
+}
+
+Future<String> downloadFile(String url) async {
+  String filePath = '${await getRollviTempDir()}/${await getCurrentTime()}.mp4';
+  HttpClient httpClient = new HttpClient();
+  File file;
+
+  try {
+    print('Download Link: $url');
+    var request = await httpClient.getUrl(Uri.parse(url));
+    var response = await request.close();
+    if(response.statusCode == 200) {
+      var bytes = await consolidateHttpClientResponseBytes(response);
+      file = File(filePath);
+      await file.writeAsBytes(bytes);
+    }
+    else {
+      print('Error code: '+response.statusCode.toString());
+      return '';
+    }
+  }
+  catch (e) {
+    print('Can not fetch url');
+    return '';
+  }
+
+  return filePath;
 }
 
 ImageRotation rotationIntToImageRotation(int rotation) {
