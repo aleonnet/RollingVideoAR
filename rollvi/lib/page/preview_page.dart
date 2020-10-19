@@ -182,35 +182,36 @@ class PreviewPageState extends State<PreviewPage> {
                                         AssetImage("assets/insta_logo.png"),
                                       ),
                                       onPressed: () async {
-                                        String _clipData =
-                                            (await Clipboard.getData(
-                                                    'text/plain'))
-                                                .text;
-                                        final inputText = await showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) =>
-                                                InstaLinkDialog(
-                                                  clipData: _clipData,
-                                                ));
-
-                                        if (inputText != null) {
-                                          FlutterInsta flutterInsta =
-                                              new FlutterInsta();
-                                          await flutterInsta
-                                              .downloadReels(inputText)
-                                              .then((String instaLink) {
-                                            print(instaLink);
-                                            Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                    builder: (BuildContext
-                                                            context) =>
-                                                        ConcatVideoPage(
-                                                          currentFile:
-                                                              File(_outputPath),
-                                                          instaLink: instaLink,
-                                                        )));
-                                          });
-                                        }
+                                        showInSnackBar("준비 중인 기능입니다");
+//                                        String _clipData =
+//                                            (await Clipboard.getData(
+//                                                    'text/plain'))
+//                                                .text;
+//                                        final inputText = await showDialog(
+//                                            context: context,
+//                                            builder: (BuildContext context) =>
+//                                                InstaLinkDialog(
+//                                                  clipData: _clipData,
+//                                                ));
+//
+//                                        if (inputText != null) {
+//                                          FlutterInsta flutterInsta =
+//                                              new FlutterInsta();
+//                                          await flutterInsta
+//                                              .downloadReels(inputText)
+//                                              .then((String instaLink) {
+//                                            print(instaLink);
+//                                            Navigator.of(context).push(
+//                                                MaterialPageRoute(
+//                                                    builder: (BuildContext
+//                                                            context) =>
+//                                                        ConcatVideoPage(
+//                                                          currentFile:
+//                                                              File(_outputPath),
+//                                                          instaLink: instaLink,
+//                                                        )));
+//                                          });
+//                                        }
                                       },
                                     ),
                                     FloatingActionButton(

@@ -54,16 +54,18 @@ class _ConcatVideoPageState extends State<ConcatVideoPage> {
   }
 
   void _initializeVideo() async {
-    _cropVideo(widget.currentFile.path).then((outputPath) {
-      setState(() {
-        _capturedVideoController = VideoPlayerController.file(File(outputPath));
-        _initializeVideoPlayerFuture1 = _capturedVideoController.initialize();
-        _capturedVideoController.setLooping(true);
-        _capturedVideoController.play();
-        _capturedVideoPath = outputPath;
-        print("_capturedVideoPath: $_capturedVideoPath");
-      });
-    });
+//    _cropVideo(widget.currentFile.path).then((outputPath) {
+//      setState(() {
+//
+//      });
+//    });
+
+    _capturedVideoController = VideoPlayerController.file(File(widget.currentFile.path));
+    _initializeVideoPlayerFuture1 = _capturedVideoController.initialize();
+    _capturedVideoController.setLooping(true);
+    _capturedVideoController.play();
+    _capturedVideoPath = widget.currentFile.path;
+    print("_capturedVideoPath: $_capturedVideoPath");
 
     if (widget.galleryFile != null) {
       isGalleryFile = true;
