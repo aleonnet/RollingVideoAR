@@ -27,7 +27,7 @@ Future<String> makeRollviBorder(final String sourceFilePath) async {
 }
 
 String getRollviTag() {
-  return "#롤비 #롤링비디오 #rollvi";
+  return "#롤비 #롤링비디오 #rollvi #코로나도우리의사랑을막을순없지";
 }
 
 String getTimestamp() {

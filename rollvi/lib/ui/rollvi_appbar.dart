@@ -48,7 +48,7 @@ class RollviAppBar extends AppBar {
                   color: Colors.white,
                 ),
                 onPressed: () {
-                  Navigator.of(context).pushReplacementNamed('/home');
+                  Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
                 },
               )
             : Container(),

@@ -129,14 +129,16 @@ class ResultPageState extends State<ResultPage> {
                       child: Icon(Icons.file_download),
                       onPressed: () async {
                         print("Recorded Video Path $_resultVideoPath");
-                        GallerySaver.saveVideo(_resultVideoPath,
-                            albumName: 'Media')
-                            .then((bool success) {
-                          if (success) {
-                            showInSnackBar("Video Saved!");
-                          } else {
-                            showInSnackBar("Failed to save the video");
-                          }
+                        makeRollviBorder(_resultVideoPath).then((value) {
+                          GallerySaver.saveVideo(_resultVideoPath,
+                              albumName: 'Media')
+                              .then((bool success) {
+                            if (success) {
+                              showInSnackBar("Video Saved!");
+                            } else {
+                              showInSnackBar("Failed to save the video");
+                            }
+                          });
                         });
                       },
                     ),
