@@ -129,17 +129,18 @@ class ResultPageState extends State<ResultPage> {
                       child: Icon(Icons.file_download),
                       onPressed: () async {
                         print("Recorded Video Path $_resultVideoPath");
-                        makeRollviBorder(_resultVideoPath).then((value) {
-                          GallerySaver.saveVideo(_resultVideoPath,
-                              albumName: 'Media')
-                              .then((bool success) {
-                            if (success) {
-                              showInSnackBar("Video Saved!");
-                            } else {
-                              showInSnackBar("Failed to save the video");
-                            }
-                          });
+                        GallerySaver.saveVideo(_resultVideoPath,
+                            albumName: 'Media')
+                            .then((bool success) {
+                          if (success) {
+                            showInSnackBar("Video Saved!");
+                          } else {
+                            showInSnackBar("Failed to save the video");
+                          }
                         });
+//                        makeRollviBorder(_resultVideoPath).then((value) {
+//
+//                        });
                       },
                     ),
                     FloatingActionButton(
@@ -147,10 +148,12 @@ class ResultPageState extends State<ResultPage> {
                       child: Icon(Icons.share),
                       onPressed: () async {
                         print("Recorded Video Path $_resultVideoPath");
-                        makeRollviBorder(_resultVideoPath).then((value) {
-                          Clipboard.setData(new ClipboardData(text: getRollviTag()));
-                          Share.shareFiles([value], subject: 'Rollvi');
-                        });
+                        Clipboard.setData(new ClipboardData(text: getRollviTag()));
+                        Share.shareFiles([_resultVideoPath], subject: 'Rollvi');
+//                        makeRollviBorder(_resultVideoPath).then((value) {
+//                          Clipboard.setData(new ClipboardData(text: getRollviTag()));
+//                          Share.shareFiles([value], subject: 'Rollvi');
+//                        });
                       },
                     ),
                   ],

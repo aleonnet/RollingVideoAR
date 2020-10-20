@@ -279,18 +279,19 @@ class PreviewPageState extends State<PreviewPage> {
                                         onPressed: () async {
                                           print(
                                               "Recorded Video Path $_outputPath");
-                                          makeRollviBorder(_outputPath)
-                                              .then((value) {
-                                            GallerySaver.saveVideo(value,
-                                                    albumName: 'Rollvi')
-                                                .then((bool success) {
-                                              if (success) {
-                                                showInSnackBar("Video Saved!");
-                                              } else {
-                                                showInSnackBar(
-                                                    "Failed to save the video");
-                                              }
-                                            });
+//                                          makeRollviBorder(_outputPath)
+//                                              .then((value) {
+//
+//                                          });
+                                          GallerySaver.saveVideo(_outputPath,
+                                              albumName: 'Rollvi')
+                                              .then((bool success) {
+                                            if (success) {
+                                              showInSnackBar("Video Saved!");
+                                            } else {
+                                              showInSnackBar(
+                                                  "Failed to save the video");
+                                            }
                                           });
                                         },
                                       ),
@@ -300,13 +301,17 @@ class PreviewPageState extends State<PreviewPage> {
                                         onPressed: () async {
                                           print(
                                               "Recorded Video Path $_outputPath");
-                                          makeRollviBorder(_outputPath)
-                                              .then((value) {
-                                            Clipboard.setData(new ClipboardData(
-                                                text: getRollviTag()));
-                                            Share.shareFiles([value],
-                                                subject: 'Rollvi');
-                                          });
+                                          Clipboard.setData(new ClipboardData(
+                                              text: getRollviTag()));
+                                          Share.shareFiles([_outputPath],
+                                              subject: 'Rollvi');
+//                                          makeRollviBorder(_outputPath)
+//                                              .then((value) {
+//                                            Clipboard.setData(new ClipboardData(
+//                                                text: getRollviTag()));
+//                                            Share.shareFiles([value],
+//                                                subject: 'Rollvi');
+//                                          });
                                         },
                                       ),
                                     ],
