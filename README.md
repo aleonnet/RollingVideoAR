@@ -18,7 +18,7 @@ Short-form video production app service that uses AR filter to create relay vide
 
 ## UI
 
-![ui](docs/ui.png)
+![ui](docs/ui.PNG)
 
 ## Face filter
 
